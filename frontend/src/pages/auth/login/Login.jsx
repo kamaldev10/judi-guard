@@ -1,13 +1,12 @@
 import React, { useState } from "react";
-import LogoWithSlogan from "../../assets/images/LogoWithSlogan.png";
+import LogoWithSlogan from "../../../assets/images/LogoWithSlogan.png";
 import { Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Title } from "react-head";
 import { toast } from "react-toastify";
-import { useAuth } from "../../hooks/useAuth";
+import { Icon } from "@iconify/react";
 
 const Login = () => {
-  const { login } = useAuth();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [formValues, setFormValues] = useState({ email: "", password: "" });
@@ -74,34 +73,35 @@ const Login = () => {
     setFormErrors({ email: emailError, password: passwordError });
 
     if (emailError || passwordError) return;
-
-    const success = await login(formValues);
-    if (success)
-      toast.success("Anda berhasil login", { position: "top-center" });
+    toast.success("Anda berhasil login", { position: "top-center" });
     navigate("/");
   };
 
   return (
     <>
       <Title>Login | Judi Guard</Title>
-      <div className="fade-in-transition min-h-screen flex items-center justify-center bg-gradient-to-b from-[--bg-blueOne] from-1/2 to-[--bg-blueSecond] to-1/2">
-        <div className="w-full max-w-md bg-transparent p-8 ">
-          <div className="static flex flex-col items-center mb-10 ">
-            <img
-              src={LogoWithSlogan}
-              alt="Judi Guard Logo"
-              width={150}
-              height={150}
-              className="absolute top-0 "
-            />
-          </div>
-
+      <div className="relative fade-in-transition min-h-screen flex items-center justify-center ">
+        <div className="absolute inset-0">
+          <div className="h-1/2 bg-blue-200"></div>
+          <div className="h-1/2 bg-blue-100"></div>
+        </div>
+        <img
+          src={LogoWithSlogan}
+          alt="Judi Guard Logo"
+          width={150}
+          height={150}
+          className="absolute top-5"
+        />
+        <div className="z-10 w-full max-w-md bg-transparent p-8 ">
           <form>
             <h1 className="text-center text-[var(--primary-color)] font-semibold text-xl mb-5">
               Masuk
             </h1>
             <div className="mb-4">
-              <label for="email" className="block text-sm mb-1 font-semibold">
+              <label
+                aria-labelledby="email"
+                className="block text-sm mb-1 font-semibold"
+              >
                 Email
               </label>
               <input
@@ -122,7 +122,7 @@ const Login = () => {
             <div className="mb-4">
               <div className="flex justify-between mb-1">
                 <label
-                  for="password"
+                  aria-labelledby="password"
                   className=" justify-self-start text-sm font-semibold"
                 >
                   Password
@@ -162,21 +162,38 @@ const Login = () => {
             <button
               type="submit"
               onClick={handleLogin}
-              className="w-full py-1 mt-2 bg-[var(--primary-color)] text-white font-semibold border rounded-xl hover:bg-[#089db1] transition"
+              className="w-full py-1 mt-2 bg-[var(--primary-color)] text-white font-semibold border rounded-md hover:bg-[#089db1] transition"
             >
               Masuk
             </button>
-          </form>
 
-          <p className="text-center text-sm mt-6">
-            Belum punya akun?
-            <Link
-              to="/register"
-              className="text-[var(--primary-color)] ms-1 font-medium hover:underline"
-            >
-              Daftar di sini
-            </Link>
-          </p>
+            <p className="text-center text-sm mt-6">
+              Belum punya akun?
+              <Link
+                to="/register"
+                className="text-[var(--primary-color)] ms-1 font-medium hover:underline"
+              >
+                Daftar di sini
+              </Link>
+            </p>
+          </form>
+          <div className="flex items-center my-10">
+            <hr className="flex-grow border-gray-400" />
+            <span className="mx-2 text-gray-600 text-sm font-medium">OR</span>
+            <hr className="flex-grow border-gray-400" />
+          </div>
+
+          <button className="w-full flex items-center justify-center gap-2 border border-gray-400 rounded-md py-2 hover:bg-gray-100 transition">
+            <Icon
+              icon="logos:google-icon"
+              width="25"
+              height="25"
+              className="items-start"
+            />
+            <span className="text-sm font-medium text-gray-700">
+              Masuk Dengan Google
+            </span>
+          </button>
         </div>
       </div>
     </>

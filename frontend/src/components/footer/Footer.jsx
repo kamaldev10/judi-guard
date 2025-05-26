@@ -1,22 +1,19 @@
 import React from "react";
+import Tagline from "../tagline/Tagline";
 
 const Footer = () => {
   return (
-    <footer className="bg-[--bg-blueOne] text-blue-900 pt-12 pb-6 px-6 md:px-20">
+    <footer className="bg-gray-800 text-white pt-12 pb-6 px-6 md:px-20">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pb-10">
-        {/* Branding */}
         <div>
           <h1 className="text-2xl font-bold mb-2">JUDI GUARD</h1>
           <p className="text-sm mb-4">
             Platform pendeteksi komentar spam judi otomatis dan akurat di ruang
             digital Anda.
           </p>
-          <p className="text-xs text-blue-800 italic">
-            Bersama menjaga ruang digital tetap aman.
-          </p>
+          <Tagline className="text-white text-xs items-start inline-block" />
         </div>
 
-        {/* Navigasi */}
         <div>
           <h2 className="font-semibold text-lg mb-3">Navigasi</h2>
           <ul className="space-y-2 text-sm">
@@ -43,7 +40,6 @@ const Footer = () => {
           </ul>
         </div>
 
-        {/* Bantuan */}
         <div>
           <h2 className="font-semibold text-lg mb-3">Bantuan</h2>
           <ul className="space-y-2 text-sm">
@@ -90,7 +86,7 @@ const Footer = () => {
       </div>
 
       {/* Copyright */}
-      <div className="pt-6 text-sm text-center text-blue-800 font-bold">
+      <div className="pt-6 text-sm text-center text-white font-bold">
         &copy; {new Date().getFullYear()} Judi Guard. All rights reserved.
       </div>
     </footer>

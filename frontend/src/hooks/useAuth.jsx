@@ -1,4 +1,3 @@
-import { useContext } from "react";
-import AuthContext from "../contexts/AuthContext";
-
-export const useAuth = () => useContext(AuthContext);
+export const getToken = () => localStorage.getItem("token");
+export const setToken = (token) => localStorage.setItem("token", token);
+export const removeToken = () => localStorage.removeItem("token");

@@ -1,8 +1,8 @@
 import React from "react";
 import { Title } from "react-head";
-import HeroSection from "../../components/home/HeroSection";
+import HeroSection from "./HeroSection";
 
-const Home = () => {
+const HomePage = () => {
   return (
     <>
       <Title>Beranda | Judi Guard</Title>
@@ -13,4 +13,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default HomePage;

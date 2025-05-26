@@ -2,7 +2,7 @@
 
 ![version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 ![made-with-react](https://img.shields.io/badge/Made%20with-React-blue.svg)
-![status](https://img.shields.io/badge/status-mobile--first%20ready-success)
+![status](https://img.shields.io/badge/status-development-success)
 
 _Judi Guard App_ Judi Guard adalah aplikasi berbasis AI yang mampu mendeteksi komentar yang mengandung unsur judi online secara cepat, akurat, dan efisien. Kami berkomitmen untuk menjaga ruang digital Anda tetap aman dari konten berbahaya.
 

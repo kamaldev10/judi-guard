@@ -111,7 +111,7 @@ const Login = () => {
                 autoComplete="email"
                 value={formValues.email}
                 onChange={handleChange}
-                className="w-full px-4 py-1 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]"
+                className="w-full px-4 py-1 border bg-white border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)]"
                 autoFocus
               />
               {formErrors.email && (
@@ -141,7 +141,7 @@ const Login = () => {
                   value={formValues.password}
                   onChange={handleChange}
                   type={showPassword ? "text" : "password"}
-                  className="w-full px-4 py-1 border rounded-xl border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-400"
+                  className="w-full px-4 py-1 border rounded-xl bg-white border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-400"
                 />
                 <button
                   type="button"

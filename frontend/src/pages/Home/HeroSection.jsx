@@ -7,7 +7,7 @@ const HeroSection = () => {
     <>
       <section
         id="hero-section"
-        className="bg-[#d8f3ff] min-h-screen px-6 md:px-16 py-20 md:py-32 flex flex-col"
+        className="bg-linear-to-r from-white to-[#E1F2FF] min-h-screen px-6 md:px-16 py-20 md:py-32 flex flex-col"
       >
         <div className="flex flex-col-reverse lg:flex-row items-center justify-between gap-10 mb-10 md:mb-20">
           {/* Left Content */}

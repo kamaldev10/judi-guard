@@ -37,12 +37,12 @@ const Header = () => {
     });
 
   return (
-    <header className="sticky top-0 z-50 bg-blue-200 shadow-md px-6 md:px-16 py-4 flex items-center justify-between">
+    <header className="sticky top-0 z-50 bg-[#B9E6FD] shadow-md px-6 md:px-16 py-2 flex items-center justify-between">
       <div className="flex items-center">
         <img
           src={LogoWithSlogan}
           alt="Judi Guard Logo"
-          className="w-36 md:w-40"
+          className="w-32 md:w-32 "
         />
       </div>
 

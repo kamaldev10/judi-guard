@@ -17,14 +17,34 @@ const userSchema = new mongoose.Schema(
       unique: true,
       trim: true,
       lowercase: true,
-      // Simple regex for email validation, consider using a library like 'validator' for more robust validation
       match: [/\S+@\S+\.\S+/, "Please use a valid email address"],
     },
     password: {
       type: String,
-      required: [true, "Password is required"],
+      // required: false, // Jika mendaftar via Google, password bisa tidak ada
       minlength: [6, "Password must be at least 6 characters long"],
-      select: false, // Default: Jangan sertakan password saat query user
+      select: false,
+    },
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true,
+      select: false,
+    },
+    isVerified: {
+      // Status verifikasi email/akun
+      type: Boolean,
+      default: false,
+    },
+    otpCode: {
+      // Kode OTP yang dikirim
+      type: String,
+      select: false, // Jangan kirim OTP ke client secara default
+    },
+    otpExpiresAt: {
+      // Waktu kedaluwarsa OTP
+      type: Date,
+      select: false,
     },
     // Untuk V1, token YouTube akan disimpan di sini
     youtubeAccessToken: { type: String, select: false },

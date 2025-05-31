@@ -4,7 +4,16 @@ const Tagline = ({ className = "" }) => {
   return (
     <div>
       <p
-        className={`flex justify-center text-sm text-[#136854] italic py-5 font-semibold ${className}`}
+        className={`
+          text-center 
+          text-xs sm:text-sm md:text-base 
+          text-[#136854] 
+          italic 
+          py-3 sm:py-4 md:py-5 
+          font-semibold 
+          leading-relaxed
+          ${className}
+        `}
       >
         Membantu Anda Menjaga Ruang Digital Tetap Aman
       </p>

@@ -1,98 +1,92 @@
-import React, { useState } from "react";
-import LogoWithSlogan from "../../../assets/images/LogoWithSlogan.png";
+// src/components/Register.jsx
+import React, { useState } from "react"; // Hapus useEffect jika tidak dipakai lagi
+import LogoWithSlogan from "../../../assets/images/LogoWithSlogan.png"; // Sesuaikan path
 import { Link, useNavigate } from "react-router-dom";
 import { Title } from "react-head";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "react-toastify";
 import { Icon } from "@iconify/react";
+import {
+  validateUserName,
+  validateEmail,
+  validateRegistrationPassword,
+} from "../../../utils/FormValidators"; // Impor validateUserName
+import { registerUserApi } from "../../../services/api";
+import GoogleSignInButton from "../../../components/auth/GoogleSignInButton";
+// import GoogleSignInButton from "./GoogleSignInButton";
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [validationPassword, setValidationPassword] = useState();
-  const [password, setPassword] = useState("");
+  const [formValues, setFormValues] = useState({
+    userName: "",
+    email: "",
+    password: "",
+  });
+  const [formErrors, setFormErrors] = useState({
+    userName: "",
+    email: "",
+    password: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
-  const validateName = (name) => {
-    if (!name.trim()) return "Name is required.";
-    const hasNumbers = /\d/.test(name);
-    if (hasNumbers) return "Name cannot contain number.";
-    return;
+  const validateAllFields = () => {
+    const userNameError = validateUserName(formValues.userName); // Validasi userName
+    const emailError = validateEmail(formValues.email);
+    const passwordError = validateRegistrationPassword(formValues.password);
+    setFormErrors({
+      userName: userNameError, // Update error untuk userName
+      email: emailError,
+      password: passwordError,
+    });
+    return !userNameError && !emailError && !passwordError;
   };
-
-  const validateEmail = (email) => {
-    if (!email.trim()) return "Email is required.";
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) return "Email is invalid.";
-    return;
-  };
-
-  const validatePassword = (password) => {
-    const minLength = 8;
-    const hasUpperCase = /[A-Z]/.test(password);
-    const hasLowerCase = /[a-z]/.test(password);
-    const hasNumbers = /\d/.test(password);
-    const hasSpecialChars = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-
-    if (password.length < minLength) {
-      return `Password must be at least ${minLength} characters long.`;
-    }
-    if (!hasUpperCase) {
-      return "Password must contain at least one uppercase letter.";
-    }
-    if (!hasLowerCase) {
-      return "Password must contain at least one lowercase letter.";
-    }
-    if (!hasNumbers) {
-      return "Password must contain at least one number.";
-    }
-    if (!hasSpecialChars) {
-      return "Password must contain at least one special character.";
-    }
-    return;
-  };
-
-  const handlePasswordChange = (e) => {
-    const newPassword = e.target.value;
-    setPassword(newPassword);
-    const validationError = validatePassword(newPassword);
-    setValidationPassword(validationError);
-  };
-
-  const [formValues, setFormValues] = useState({
-    name: "",
-    email: "",
-    password: "",
-  });
-
-  const [formErrors, setFormErrors] = useState({
-    name: "",
-    email: "",
-    password: "",
-  });
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value } = e.target; // 'name' di sini adalah atribut 'name' dari input HTML
     setFormValues((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: value, // Ini akan mengupdate formValues.userName, formValues.email, atau formValues.password
     }));
 
     let error = "";
-    if (name === "name") error = validateName(value);
+    if (name === "userName")
+      error = validateUserName(value); // Validasi untuk userName
     else if (name === "email") error = validateEmail(value);
-    else if (name === "password") error = validatePassword(value);
+    else if (name === "password") error = validateRegistrationPassword(value);
+
     setFormErrors((prev) => ({
       ...prev,
       [name]: error,
     }));
   };
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    toast.success("Anda berhasil mendaftar", {
-      position: "bottom-right",
-    });
-    navigate("/otp", { state: { email: formValues.email } });
+    if (!validateAllFields()) {
+      toast.error("Harap perbaiki semua error pada form.", {
+        position: "bottom-right",
+      });
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      // formValues sudah memiliki userName, email, password
+      await registerUserApi(formValues);
+      toast.success(
+        "Anda berhasil mendaftar! Mengarahkan ke verifikasi OTP...",
+        {
+          position: "bottom-right",
+        }
+      );
+      navigate("/otp", { state: { email: formValues.email } });
+    } catch (error) {
+      toast.error(error.message || "Registrasi gagal. Silakan coba lagi.", {
+        position: "bottom-right",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -103,6 +97,7 @@ const Register = () => {
           <div className="h-1/2 bg-blue-200"></div>
           <div className="h-1/2 bg-blue-100"></div>
         </div>
+
         <img
           src={LogoWithSlogan}
           alt="Judi Guard Logo"
@@ -118,26 +113,29 @@ const Register = () => {
 
             <div className="mb-4">
               <label
-                htmlFor="name"
+                htmlFor="userName"
                 className="block text-sm mb-1 font-semibold"
               >
-                Nama Lengkap
+                Username
               </label>
               <input
                 type="text"
-                name="name"
-                id="name"
-                autoComplete="name"
-                value={formValues.name}
+                name="userName"
+                id="userName"
+                autoComplete="username"
+                value={formValues.userName}
                 onChange={handleChange}
-                className="w-full px-4 py-1 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--primary-color)] bg-white"
+                className={`w-full px-4 py-1 border rounded-xl focus:outline-none focus:ring-2 bg-white ${formErrors.userName ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-[var(--primary-color)]"}`}
                 autoFocus
               />
-              {formErrors.name && (
-                <p className="mt-1 text-sm text-red-600">{formErrors.name}</p>
+              {formErrors.userName && (
+                <p className="mt-1 text-sm text-red-600">
+                  {formErrors.userName}
+                </p>
               )}
             </div>
 
+            {/* Input Email tetap sama */}
             <div className="mb-4">
               <label
                 htmlFor="email"
@@ -152,13 +150,14 @@ const Register = () => {
                 value={formValues.email}
                 onChange={handleChange}
                 autoComplete="email"
-                className="w-full px-4 py-1 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--primary-color) bg-white"
+                className={`w-full px-4 py-1 border rounded-xl focus:outline-none focus:ring-2 bg-white ${formErrors.email ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-[var(--primary-color)]"}`}
               />
               {formErrors.email && (
                 <p className="mt-1 text-sm text-red-600">{formErrors.email}</p>
               )}
             </div>
 
+            {/* Input Password tetap sama */}
             <div className="mb-4">
               <div className="flex justify-between mb-1">
                 <label htmlFor="password" className="text-sm font-semibold">
@@ -170,9 +169,9 @@ const Register = () => {
                   name="password"
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={handlePasswordChange}
-                  className="w-full px-4 py-1 border rounded-xl border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-400 bg-white"
+                  value={formValues.password}
+                  onChange={handleChange}
+                  className={`w-full px-4 py-1 border rounded-xl focus:outline-none focus:ring-2 bg-white ${formErrors.password ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-[var(--primary-color)]"}`}
                 />
                 <button
                   type="button"
@@ -186,18 +185,19 @@ const Register = () => {
                   )}
                 </button>
               </div>
-              {validationPassword && (
+              {formErrors.password && (
                 <p className="mt-1 text-sm text-red-600">
-                  {validationPassword}
+                  {formErrors.password}
                 </p>
               )}
             </div>
 
             <button
               type="submit"
-              className="w-full py-1 mt-2 bg-[var(--primary-color)] text-white font-semibold rounded-xl hover:bg-[#089db1] transition"
+              disabled={isSubmitting}
+              className="w-full py-1 mt-2 bg-[var(--primary-color)] text-white font-semibold rounded-xl hover:bg-[#089db1] transition disabled:opacity-50"
             >
-              Daftar
+              {isSubmitting ? "Mendaftar..." : "Daftar"}
             </button>
 
             <p className="text-center text-sm mt-6">
@@ -216,13 +216,10 @@ const Register = () => {
             <span className="mx-2 text-gray-600 text-sm font-medium">OR</span>
             <hr className="flex-grow border-gray-400" />
           </div>
-
-          <button className="w-full flex items-center justify-center gap-2 border border-gray-400 rounded-md py-2 hover:bg-gray-100 transition">
-            <Icon icon="logos:google-icon" width="25" height="25" />
-            <span className="text-sm font-medium text-gray-700">
-              Masuk Dengan Google
-            </span>
-          </button>
+          {/* <GoogleSignInButton /> */}
+          <div className="flex w-full justify-center">
+            <GoogleSignInButton buttonText="Daftar dengan google" />
+          </div>
         </div>
       </div>
     </>

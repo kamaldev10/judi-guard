@@ -1,14 +1,20 @@
 import React from "react";
 import { Title } from "react-head";
 import HeroSection from "./HeroSection";
+import AnalisisSection from "./AnalisisSection";
+import TestimonialsSection from "./TestimonialsSection";
+import ContactSection from "./ContactSection";
 
 const HomePage = () => {
   return (
     <>
       <Title>Beranda | Judi Guard</Title>
-      <main>
+      <div>
         <HeroSection />
-      </main>
+        <AnalisisSection />
+        <TestimonialsSection />
+        <ContactSection />
+      </div>
     </>
   );
 };

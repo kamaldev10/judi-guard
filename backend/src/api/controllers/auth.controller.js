@@ -44,6 +44,27 @@ const handleLogin = async (req, res, next) => {
   }
 };
 
+const handleGoogleAppSignIn = async (req, res, next) => {
+  try {
+    const { idToken } = req.body;
+    if (!idToken) {
+      throw new BadRequestError("Google ID Token diperlukan dari frontend.");
+    }
+    const { token, user, isNewUser } = await authService.signInWithGoogle(
+      idToken
+    );
+    res.status(isNewUser ? 201 : 200).json({
+      status: "success",
+      message: isNewUser
+        ? "Registrasi/Login dengan Google berhasil!"
+        : "Login dengan Google berhasil!",
+      data: { token, user },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const redirectToGoogleOAuth = (req, res, next) => {
   try {
     // Pastikan req.user ada karena rute ini diproteksi isAuthenticated
@@ -190,9 +211,43 @@ const handleGoogleOAuthCallback = async (req, res, next) => {
   }
 };
 
+const handleVerifyOtp = async (req, res, next) => {
+  try {
+    const { email, otpCode } = req.body;
+    const result = await authService.verifyOtp(email, otpCode);
+    // Hasilnya berisi token dan user, mirip login sukses
+    res.status(200).json({
+      status: "success",
+      message: result.message,
+      data: {
+        token: result.token,
+        user: result.user,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const handleResendOtp = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    const result = await authService.resendOtp(email);
+    res.status(200).json({
+      status: "success",
+      message: result.message,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   handleRegister,
-  handleLogin, // Tambahkan ini
-  redirectToGoogleOAuth, // Tambahkan ini
-  handleGoogleOAuthCallback, // Tambahkan ini
+  handleLogin,
+  handleGoogleAppSignIn,
+  redirectToGoogleOAuth,
+  handleGoogleOAuthCallback,
+  handleVerifyOtp,
+  handleResendOtp,
 };

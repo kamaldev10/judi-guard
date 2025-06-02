@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:3001/api/v1"; // Fallback jika .env lupa
+  import.meta.env.VITE_API_URL || "http://localhost:3001/api/v1";
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -67,6 +67,41 @@ export const getCurrentUserApi = async () => {
       error.response?.data || error.message
     );
     throw error.response?.data || new Error("Gagal mengambil data pengguna");
+  }
+};
+
+export const deleteMyAccountApi = async () => {
+  try {
+    // Pastikan endpoint ini benar relatif terhadap baseURL Anda
+    const response = await apiClient.delete("/users/deleteMe");
+    return response.data; // Backend mengirim { status: "success", message: "..." }
+  } catch (error) {
+    console.error(
+      "Error in deleteMyAccountApi ",
+      error.response?.data?.message || error.message
+    );
+    throw new Error(
+      error.response?.data?.message || error.message || "Gagal menghapus akun."
+    );
+  }
+};
+
+export const updateMyProfileApi = async (profileData) => {
+  try {
+    // profileData adalah objek berisi field yang ingin diupdate, misal: { username: "baru", email: "baru@mail.com" }
+    const response = await apiClient.patch("/users/updateMe", profileData);
+    return response.data; // Backend mengirim { status: "success", data: { user: { ... } } }
+  } catch (error) {
+    console.error(
+      "Error in updateMyProfileApi:",
+      error.response?.data?.message || error.message
+    );
+    // Backend controller (updateMe) sudah menggunakan custom error, jadi error.response.data.message seharusnya ada
+    throw new Error(
+      error.response?.data?.message ||
+        error.message ||
+        "Gagal memperbarui profil."
+    );
   }
 };
 

@@ -23,16 +23,13 @@ const Footer = () => {
 
             <ul className="space-y-2 text-xs sm:text-sm">
               <li>
-                <Link
-                  to="/#hero-section"
-                  className="hover:text-blue-400 transition-colors"
-                >
+                <Link to="/" className="hover:text-blue-400 transition-colors">
                   Beranda
                 </Link>
               </li>
               <li>
                 <Link
-                  to="/about-us/#about"
+                  to="/about-us"
                   className="hover:text-blue-400 transition-colors"
                 >
                   Tentang Kami
@@ -40,10 +37,18 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  to="/analisis#cara-kerja"
+                  to="/analisis"
                   className="hover:text-blue-400 transition-colors"
                 >
                   Analisis
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/profile"
+                  className="hover:text-blue-400 transition-colors"
+                >
+                  Profil
                 </Link>
               </li>
             </ul>
@@ -63,7 +68,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  to="/kontak"
+                  to="/#contact-section"
                   className="hover:text-blue-400 transition-colors"
                 >
                   Kontak Kami
@@ -74,16 +79,14 @@ const Footer = () => {
                   Dukungan Teknis
                 </Link>
               </li> */}
-              <li>
+              {/* <li>
                 <Link
                   to="/kebijakan-privasi"
                   className="hover:text-blue-400 transition-colors"
                 >
-                  {" "}
-                  {/* Ganti path jika perlu */}
                   Kebijakan Privasi
                 </Link>
-              </li>
+              </li> */}
             </ul>
           </div>
 

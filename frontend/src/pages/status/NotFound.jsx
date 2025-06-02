@@ -1,4 +1,5 @@
 // Contoh path: src/pages/status/NotFoundPage.jsx
+/* eslint-disable react/prop-types */
 import React from "react";
 import { Link } from "react-router-dom";
 import notFoundImage from "../../assets/images/notFound.jpg";

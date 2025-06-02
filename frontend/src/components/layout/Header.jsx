@@ -10,6 +10,7 @@ import {
   Info,
   BarChart3,
   UserCircle,
+  HandMetal,
 } from "lucide-react";
 
 import LogoImage from "../../assets/images/Logo.png";
@@ -91,7 +92,7 @@ const Header = () => {
           onClick={() => isMobile && setIsMobileMenuOpen(false)}
           className={`${loginButtonClasses} ${isMobile ? "w-full mt-2 block" : ""}`} // Hapus text-center jika sudah ada flex
         >
-          <LogIn size={18} className="mr-2" /> Login
+          <LogIn size={18} className="mr-2" /> Masuk
         </Link>
       );
     }
@@ -107,6 +108,8 @@ const Header = () => {
         return <Info size={18} className="mr-2" />;
       case "/analisis":
         return <BarChart3 size={18} className="mr-2" />;
+      case "/profile":
+        return <UserCircle size={18} className="mr-2" />;
       default:
         return null;
     }
@@ -114,11 +117,11 @@ const Header = () => {
 
   return (
     <header className="bg-[#B9E6FD] shadow-lg sticky top-0 z-50">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="container mx-auto px-4  sm:px-6 md:px-1 lg:px-8 ">
         <div className="flex items-center justify-between h-18">
-          <div className="flex-shrink-0">
+          <div className="flex flex-shrink-0">
             <Link
-              to="/"
+              to="/about-us"
               className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors"
             >
               <img
@@ -127,23 +130,29 @@ const Header = () => {
                 className="w-26 border border-sky-500 rounded-full p-2 bg-transparent "
               />
             </Link>
+            <button>connect to youtube</button>
           </div>
 
-          <nav className="hidden md:flex items-center space-x-4">
-            <Link to="/" className={navLinkClasses("/")}>
-              {getNavIcon("/")} Home
+          <nav className="hidden md:flex items-center md:space-x-1 lg:space-x-10">
+            <Link to="/" className={navLinkClasses("/#hero-section")}>
+              {getNavIcon("/")} Beranda
             </Link>
             <Link to="/about-us" className={navLinkClasses("/about-us")}>
-              {getNavIcon("/about-us")} About Us
+              {getNavIcon("/about-us")} Tentang Kami
             </Link>
             {isAuthenticated && (
               <Link to="/analisis" className={navLinkClasses("/analisis")}>
                 {getNavIcon("/analisis")} Analisis
               </Link>
             )}
+            {isAuthenticated && (
+              <Link to="/profile" className={navLinkClasses("/profile")}>
+                {getNavIcon("/profile")} Profil
+              </Link>
+            )}
             {isAuthenticated && currentUser && (
               <span className="text-sm text-[#06786F] ml-4 pl-4 border-l-cyan-600 border-l-2 font-semibold border-gray-200 inline-flex items-center">
-                <UserCircle size={18} className="mr-1 text-gray-700" /> Halo,{" "}
+                <HandMetal size={18} className="mr-1 text-gray-700" /> Halo,{" "}
                 {currentUser.username || currentUser.name || "Pengguna"}
               </span>
             )}
@@ -173,12 +182,12 @@ const Header = () => {
       {isMobileMenuOpen && (
         <div
           ref={mobileMenuRef}
-          className="md:hidden absolute top-16 inset-x-0 z-40" // Removed transform classes for simplicity, rely on conditional rendering
+          className="md:hidden absolute top-18 inset-x-0 z-40" // Removed transform classes for simplicity, rely on conditional rendering
         >
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-[#B9E6FD] border-t border-gray-200 shadow-xl rounded-b-lg">
             {isAuthenticated && currentUser && (
               <div className="px-3 py-3 border-b border-gray-100 flex items-center">
-                <UserCircle size={20} className="mr-2 text-gray-700" />
+                <HandMetal size={20} className="mr-2 text-gray-700" />
                 <span className="block text-sm font-semibold text-[#06786F]">
                   Halo, {currentUser.username || currentUser.name || "Pengguna"}
                 </span>
@@ -207,7 +216,16 @@ const Header = () => {
                 {getNavIcon("/analisis")} Analisis
               </Link>
             )}
-            <div className="px-1 pt-3 pb-2 border-t border-gray-100 mt-2">
+            {isAuthenticated && (
+              <Link
+                to="/profile"
+                className={navLinkClasses("/profile", true)}
+                onClick={toggleMobileMenu}
+              >
+                {getNavIcon("/profile")} Profil
+              </Link>
+            )}
+            <div className="px-1 pt-3 pb-2  border-t border-gray-100 mt-2">
               {renderAuthButtons(true)}
             </div>
           </div>

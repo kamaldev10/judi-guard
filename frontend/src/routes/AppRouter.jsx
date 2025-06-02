@@ -9,10 +9,12 @@ import Loader from "../components/loader/Loader";
 const HomePage = lazy(() => import("../pages/Home/HomePage"));
 const AboutUs = lazy(() => import("../pages/aboutUs/AboutUs"));
 const AnalysisPage = lazy(() => import("../pages/analisis/AnalysisPage"));
+const UserProfilePage = lazy(() => import("../pages/profile/UserProfilePage"));
+const EditProfilPage = lazy(() => import("../pages/profile/EditProfilePage"));
 const Login = lazy(() => import("../pages/auth/login/Login"));
 const Register = lazy(() => import("../pages/auth/register/Register"));
 const OtpPage = lazy(() => import("../pages/otp/OtpPage"));
-const NotFoundPageDisplay = lazy(() => import("../pages/status/NotFound.jsx"));
+const NotFoundPage = lazy(() => import("../pages/status/NotFound"));
 
 const AppRouter = () => {
   return (
@@ -31,7 +33,23 @@ const AppRouter = () => {
               </ProtectedRoute>
             }
           />
-          <Route path="not-found" element={<NotFoundPageDisplay />} />
+          <Route
+            path="profile"
+            element={
+              <ProtectedRoute>
+                <UserProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile/edit"
+            element={
+              <ProtectedRoute>
+                <EditProfilPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="not-found" element={<NotFoundPage />} />
         </Route>
 
         {/* Rute Autentikasi (tanpa Layout Utama) */}

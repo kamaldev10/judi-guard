@@ -5,16 +5,16 @@ const {
   BadRequestError,
   UnauthorizedError,
 } = require("../../utils/errors");
-const { generateToken } = require("../../utils/jwt"); // Impor fungsi generateToken
+const { generateToken, generateRandomToken } = require("../../utils/jwt"); // Impor fungsi generateToken
 const { createOAuth2Client } = require("../../utils/googleOAuth2Client"); // Impor
 const { google } = require("googleapis"); // Impor google untuk youtube API client nanti
 const sendEmail = require("../../utils/emailSender"); // Impor pengirim email
 const crypto = require("crypto"); // Modul bawaan Node.js untuk generate string acak
 const config = require("../../config/environment");
 const { OAuth2Client } = require("google-auth-library"); // Penting untuk verifikasi ID Token
+const PasswordReset = require("../../models/PasswordReset.model.js");
 
 const generateOtp = () => {
-  // Generate 6 digit OTP
   return crypto.randomInt(100000, 999999).toString();
 };
 
@@ -117,20 +117,21 @@ const registerUser = async (userData) => {
 };
 
 // TAMBAHKAN FUNGSI INI
-const loginUser = async (loginData) => {
-  const { email, password } = loginData;
+const loginUser = async (userData) => {
+  const { email, password } = userData;
 
   // 1. Cari user berdasarkan email dan ambil passwordnya (karena select: false di model)
   const user = await User.findOne({ email }).select("+password");
+
   if (!user) {
-    throw new UnauthorizedError("Email atau password salah.");
+    throw new UnauthorizedError("Akun belum terdaftar.");
   }
 
   // 2. Bandingkan password yang diberikan dengan password di database
   // Pastikan method comparePassword sudah ada di User.model.js dan bekerja dengan benar
   const isPasswordMatch = await user.comparePassword(password);
   if (!isPasswordMatch) {
-    throw new UnauthorizedError("Email atau password salah.");
+    throw new UnauthorizedError("Password anda salah.");
   }
 
   // 3. Jika password cocok, buat JWT
@@ -148,8 +149,10 @@ const loginUser = async (loginData) => {
   delete userResponse.youtubeRefreshToken;
   delete userResponse.youtubeTokenExpiresAt;
 
+  console.log(userResponse);
   return { token, user: userResponse };
 };
+
 const signInWithGoogle = async (idTokenString) => {
   if (!config.googleSignIn || !config.googleSignIn.clientId) {
     console.error(
@@ -427,6 +430,217 @@ const resendOtp = async (email) => {
   return { message: `Kode OTP baru telah dikirim ke ${user.email}.` };
 };
 
+const requestPasswordReset = async (emailAddress) => {
+  const user = await User.findOne({ email: emailAddress });
+
+  if (!user) {
+    console.warn(
+      `Password reset attempt for non-existent email: ${emailAddress}`
+    );
+    return;
+  }
+
+  await PasswordReset.deleteMany({ userId: user._id });
+
+  const resetToken = generateRandomToken();
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // Token berlaku 15 menit
+
+  await PasswordReset.create({
+    userId: user._id,
+    token: resetToken,
+    expiresAt,
+  });
+
+  const resetUrl = `${config.frontendUrl}/reset-password/${resetToken}`;
+
+  // Konten email sekarang hanya teks biasa
+  const emailText = `
+Halo ${user.username || "Pengguna"},
+
+Anda menerima email ini karena ada permintaan untuk mereset kata sandi akun JudiGuard Anda.
+Silakan gunakan tautan berikut untuk mereset kata sandi Anda:
+${resetUrl}
+
+Tautan ini akan kedaluwarsa dalam 15 menit.
+Jika Anda tidak meminta reset kata sandi ini, abaikan email ini.
+
+Terima kasih,
+Tim JudiGuard
+  `.trim();
+
+  try {
+    const emailResult = await sendEmail({
+      email: user.email,
+      subject: "Instruksi Reset Kata Sandi JudiGuard Anda",
+      text: emailText,
+    });
+
+    if (!emailResult.success) {
+      console.error(
+        "Failed to send password reset email (reported by emailSender):",
+        emailResult.error
+      );
+      throw new InternalServerError(
+        "Gagal mengirim email instruksi. Silakan coba beberapa saat lagi."
+      );
+    }
+    if (emailResult.previewUrl) {
+      console.log(
+        `Ethereal preview URL for password reset: ${emailResult.previewUrl}`
+      );
+    }
+  } catch (error) {
+    console.error("Error during sendEmail call for password reset:", error);
+    await PasswordReset.deleteOne({ token: resetToken });
+    if (error instanceof InternalServerError) {
+      throw error;
+    }
+    throw new InternalServerError(
+      "Gagal mengirim email instruksi karena kesalahan sistem. Silakan coba beberapa saat lagi."
+    );
+  }
+};
+
+const processPasswordReset = async (token, newPassword) => {
+  const passwordResetEntry = await PasswordReset.findOne({ token });
+
+  if (!passwordResetEntry) {
+    throw new BadRequestError(
+      "Token reset tidak valid atau sudah kedaluwarsa."
+    );
+  }
+
+  if (passwordResetEntry.expiresAt < new Date()) {
+    throw new BadRequestError(
+      "Token reset sudah kedaluwarsa. Silakan minta reset kata sandi lagi."
+    );
+  }
+
+  const user = await User.findById(passwordResetEntry.userId);
+  if (!user) {
+    await PasswordReset.findByIdAndDelete(passwordResetEntry._id);
+    throw new NotFoundError(
+      "Pengguna yang terkait dengan token ini tidak ditemukan."
+    );
+  }
+
+  user.password = newPassword;
+  await user.save();
+
+  await PasswordReset.findByIdAndDelete(passwordResetEntry._id);
+
+  // Email konfirmasi perubahan password (teks biasa)
+  const confirmationText = `
+Halo ${user.username || "Pengguna"},
+
+Kata sandi untuk akun JudiGuard Anda (${
+    user.email
+  }) telah berhasil diubah pada ${new Date().toLocaleString("id-ID", {
+    timeZone: "Asia/Jakarta",
+  })}.
+
+Jika Anda merasa tidak melakukan perubahan ini, segera amankan akun Anda dan hubungi tim support kami.
+
+Terima kasih,
+Tim JudiGuard
+  `.trim();
+
+  try {
+    const emailConfirmationResult = await sendEmail({
+      email: user.email,
+      subject: "Konfirmasi Perubahan Kata Sandi Akun JudiGuard",
+      text: confirmationText, // Hanya mengirimkan teks
+      // html: null, // atau hapus properti html
+    });
+
+    if (!emailConfirmationResult.success) {
+      console.warn(
+        "Failed to send password change confirmation email (reported by emailSender):",
+        emailConfirmationResult.error
+      );
+    }
+    if (emailConfirmationResult.previewUrl) {
+      console.log(
+        `Ethereal preview URL for password confirmation: ${emailConfirmationResult.previewUrl}`
+      );
+    }
+  } catch (emailError) {
+    console.error(
+      "Error during sendEmail call for password change confirmation:",
+      emailError
+    );
+  }
+};
+
+const changeUserPassword = async (userId, currentPassword, newPassword) => {
+  // Ambil user DENGAN password-nya untuk perbandingan
+  const user = await User.findById(userId).select("+password");
+
+  if (!user) {
+    // Seharusnya tidak terjadi jika user diambil dari req.user (hasil isAuthenticated)
+    throw new NotFoundError("Pengguna tidak ditemukan.");
+  }
+
+  // Jika pengguna mendaftar via Google dan belum pernah mengatur password lokal
+  if (!user.password) {
+    throw new BadRequestError(
+      'Anda belum mengatur password lokal. Silakan gunakan opsi "Lupa Password" untuk membuat password baru jika Anda login via Google.'
+    );
+  }
+
+  const isMatch = await user.comparePassword(currentPassword);
+  if (!isMatch) {
+    throw new UnauthorizedError("Password saat ini yang Anda masukkan salah.");
+  }
+
+  if (currentPassword === newPassword) {
+    throw new BadRequestError(
+      "Password baru tidak boleh sama dengan password saat ini."
+    );
+  }
+
+  // Password baru akan di-hash oleh pre-save hook di User model
+  user.password = newPassword;
+  await user.save();
+
+  // Opsional: Kirim email notifikasi bahwa password telah diubah (plain text)
+  const confirmationText = `
+Halo ${user.username || "Pengguna"},
+
+Password untuk akun JudiGuard Anda (${
+    user.email
+  }) telah berhasil diubah melalui halaman profil pada ${new Date().toLocaleString(
+    "id-ID",
+    { timeZone: "Asia/Jakarta" }
+  )}.
+
+Jika Anda merasa tidak melakukan perubahan ini, segera amankan akun Anda.
+
+Terima kasih,
+Tim JudiGuard
+  `.trim();
+
+  try {
+    const emailConfirmationResult = await sendEmail({
+      email: user.email,
+      subject: "Pemberitahuan Perubahan Password Akun JudiGuard",
+      text: confirmationText,
+    });
+    if (!emailConfirmationResult.success) {
+      console.warn(
+        "Gagal mengirim email notifikasi perubahan password (change password):",
+        emailConfirmationResult.error
+      );
+    }
+  } catch (emailError) {
+    console.error(
+      "Error mengirim email notifikasi perubahan password (change password):",
+      emailError
+    );
+  }
+  // Keberhasilan atau kegagalan pengiriman email notifikasi tidak menghentikan respons sukses utama
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -434,4 +648,7 @@ module.exports = {
   verifyOtp,
   resendOtp,
   signInWithGoogle,
+  requestPasswordReset,
+  processPasswordReset,
+  changeUserPassword,
 };

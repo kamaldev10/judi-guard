@@ -2,9 +2,16 @@
 const express = require("express");
 const authController = require("../controllers/auth.controller");
 const validateRequest = require("../middlewares/validateRequest");
-const { registerSchema, loginSchema } = require("../validators/auth.validator");
+const {
+  registerSchema,
+  loginSchema,
+  otpSchema,
+  emailSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+  changePasswordSchema,
+} = require("../validators/auth.validator");
 const isAuthenticated = require("../middlewares/isAuthenticated");
-const Joi = require("joi");
 
 const router = express.Router();
 
@@ -13,6 +20,19 @@ router.post(
   validateRequest(registerSchema, "body"),
   authController.handleRegister
 );
+
+router.post(
+  "/verify-otp",
+  validateRequest(otpSchema, "body"),
+  authController.handleVerifyOtp
+);
+
+router.post(
+  "/resend-otp",
+  validateRequest(emailSchema, "body"),
+  authController.handleResendOtp
+);
+
 router.post(
   "/login",
   validateRequest(loginSchema, "body"),
@@ -29,33 +49,27 @@ router.get(
 
 router.get("/youtube/callback", authController.handleGoogleOAuthCallback);
 
-// Skema validasi untuk OTP (opsional tapi bagus)
-const otpSchema = Joi.object({
-  email: Joi.string().email().required(),
-  otpCode: Joi.string()
-    .length(6)
-    .pattern(/^[0-9]+$/)
-    .required()
-    .messages({
-      // Pastikan 6 digit angka
-      "string.length": "Kode OTP harus 6 digit.",
-      "string.pattern.base": "Kode OTP hanya boleh berisi angka.",
-    }),
-});
-
-const emailSchema = Joi.object({
-  email: Joi.string().email().required(),
-});
-
 router.post(
-  "/verify-otp",
-  validateRequest(otpSchema, "body"),
-  authController.handleVerifyOtp
+  "/forgot-password",
+  validateRequest(forgotPasswordSchema),
+  authController.handleForgotPassword
 );
-router.post(
-  "/resend-otp",
-  validateRequest(emailSchema, "body"),
-  authController.handleResendOtp
+
+router.put(
+  "/reset-password/:token",
+  validateRequest(resetPasswordSchema),
+  authController.handleResetPassword
+);
+
+router.put(
+  "/change-password",
+  isAuthenticated, // 2. Pastikan pengguna sudah login
+  // Jika changePasswordSchema Anda memvalidasi req.body (currentPassword, newPassword, confirmPassword),
+  // Anda mungkin perlu validateRequest(changePasswordSchema, "body") jika middleware Anda memerlukannya,
+  // atau validateRequest(changePasswordSchema) jika middleware Anda cerdas.
+  // Saya akan mengikuti pola yang paling mirip dengan '/reset-password/:token' untuk konsistensi jika skema sudah mencakup targetnya.
+  validateRequest(changePasswordSchema), // 3. Validasi input
+  authController.handleChangePassword // 4. Panggil handler controller baru
 );
 
 module.exports = router;

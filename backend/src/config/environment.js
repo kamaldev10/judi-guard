@@ -6,6 +6,7 @@ require("dotenv").config();
 const config = {
   port: process.env.PORT || 3001,
   mongodbUri: process.env.MONGODB_URI,
+  frontendUrl: process.env.FRONTEND_URL,
   jwt: {
     secret: process.env.JWT_SECRET,
     expiresIn: process.env.JWT_EXPIRES_IN || "1h",
@@ -20,7 +21,6 @@ const config = {
     apiKey: process.env.YOUTUBE_API_KEY,
   },
   mailgun: {
-    // Konfigurasi baru untuk Mailgun
     apiKey: process.env.MAILGUN_API_KEY,
     domain: process.env.MAILGUN_DOMAIN,
     senderEmail:

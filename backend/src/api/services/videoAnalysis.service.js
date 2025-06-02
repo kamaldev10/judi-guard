@@ -254,14 +254,14 @@ const startVideoAnalysis = async (userId, youtubeVideoUrl) => {
 
 /**
  * Mengambil hasil analisis komentar untuk sebuah VideoAnalysis.
- * @param {string} analysisId - ID dari VideoAnalysis.
+ * @param {string} videoAnalysisId - ID dari VideoAnalysis.
  * @param {string} userId - ID User Judi Guard yang memiliki analisis tersebut.
  * @returns {Promise<Array<object>>} Array objek AnalyzedComment.
  */
-const getAnalysisResults = async (analysisId, userId) => {
-  // Pastikan analysisId ini milik userId yang meminta
+const getAnalysisResults = async (videoAnalysisId, userId) => {
+  // Pastikan videoAnalysisId ini milik userId yang meminta
   const videoAnalysis = await VideoAnalysis.findOne({
-    _id: analysisId,
+    _id: videoAnalysisId,
     userId: userId,
   });
   if (!videoAnalysis) {
@@ -271,7 +271,7 @@ const getAnalysisResults = async (analysisId, userId) => {
   }
 
   const analyzedComments = await AnalyzedComment.find({
-    videoAnalysisId: analysisId,
+    videoAnalysisId: videoAnalysisId,
   }).sort({ commentPublishedAt: -1 }); // Urutkan berdasarkan terbaru dulu (atau sesuai kebutuhan)
 
   return analyzedComments.map((comment) => comment.toObject());

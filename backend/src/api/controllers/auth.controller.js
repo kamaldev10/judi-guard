@@ -1,5 +1,4 @@
 // src/api/controllers/auth.controller.js
-const config = require("../../config/environment");
 const { createOAuth2Client } = require("../../utils/googleOAuth2Client");
 const authService = require("../services/auth.service");
 
@@ -24,10 +23,10 @@ const handleLogin = async (req, res, next) => {
     const loginData = req.body;
     const { token, user } = await authService.loginUser(loginData);
 
-    // Anda bisa mengirim token via httpOnly cookie jika diinginkan (lebih aman)
-    // res.cookie('jwt', token, {
+    // Anda bisa mengirim token via httpOnly cookie jika diinginkan
+    // res.cookie("jwt", token, {
     //   httpOnly: true,
-    //   secure: process.env.NODE_ENV === 'production', // true jika HTTPS
+    //   secure: process.env.NODE_ENV === "production", // true jika HTTPS
     //   maxAge: config.jwt.expiresIn, // samakan dengan expiry token atau atur sendiri
     // });
 
@@ -242,6 +241,65 @@ const handleResendOtp = async (req, res, next) => {
   }
 };
 
+const handleForgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body; // Email diambil dari body request
+    await authService.requestPasswordReset(email);
+
+    // Respons sukses selalu generik untuk keamanan (mencegah user enumeration)
+    res.status(200).json({
+      success: true,
+      message:
+        "Jika alamat email Anda terdaftar di sistem kami, Anda akan menerima email berisi instruksi untuk mereset kata sandi Anda.",
+      // Tidak ada data spesifik pengguna yang dikembalikan di sini
+    });
+  } catch (error) {
+    // Jika authService.requestPasswordReset melempar error (misalnya, gagal kirim email),
+    // error akan diteruskan ke middleware errorHandler global Anda.
+    // errorHandler Anda yang akan mengirim respons error JSON, contoh:
+    // res.status(500).json({ success: false, message: 'Gagal mengirim email instruksi.' });
+    next(error);
+  }
+};
+
+const handleResetPassword = async (req, res, next) => {
+  try {
+    const { token } = req.params; // Token diambil dari parameter URL
+    const { password } = req.body; // Password baru diambil dari body request
+
+    await authService.processPasswordReset(token, password);
+
+    res.status(200).json({
+      success: true,
+      message:
+        "Kata sandi berhasil direset. Anda sekarang dapat login dengan kata sandi baru Anda.",
+      // Tidak ada data spesifik pengguna yang dikembalikan di sini
+    });
+  } catch (error) {
+    // Jika authService.processPasswordReset melempar error (token tidak valid, dll.),
+    // error akan diteruskan ke middleware errorHandler global Anda.
+    // errorHandler Anda yang akan mengirim respons error JSON, contoh:
+    // res.status(400).json({ success: false, message: 'Token reset tidak valid atau sudah kedaluwarsa.' });
+    next(error);
+  }
+};
+
+const handleChangePassword = async (req, res, next) => {
+  try {
+    const userId = req.user._id; // Diambil dari middleware isAuthenticated
+    const { currentPassword, newPassword } = req.body;
+
+    await authService.changeUserPassword(userId, currentPassword, newPassword);
+
+    res.status(200).json({
+      success: true,
+      message: "Password Anda berhasil diubah.",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   handleRegister,
   handleLogin,
@@ -250,4 +308,7 @@ module.exports = {
   handleGoogleOAuthCallback,
   handleVerifyOtp,
   handleResendOtp,
+  handleForgotPassword,
+  handleResetPassword,
+  handleChangePassword,
 };

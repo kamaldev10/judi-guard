@@ -1,15 +1,17 @@
 // src/api/routes/user.routes.js
 const express = require("express");
-const isAuthenticated = require("../middlewares/isAuthenticated"); // Impor middleware
-const userController = require("../controllers/user.controller"); // Akan kita buat controllernya
+const isAuthenticated = require("../middlewares/isAuthenticated");
+const userController = require("../controllers/user.controller");
 
 const router = express.Router();
 
 // Rute ini akan dilindungi oleh middleware isAuthenticated
 router.get("/me", isAuthenticated, userController.getMe);
 
-// Rute lain terkait user bisa ditambahkan di sini
-// router.patch('/updateMe', isAuthenticated, userController.updateMe);
-// router.delete('/deleteMe', isAuthenticated, userController.deleteMe);
+// Rute untuk memperbarui data user saat ini (PATCH)
+router.patch("/updateMe", isAuthenticated, userController.updateMe);
+
+// Rute untuk menghapus akun user saat ini (DELETE)
+router.delete("/deleteMe", isAuthenticated, userController.deleteMe);
 
 module.exports = router;

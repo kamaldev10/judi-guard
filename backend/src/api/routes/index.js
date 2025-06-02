@@ -15,6 +15,6 @@ router.get("/health", (req, res) => {
 
 router.use("/auth", authRoutes);
 router.use("/users", userRoutes);
-router.use("/analysis", videoAnalysisRoutes); // Daftarkan rute analisis, misal di bawah /api/v1/analysis
+router.use("/analysis", videoAnalysisRoutes);
 
 module.exports = router;

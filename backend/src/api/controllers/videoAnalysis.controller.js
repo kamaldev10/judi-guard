@@ -101,5 +101,5 @@ const deleteAnalyzedCommentController = async (req, res, next) => {
 module.exports = {
   submitVideoForAnalysis,
   getAnalyzedCommentsForVideo,
-  deleteAnalyzedCommentController, // Tambahkan ini
+  deleteAnalyzedCommentController,
 };

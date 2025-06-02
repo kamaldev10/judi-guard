@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      // required: false, // Jika mendaftar via Google, password bisa tidak ada
+      required: false, // Jika mendaftar via Google, password bisa tidak ada
       minlength: [6, "Password must be at least 6 characters long"],
       select: false,
     },

@@ -1,12 +1,12 @@
 import React from "react";
 import { motion } from "motion/react";
 
-const CaraKerja = () => {
+const WorkGuide = () => {
   return (
     <div>
       {/* Cara Kerja */}
       <motion.section
-        id="cara-kerja"
+        id="work-guide"
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -36,4 +36,4 @@ const CaraKerja = () => {
   );
 };
 
-export default CaraKerja;
+export default WorkGuide;

@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React from "react";
 import { motion } from "motion/react";
 import { Star, MessageCircle } from "lucide-react"; // Contoh ikon
@@ -70,7 +71,7 @@ const TestimonialCard = ({ quote, author, title, avatarUrl, rating }) => {
       <MessageCircle className="text-teal-500 w-8 h-8 mb-4" />{" "}
       {/* Ikon kutipan */}
       <p className="text-gray-600 italic text-sm sm:text-base leading-relaxed mb-6 flex-grow">
-        "{quote}"
+        &rdquo;{quote}&quot;
       </p>
       <div className="mt-auto">
         {" "}

@@ -43,7 +43,7 @@ const imageVariants = {
 
 const HeroSection = () => {
   return (
-    <section
+    <motion.section
       id="hero-section"
       className="bg-gradient-to-r from-white via-blue-50 to-[#E1F2FF] min-h-screen flex flex-col justify-center items-center px-4 pt-24 pb-12 sm:px-6 lg:px-8 overflow-hidden" // pt lebih besar untuk memberi ruang Header
     >
@@ -118,7 +118,7 @@ const HeroSection = () => {
           <Tagline />
         </motion.div>
       </div>
-    </section>
+    </motion.section>
   );
 };
 

@@ -74,7 +74,7 @@ const Register = () => {
       // formValues sudah memiliki userName, email, password
       await registerUserApi(formValues);
       toast.success(
-        "Anda berhasil mendaftar! Mengarahkan ke verifikasi OTP...",
+        "Anda berhasil mendaftar! Silahkan Verivikasi OTP anda...",
         {
           position: "bottom-right",
         }

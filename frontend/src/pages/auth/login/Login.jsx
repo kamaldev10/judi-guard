@@ -15,7 +15,6 @@ import {
   validateLoginPassword,
 } from "../../../utils/FormValidators";
 import GoogleSignInButton from "../../../components/auth/GoogleSignInButton";
-// import GoogleSignInButton from "./GoogleSignInButton";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -51,8 +50,6 @@ const Login = () => {
     setFormErrors({ email: emailError, password: passwordError });
 
     if (emailError || passwordError) {
-      // Tidak perlu toast di sini jika error per field sudah ditampilkan
-      // toast.error("Harap perbaiki error pada form.", { position: "bottom-right"});
       return;
     }
 
@@ -62,8 +59,8 @@ const Login = () => {
     try {
       const response = await loginUserApi(formValues);
       login(response.data.user, response.data.token);
-      toast.success("Anda berhasil login!", { position: "bottom-right" });
       navigate("/"); // Arahkan ke dashboard atau halaman utama
+      toast.success("Anda berhasil login!", { position: "bottom-right" });
     } catch (error) {
       console.error("Login error:", error);
       const errorMessage =

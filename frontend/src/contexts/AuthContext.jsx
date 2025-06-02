@@ -1,6 +1,9 @@
 // src/context/AuthContext.jsx
+
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { getCurrentUserApi } from "../services/api"; // API call untuk verifikasi token
+import PropTypes from "prop-types";
 
 export const AuthContext = createContext(null);
 
@@ -26,7 +29,8 @@ export const AuthProvider = ({ children }) => {
           setCurrentUser(response.data.user);
         } catch (error) {
           console.warn(
-            "Token tidak valid atau sesi kedaluwarsa, menghapus token..."
+            "Token tidak valid atau sesi kedaluwarsa, menghapus token.",
+            error
           );
           localStorage.removeItem("judiGuardToken");
           localStorage.removeItem("judiGuardUser");
@@ -68,4 +72,8 @@ export const AuthProvider = ({ children }) => {
       {!isLoadingAuth && children}{" "}
     </AuthContext.Provider>
   );
+};
+
+AuthProvider.propTypes = {
+  children: PropTypes.node.isRequired, // atau PropTypes.element, PropTypes.any, dll.
 };

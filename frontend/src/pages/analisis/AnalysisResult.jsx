@@ -1,4 +1,5 @@
 import { motion } from "motion/react";
+import PropTypes from "prop-types";
 import { PieChart, Pie, Cell, Legend } from "recharts";
 
 const data = [
@@ -11,7 +12,7 @@ const COLORS = ["#5b6dfa", "#f25fa0"];
 const AnalysisResult = () => {
   return (
     <motion.section
-      id="analisys-result"
+      id="analysis-result"
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
@@ -72,3 +73,8 @@ const StatBox = ({ label, value }) => (
 );
 
 export default AnalysisResult;
+
+StatBox.propTypes = {
+  label: PropTypes.string.isRequired,
+  value: PropTypes.string.isRequired,
+};

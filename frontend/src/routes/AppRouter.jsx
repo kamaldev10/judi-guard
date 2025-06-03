@@ -9,7 +9,7 @@ import Loader from "../components/loader/Loader";
 const HomePage = lazy(() => import("../pages/Home/HomePage"));
 const AboutUs = lazy(() => import("../pages/aboutUs/AboutUs"));
 const AnalysisPage = lazy(() => import("../pages/analisis/AnalysisPage"));
-const UserProfilePage = lazy(() => import("../pages/profile/UserProfilePage"));
+const ProfilePage = lazy(() => import("../pages/profile/ProfilePage"));
 const EditProfilPage = lazy(() => import("../pages/profile/EditProfilePage"));
 const Login = lazy(() => import("../pages/auth/login/Login"));
 const Register = lazy(() => import("../pages/auth/register/Register"));
@@ -37,7 +37,7 @@ const AppRouter = () => {
             path="profile"
             element={
               <ProtectedRoute>
-                <UserProfilePage />
+                <ProfilePage />
               </ProtectedRoute>
             }
           />

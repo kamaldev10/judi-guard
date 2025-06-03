@@ -74,7 +74,7 @@ const ContactSection = () => {
   return (
     <section id="contact-section" className="py-16 sm:py-24 bg-white">
       <motion.div
-        className="container mx-auto px-4 sm:px-6 lg:px-8"
+        className="container mx-auto px-20 sm:px-6 lg:px-70"
         variants={sectionVariants}
         initial="hidden"
         whileInView="visible"
@@ -209,11 +209,14 @@ const ContactSection = () => {
                   placeholder="Tulis pesan Anda di sini..."
                 ></textarea>
               </motion.div>
-              <motion.div variants={formItemVariants}>
+              <motion.div
+                className="flex justify-start"
+                variants={formItemVariants}
+              >
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full flex items-center justify-center gap-2 bg-teal-600 text-white font-semibold px-6 py-3 rounded-md
+                  className="sm:w-1/3 flex items-center justify-center gap-2 bg-teal-600 text-white font-semibold px-6 py-3 rounded-md
                              hover:bg-teal-700 shadow-md hover:shadow-lg transition-colors
                              focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50
                              disabled:opacity-60 disabled:cursor-not-allowed"

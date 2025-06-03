@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 // src/components/auth/GoogleSignInButton.jsx
 import React from "react";
 import { GoogleLogin } from "@react-oauth/google"; // Komponen utama dari library
@@ -16,7 +17,7 @@ const GoogleSignInButton = ({
   const navigate = useNavigate();
 
   const handleGoogleSuccess = async (credentialResponse) => {
-    console.log("Google Sign-In Success (Frontend):", credentialResponse);
+    // console.log("Google Sign-In Success (Frontend):", credentialResponse);
     const idToken = credentialResponse.credential; // Ini adalah ID Token JWT dari Google
 
     if (idToken) {
@@ -38,8 +39,11 @@ const GoogleSignInButton = ({
       } catch (err) {
         console.error("Error during backend Google sign-in:", err);
         const errorMessage =
-          err.message || "Gagal memproses login Google di server kami.";
+          err.response?.data?.message || // Pesan spesifik dari backend
+          err.message || // Pesan error dari Axios atau error lainnya
+          "Gagal memproses login Google di server kami.";
         toast.error(errorMessage, { position: "bottom-right" });
+
         if (onErrorCustom) onErrorCustom(err);
       }
     } else {
@@ -79,3 +83,10 @@ const GoogleSignInButton = ({
 };
 
 export default GoogleSignInButton;
+
+import PropTypes from "prop-types";
+GoogleSignInButton.propTypes = {
+  onSuccessCustom: PropTypes.func,
+  onErrorCustom: PropTypes.func,
+  buttonText: PropTypes.string,
+};

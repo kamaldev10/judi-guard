@@ -2,9 +2,9 @@ import { Title } from "react-head";
 import { useLocation } from "react-router-dom";
 import React, { useEffect, useMemo } from "react";
 
-import AnalysisForm from "./AnalysisForm";
-import AnalysisResult from "./AnalysisResult";
-import WorkGuide from "./WorkGuide";
+import WorkGuideSection from "./WorkGuideSection";
+import AnalysisResultSection from "./AnalysisResultSection";
+import AnalysisFormSection from "./AnalysisFormSection";
 
 const AnalysisPage = () => {
   const location = useLocation();
@@ -13,19 +13,19 @@ const AnalysisPage = () => {
     () => [
       {
         id: "work-guide",
-        component: WorkGuide,
+        component: WorkGuideSection,
         title: "Work Guide",
         ref: React.createRef(),
       },
       {
         id: "analysis-form",
-        component: AnalysisForm,
+        component: AnalysisFormSection,
         title: "Analysis Form",
         ref: React.createRef(),
       },
       {
         id: "analysis-results",
-        component: AnalysisResult,
+        component: AnalysisResultSection,
         title: "Analysis Result",
         ref: React.createRef(),
       },

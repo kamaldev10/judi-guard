@@ -3,9 +3,9 @@ import { Title } from "react-head";
 import { useLocation } from "react-router-dom";
 
 import HeroSection from "./HeroSection";
-import AnalisisSection from "./AnalisisSection";
 import TestimonialsSection from "./TestimonialsSection";
 import ContactSection from "./ContactSection";
+import ConnectSection from "./ConnectSection";
 
 const HomePage = () => {
   const location = useLocation();
@@ -19,8 +19,8 @@ const HomePage = () => {
         ref: React.createRef(),
       },
       {
-        id: "analisis-section",
-        component: AnalisisSection,
+        id: "connect-section",
+        component: ConnectSection,
         title: "Analisis",
         ref: React.createRef(),
       },

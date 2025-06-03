@@ -64,7 +64,7 @@ const itemVariants = {
 const TestimonialCard = ({ quote, author, title, avatarUrl, rating }) => {
   return (
     <motion.div
-      className="bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 flex flex-col h-full" // h-full untuk tinggi sama jika dalam grid
+      className="bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 flex flex-col h-full " // h-full untuk tinggi sama jika dalam grid
       variants={itemVariants}
       whileHover={{ y: -5, transition: { type: "spring", stiffness: 300 } }}
     >
@@ -116,7 +116,7 @@ const TestimonialsSection = () => {
   return (
     <section
       id="testimonials-section"
-      className="py-16 sm:py-24 bg-gradient-to-br from-teal-50 via-cyan-50 to-sky-100"
+      className="py-16 sm:py-24 bg-gradient-to-br from-teal-50 via-cyan-50 to-sky-100 border-b-4 border-b-teal-800 "
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div

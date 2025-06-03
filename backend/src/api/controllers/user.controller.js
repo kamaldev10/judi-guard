@@ -5,14 +5,45 @@ const { NotFoundError, BadRequestError } = require("../../utils/errors");
 
 const getMe = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id).select("-password");
-    if (!user) {
-      return next(new NotFoundError("User tidak ditemukan."));
+    const userFromDb = await User.findById(req.user.id).select(
+      "+youtubeAccessToken"
+    ); // Hanya inklusi untuk field yang dibutuhkan virtual dan select:false
+
+    if (!userFromDb) {
+      throw new NotFoundError("Pengguna tidak ditemukan.");
     }
+
+    // 2. Konversi ke objek JavaScript biasa.
+    //    Ini akan menghitung semua virtual fields, termasuk 'isYoutubeConnected'.
+    //    Pada titik ini, userFromDb.youtubeAccessToken (karena di-select +) dan
+    //    userFromDb.youtubeChannelId (karena default) akan tersedia untuk getter virtual.
+    const userObject = userFromDb.toObject({ virtuals: true });
+
+    // 3. Hapus field 'youtubeAccessToken' dari objek userObject SEBELUM dikirim ke frontend.
+    //    Ini penting karena kita memuatnya secara eksplisit untuk virtual, tapi token itu sendiri sensitif.
+    delete userObject.youtubeAccessToken;
+    // Bidang lain seperti youtubeRefreshToken, youtubeTokenExpiresAt, password, otpCode, googleId
+    // seharusnya tidak ada di userObject jika mereka `select: false` di skema dan tidak
+    // secara eksplisit di-include dalam query select di atas.
+
+    // // Log untuk debugging di backend:
+    // console.log(
+    //   "[Backend /users/me] User object FINAL being sent:",
+    //   JSON.stringify(userObject, null, 2)
+    // );
+    // console.log(
+    //   "[Backend /users/me] isYoutubeConnected from object:",
+    //   userObject.isYoutubeConnected
+    // );
+    // console.log(
+    //   "[Backend /users/me] youtubeChannelName from object:",
+    //   userObject.youtubeChannelName
+    // );
+
     res.status(200).json({
       status: "success",
       data: {
-        user,
+        user: userObject,
       },
     });
   } catch (error) {

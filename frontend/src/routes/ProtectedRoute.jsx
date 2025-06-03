@@ -17,7 +17,6 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Pengguna sudah login, tampilkan komponen children
   return children;
 };
 

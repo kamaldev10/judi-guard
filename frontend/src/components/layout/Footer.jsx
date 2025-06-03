@@ -1,19 +1,17 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import Tagline from "../tagline/Tagline";
 
 const Footer = () => {
   return (
     <footer className="bg-gray-800 text-white pt-10 pb-6 px-4 sm:px-6 md:px-12 lg:px-20">
       <div className="container mx-auto">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 pb-10">
-          <div className="sm:col-span-2 md:col-span-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8  sm:pb-2 md:pb-5">
+          <div className="sm:col-span-2 md:col-span-1 md:w-11/12">
             <h1 className="text-xl sm:text-2xl font-bold mb-3">JUDI GUARD</h1>{" "}
             <p className="text-xs sm:text-sm mb-4 leading-relaxed">
               Platform pendeteksi komentar spam judi otomatis dan akurat di
               ruang digital Anda.
             </p>
-            <Tagline className="text-white text-xs items-start inline-block" />
           </div>
 
           <div>
@@ -100,8 +98,6 @@ const Footer = () => {
               Anda.
             </p>
             <form className="flex flex-col sm:flex-row sm:space-y-0 sm:space-x-2 space-y-2">
-              {" "}
-              {/* 4. Layout form responsif */}
               <input
                 type="email"
                 placeholder="Email Anda"
@@ -109,7 +105,7 @@ const Footer = () => {
               />
               <button
                 type="submit"
-                className="bg-blue-600 text-white text-sm py-2 px-4 rounded hover:bg-blue-700 transition-colors whitespace-nowrap"
+                className="bg-blue-600 text-white text-sm py-2 px-4 rounded hover:bg-blue-700 transition-colors whitespace-nowrap "
               >
                 Langganan
               </button>

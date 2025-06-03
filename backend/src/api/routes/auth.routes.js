@@ -50,6 +50,12 @@ router.get(
 router.get("/youtube/callback", authController.handleGoogleOAuthCallback);
 
 router.post(
+  "/youtube/disconnect",
+  isAuthenticated,
+  authController.handleDisconnectYouTube
+);
+
+router.post(
   "/forgot-password",
   validateRequest(forgotPasswordSchema),
   authController.handleForgotPassword

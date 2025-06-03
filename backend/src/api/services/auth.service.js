@@ -116,6 +116,100 @@ const registerUser = async (userData) => {
   }
 };
 
+const verifyOtp = async (email, otpCode) => {
+  if (!email || !otpCode) {
+    throw new BadRequestError("Email dan kode OTP diperlukan.");
+  }
+
+  const user = await User.findOne({ email }).select("+otpCode +otpExpiresAt"); // Ambil field OTP
+  if (!user) {
+    throw new NotFoundError("Pengguna tidak ditemukan.");
+  }
+  if (user.isVerified) {
+    throw new BadRequestError("Akun ini sudah diverifikasi sebelumnya.");
+  }
+  if (!user.otpCode || !user.otpExpiresAt) {
+    throw new BadRequestError(
+      "Tidak ada OTP yang tertunda untuk akun ini. Silakan daftar atau minta OTP baru."
+    );
+  }
+  if (user.otpCode !== otpCode) {
+    throw new BadRequestError("Kode OTP salah.");
+  }
+  if (new Date() > user.otpExpiresAt) {
+    // OTP sudah kedaluwarsa, bersihkan
+    user.otpCode = undefined;
+    user.otpExpiresAt = undefined;
+    await user.save();
+    throw new BadRequestError(
+      "Kode OTP sudah kedaluwarsa. Silakan minta OTP baru."
+    );
+  }
+
+  // OTP valid
+  user.isVerified = true;
+  user.otpCode = undefined; // Hapus OTP setelah digunakan
+  user.otpExpiresAt = undefined;
+  await user.save();
+
+  // Generate JWT Judi Guard untuk user
+  const judiGuardTokenPayload = { userId: user._id, username: user.username };
+  const token = generateToken(judiGuardTokenPayload);
+
+  const userResponse = user.toObject();
+  delete userResponse.password;
+  // Hapus field OTP yang sudah tidak relevan
+  delete userResponse.otpCode;
+  delete userResponse.otpExpiresAt;
+
+  return {
+    message: "Verifikasi OTP berhasil! Anda sekarang login.",
+    token,
+    user: userResponse,
+  };
+};
+
+const resendOtp = async (email) => {
+  if (!email) {
+    throw new BadRequestError("Email diperlukan untuk mengirim ulang OTP.");
+  }
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new NotFoundError("Pengguna dengan email ini tidak ditemukan.");
+  }
+  if (user.isVerified) {
+    throw new BadRequestError("Akun ini sudah diverifikasi.");
+  }
+
+  const otp = generateOtp();
+  const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // OTP baru berlaku 10 menit
+
+  user.otpCode = otp;
+  user.otpExpiresAt = otpExpiresAt;
+  await user.save();
+
+  // Kirim email OTP
+  const emailOptions = {
+    email: user.email,
+    subject: "Kode Verifikasi OTP Judi Guard Anda (Kirim Ulang)",
+    text: `Halo ${user.username},\n\nKode OTP baru Anda adalah: ${otp}\nKode ini berlaku selama 10 menit.\n\nTerima kasih,\nTim Judi Guard`,
+  };
+
+  const emailResult = await sendEmail(emailOptions);
+  if (!emailResult.success) {
+    console.error("Gagal mengirim ulang email OTP:", emailResult.error);
+    // throw new AppError('Gagal mengirim ulang OTP. Hubungi support.', 500);
+  }
+  if (emailResult.previewUrl) {
+    console.log(
+      `Email OTP (kirim ulang) dikirim. Preview: ${emailResult.previewUrl}`
+    );
+  }
+
+  return { message: `Kode OTP baru telah dikirim ke ${user.email}.` };
+};
+
 // TAMBAHKAN FUNGSI INI
 const loginUser = async (userData) => {
   const { email, password } = userData;
@@ -336,98 +430,50 @@ const handleYoutubeOAuthCallback = async (authCode, judiGuardUserId) => {
   }
 };
 
-const verifyOtp = async (email, otpCode) => {
-  if (!email || !otpCode) {
-    throw new BadRequestError("Email dan kode OTP diperlukan.");
-  }
+/**
+ * Memutuskan koneksi akun YouTube untuk pengguna.
+ * @param {string} userId - ID pengguna yang akan diputuskan koneksi YouTube-nya.
+ * @returns {Promise<object>} Objek pengguna yang telah diperbarui (tanpa field sensitif).
+ */
+const disconnectYouTubeAccount = async (userId) => {
+  const user = await User.findById(userId);
 
-  const user = await User.findOne({ email }).select("+otpCode +otpExpiresAt"); // Ambil field OTP
   if (!user) {
     throw new NotFoundError("Pengguna tidak ditemukan.");
   }
-  if (user.isVerified) {
-    throw new BadRequestError("Akun ini sudah diverifikasi sebelumnya.");
-  }
-  if (!user.otpCode || !user.otpExpiresAt) {
-    throw new BadRequestError(
-      "Tidak ada OTP yang tertunda untuk akun ini. Silakan daftar atau minta OTP baru."
-    );
-  }
-  if (user.otpCode !== otpCode) {
-    throw new BadRequestError("Kode OTP salah.");
-  }
-  if (new Date() > user.otpExpiresAt) {
-    // OTP sudah kedaluwarsa, bersihkan
-    user.otpCode = undefined;
-    user.otpExpiresAt = undefined;
-    await user.save();
-    throw new BadRequestError(
-      "Kode OTP sudah kedaluwarsa. Silakan minta OTP baru."
-    );
-  }
 
-  // OTP valid
-  user.isVerified = true;
-  user.otpCode = undefined; // Hapus OTP setelah digunakan
-  user.otpExpiresAt = undefined;
-  await user.save();
-
-  // Generate JWT Judi Guard untuk user
-  const judiGuardTokenPayload = { userId: user._id, username: user.username };
-  const token = generateToken(judiGuardTokenPayload);
-
-  const userResponse = user.toObject();
-  delete userResponse.password;
-  // Hapus field OTP yang sudah tidak relevan
-  delete userResponse.otpCode;
-  delete userResponse.otpExpiresAt;
-
-  return {
-    message: "Verifikasi OTP berhasil! Anda sekarang login.",
-    token,
-    user: userResponse,
-  };
-};
-
-const resendOtp = async (email) => {
-  if (!email) {
-    throw new BadRequestError("Email diperlukan untuk mengirim ulang OTP.");
-  }
-
-  const user = await User.findOne({ email });
-  if (!user) {
-    throw new NotFoundError("Pengguna dengan email ini tidak ditemukan.");
-  }
-  if (user.isVerified) {
-    throw new BadRequestError("Akun ini sudah diverifikasi.");
-  }
-
-  const otp = generateOtp();
-  const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // OTP baru berlaku 10 menit
-
-  user.otpCode = otp;
-  user.otpExpiresAt = otpExpiresAt;
-  await user.save();
-
-  // Kirim email OTP
-  const emailOptions = {
-    email: user.email,
-    subject: "Kode Verifikasi OTP Judi Guard Anda (Kirim Ulang)",
-    text: `Halo ${user.username},\n\nKode OTP baru Anda adalah: ${otp}\nKode ini berlaku selama 10 menit.\n\nTerima kasih,\nTim Judi Guard`,
-  };
-
-  const emailResult = await sendEmail(emailOptions);
-  if (!emailResult.success) {
-    console.error("Gagal mengirim ulang email OTP:", emailResult.error);
-    // throw new AppError('Gagal mengirim ulang OTP. Hubungi support.', 500);
-  }
-  if (emailResult.previewUrl) {
+  // Jika tidak ada koneksi YouTube, tidak ada yang perlu dilakukan (atau bisa beri pesan)
+  if (!user.youtubeAccessToken && !user.youtubeChannelId) {
+    // Anda bisa memilih untuk melempar error atau mengembalikan pesan bahwa tidak ada yang diputuskan
+    // throw new AppError("Akun YouTube tidak terhubung dengan pengguna ini.", 400);
+    // Atau cukup kembalikan user apa adanya dengan pesan sukses yang berbeda nanti di controller
     console.log(
-      `Email OTP (kirim ulang) dikirim. Preview: ${emailResult.previewUrl}`
+      `[AuthService] Pengguna ${userId} mencoba disconnect YouTube, tapi memang belum terhubung.`
     );
   }
 
-  return { message: `Kode OTP baru telah dikirim ke ${user.email}.` };
+  // Hapus field-field terkait YouTube
+  user.youtubeAccessToken = undefined;
+  user.youtubeRefreshToken = undefined;
+  user.youtubeTokenExpiresAt = undefined;
+  user.youtubeChannelId = undefined;
+  user.youtubeChannelName = undefined;
+  user.youtubeChannelThumbnailUrl = undefined; // Jika Anda menyimpan ini juga
+
+  await user.save();
+
+  // Kembalikan objek pengguna yang sudah bersih dan diperbarui
+  const userToReturn = user.toObject({ virtuals: true });
+  delete userToReturn.password;
+  delete userToReturn.otpCode;
+  delete userToReturn.otpExpiresAt;
+  delete userToReturn.youtubeAccessToken; // Pastikan semua token sensitif dihapus dari respons
+  delete userToReturn.youtubeRefreshToken;
+  delete userToReturn.youtubeTokenExpiresAt;
+  // googleId juga bisa dihapus jika tidak relevan untuk respons ini
+  // delete userToReturn.googleId;
+
+  return userToReturn; // Mengembalikan user yang sudah diupdate
 };
 
 const requestPasswordReset = async (emailAddress) => {
@@ -643,11 +689,14 @@ Tim JudiGuard
 
 module.exports = {
   registerUser,
-  loginUser,
-  handleYoutubeOAuthCallback,
   verifyOtp,
   resendOtp,
+  loginUser,
+
   signInWithGoogle,
+  handleYoutubeOAuthCallback,
+  disconnectYouTubeAccount,
+
   requestPasswordReset,
   processPasswordReset,
   changeUserPassword,

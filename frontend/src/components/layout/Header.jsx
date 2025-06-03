@@ -130,7 +130,6 @@ const Header = () => {
                 className="w-26 border border-sky-500 rounded-full p-2 bg-transparent "
               />
             </Link>
-            <button>connect to youtube</button>
           </div>
 
           <nav className="hidden md:flex items-center md:space-x-1 lg:space-x-10">
@@ -152,7 +151,7 @@ const Header = () => {
             )}
             {isAuthenticated && currentUser && (
               <span className="text-sm text-[#06786F] ml-4 pl-4 border-l-cyan-600 border-l-2 font-semibold border-gray-200 inline-flex items-center">
-                <HandMetal size={18} className="mr-1 text-gray-700" /> Halo,{" "}
+                <HandMetal size={18} className="mr-1 text-amber-700" /> Halo,{" "}
                 {currentUser.username || currentUser.name || "Pengguna"}
               </span>
             )}

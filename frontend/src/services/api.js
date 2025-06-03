@@ -11,13 +11,41 @@ const apiClient = axios.create({
 
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("judiGuardToken");
+    const token = localStorage.getItem("judiGuardToken"); // Ambil token dari localStorage
+    // console.log(
+    //   "[API Interceptor] Attempting to get token from localStorage:",
+    //   token
+    // ); // DEBUG
+
     if (token) {
       config.headers["Authorization"] = `Bearer ${token}`;
+      // console.log(
+      //   "[API Interceptor] Authorization header set:",
+      //   config.headers["Authorization"]
+      // ); // DEBUG
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    console.error("[API Interceptor] Error in request interceptor:", error); // DEBUG
+    return Promise.reject(error);
+  }
+);
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error(
+      "[API Interceptor] Error in response for path:",
+      error.config?.url,
+      error.response?.status,
+      error.response?.data
+    ); // DEBUG
+    // Anda bisa menambahkan logika global di sini, misalnya jika error.response.status === 401,
+    // panggil fungsi logout dari AuthContext atau redirect.
+    // Namun, pastikan tidak tumpang tindih dengan penanganan error di komponen/hook.
+    return Promise.reject(error);
+  }
 );
 
 export const registerUserApi = async (userData) => {
@@ -31,77 +59,72 @@ export const registerUserApi = async (userData) => {
     const response = await apiClient.post("/auth/register", payload);
     return response.data;
   } catch (error) {
-    throw error.response?.data || new Error("Registrasi gagal dari API");
+    throw (
+      error.response?.data ||
+      new Error(
+        "Registrasi gagal. Periksa kembali data Anda atau coba lagi nanti."
+      )
+    );
   }
 };
 
 export const loginUserApi = async (credentials) => {
   try {
     const response = await apiClient.post("/auth/login", credentials);
-    // Backend akan merespons dengan { status, message, data: { token, user } }
     return response.data;
   } catch (error) {
-    // Lempar error agar bisa ditangkap di komponen
-    throw error.response?.data || new Error("Login gagal dari API");
+    const message =
+      error.response?.data?.message ||
+      "Login gagal. Periksa email dan password Anda atau coba lagi nanti.";
+    throw new Error(message);
   }
 };
 
-// Placeholder untuk Google Sign-In API call
 export const signInWithGoogleApi = async (idToken) => {
   try {
     const response = await apiClient.post("/auth/google/signin", { idToken });
     return response.data;
   } catch (error) {
-    throw error.response?.data || new Error("Google Sign-In gagal dari API");
+    const message =
+      error.response?.data?.message ||
+      "Google Sign-In gagal. Silakan coba lagi atau gunakan metode login lain.";
+    throw new Error(message);
   }
 };
 
-// Fungsi untuk mendapatkan data user saat ini (untuk verifikasi token)
 export const getCurrentUserApi = async () => {
   try {
     const response = await apiClient.get("/users/me");
-    return response.data;
+    return response.data; // Backend Anda mengirim: { status, message, data: { user } }
   } catch (error) {
-    console.error(
-      "Error fetching current user:",
-      error.response?.data || error.message
-    );
-    throw error.response?.data || new Error("Gagal mengambil data pengguna");
+    const message =
+      error.response?.data?.message ||
+      "Gagal mengambil data pengguna. Sesi Anda mungkin telah berakhir, silakan login kembali.";
+    throw new Error(message);
   }
 };
 
 export const deleteMyAccountApi = async () => {
   try {
-    // Pastikan endpoint ini benar relatif terhadap baseURL Anda
     const response = await apiClient.delete("/users/deleteMe");
-    return response.data; // Backend mengirim { status: "success", message: "..." }
+    return response.data;
   } catch (error) {
-    console.error(
-      "Error in deleteMyAccountApi ",
-      error.response?.data?.message || error.message
-    );
-    throw new Error(
-      error.response?.data?.message || error.message || "Gagal menghapus akun."
-    );
+    const message =
+      error.response?.data?.message ||
+      "Gagal menghapus akun. Silakan coba lagi nanti.";
+    throw new Error(message);
   }
 };
 
 export const updateMyProfileApi = async (profileData) => {
   try {
-    // profileData adalah objek berisi field yang ingin diupdate, misal: { username: "baru", email: "baru@mail.com" }
     const response = await apiClient.patch("/users/updateMe", profileData);
-    return response.data; // Backend mengirim { status: "success", data: { user: { ... } } }
+    return response.data;
   } catch (error) {
-    console.error(
-      "Error in updateMyProfileApi:",
-      error.response?.data?.message || error.message
-    );
-    // Backend controller (updateMe) sudah menggunakan custom error, jadi error.response.data.message seharusnya ada
-    throw new Error(
+    const message =
       error.response?.data?.message ||
-        error.message ||
-        "Gagal memperbarui profil."
-    );
+      "Gagal memperbarui profil. Silakan coba lagi nanti.";
+    throw new Error(message);
   }
 };
 
@@ -111,23 +134,69 @@ export const verifyOtpApi = async (email, otpCode) => {
       email,
       otpCode,
     });
-    return response.data; // Berisi { status, message, data: { token, user } }
+    return response.data;
   } catch (error) {
-    throw error.response?.data || new Error("Verifikasi OTP gagal");
+    const message =
+      error.response?.data?.message ||
+      "Verifikasi OTP gagal. Kode OTP salah atau telah kedaluwarsa.";
+    throw new Error(message);
   }
 };
 
 export const resendOtpApi = async (email) => {
   try {
     const response = await apiClient.post("/auth/resend-otp", { email });
-    return response.data; // Berisi { status, message }
+    return response.data;
   } catch (error) {
-    throw error.response?.data || new Error("Gagal mengirim ulang OTP");
+    const message =
+      error.response?.data?.message ||
+      "Gagal mengirim ulang OTP. Silakan coba lagi setelah beberapa saat.";
+    throw new Error(message);
   }
 };
 
-// Anda bisa menambahkan fungsi API lainnya di sini nanti
-// export const connectYoutubeAccountApi = () => { ... };
+export const initiateYoutubeOAuthRedirectApi = async () => {
+  // console.log("[API] Memulai permintaan untuk koneksi YouTube..."); // Akan muncul di konsol sebelum RAW RESPONSE
+  try {
+    const axiosResponse = await apiClient.get("/auth/youtube/connect"); // apiClient adalah instance Axios Anda
+    return axiosResponse.data; // Ini akan menjadi objek JSON dari backend
+  } catch (error) {
+    console.error(
+      "[API] Error di initiateYoutubeOAuthRedirectApi:",
+      error.response?.data || error.message,
+      error
+    );
+    throw error; // Lempar error agar ditangkap oleh useProfilePresenter
+  }
+};
+
+export const disconnectYoutubeAccountApi = async () => {
+  console.log("[API] Memutus koneksi akun YouTube...");
+  try {
+    // Gunakan apiClient agar interceptor menambahkan Authorization header
+    // Sesuaikan method (POST) dan endpoint dengan yang Anda definisikan di backend
+    const response = await apiClient.post("/auth/youtube/disconnect");
+
+    // Backend Anda mengirim: { success: true, message: "...", data: { user: updatedUser } }
+    // Jadi, response.data akan menjadi objek tersebut.
+    return response.data; // Kembalikan seluruh data dari backend (termasuk success, message, dan user)
+  } catch (error) {
+    console.error(
+      "[API] Error saat disconnectYoutubeAccountApi:",
+      error.response?.data || error.message
+    );
+    const message =
+      error.response?.data?.message || // Pesan dari backend
+      error.message || // Pesan error umum
+      "Gagal memutuskan koneksi akun YouTube. Silakan coba lagi.";
+    // Lempar error agar bisa ditangani oleh useProfilePresenter
+    // Anda mungkin ingin melempar objek Error dengan pesan yang sudah diformat
+    throw new Error(message);
+  }
+};
+
+// Contoh: export const fetchSomeDataApi = async (params) => { ... }
+
 // export const submitVideoForAnalysisApi = (videoUrl) => { ... };
 
 export default apiClient; // Ekspor instance apiClient jika diperlukan di tempat lain (opsional)

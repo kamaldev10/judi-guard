@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 // src/components/auth/GoogleSignInButton.jsx
 import React from "react";
 import { GoogleLogin } from "@react-oauth/google"; // Komponen utama dari library

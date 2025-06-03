@@ -151,7 +151,7 @@ export const useProfilePresenter = () => {
       setYoutubeStatusMessage(successText);
       // Mengganti Swal dengan toast
       toast.success(successText, {
-        position: "top-end",
+        position: "bottom-right",
         autoClose: 3500,
         hideProgressBar: false,
         closeOnClick: true,

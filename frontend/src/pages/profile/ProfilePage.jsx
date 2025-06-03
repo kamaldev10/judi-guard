@@ -189,7 +189,7 @@ const UserProfilePage = () => {
         variants={pageVariants}
         initial="hidden"
         animate="visible"
-        className="w-full max-w-4xl space-y-6 md:space-y-8"
+        className="w-full max-w-4xl space-y-6 md:space-y-8" // Max width untuk layout
       >
         {/* BAGIAN 1: HEADER PROFIL */}
         <motion.section
@@ -263,7 +263,7 @@ const UserProfilePage = () => {
           </div>
         </motion.section>
 
-        {/* BAGIAN 2: KONEKSI AKUN YOUTUBE (Dimodifikasi) */}
+        {/* BAGIAN 2: KONEKSI AKUN YOUTUBE */}
         <motion.section
           variants={sectionItemVariants}
           className="bg-white shadow-xl rounded-xl p-6 md:p-8"
@@ -277,12 +277,8 @@ const UserProfilePage = () => {
             Koneksi Akun
           </h2>
 
-          <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 space-y-4">
-            {" "}
-            {/* Tambahkan space-y-4 untuk jarak antar baris grid konseptual */}
-            <div className="flex items-center justify-between mb-1">
-              {" "}
-              {/* Mengurangi margin bottom jika status message akan ada di bawahnya */}
+          <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+            <div className="flex items-center justify-between mb-3">
               <h3 className="text-lg font-medium text-slate-700 flex items-center">
                 <Youtube size={20} className="text-red-500 mr-2" />
                 Akun YouTube
@@ -291,102 +287,76 @@ const UserProfilePage = () => {
                 <Loader2 size={20} className="animate-spin text-sky-500" />
               )}
             </div>
-            {/* Grid utama untuk status dan aksi YouTube */}
-            <div className="grid grid-cols-3 gap-x-4 gap-y-2 items-center">
-              {" "}
-              {/* gap-x untuk antar kolom, gap-y jika ada beberapa baris */}
-              {/* Baris untuk youtubeStatusMessage (jika ada) - akan span semua kolom */}
-              {youtubeStatusMessage && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className={`col-span-3 text-sm p-2.5 rounded-md border ${
-                    isYoutubeConnected &&
-                    (youtubeStatusMessage.toLowerCase().includes("berhasil") ||
-                      youtubeStatusMessage.toLowerCase().includes("terhubung"))
-                      ? "bg-green-50 text-green-700 border-green-300"
-                      : youtubeStatusMessage.toLowerCase().includes("gagal")
-                        ? "bg-red-50 text-red-700 border-red-300"
-                        : "bg-blue-50 text-blue-700 border-blue-300" // Pesan info/loading
-                  }`}
-                >
-                  {youtubeStatusMessage}
-                </motion.p>
-              )}
-              {/* Konten Kondisional: Terhubung atau Belum Terhubung */}
-              {isYoutubeConnected && youtubeChannelInfo ? (
-                <>
-                  {/* Kolom 1: Nama Akun & Thumbnail */}
-                  <div className="col-span-3 sm:col-span-1 flex items-center space-x-2 min-w-0 py-1">
-                    {" "}
-                    {/* min-w-0 untuk truncate */}
-                    {youtubeChannelInfo.thumbnailUrl && (
-                      <img
-                        src={youtubeChannelInfo.thumbnailUrl}
-                        alt="Thumbnail Channel"
-                        className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex-shrink-0 border border-slate-200"
-                      />
-                    )}
-                    <p
-                      className="text-sm font-semibold text-slate-800 truncate"
-                      title={
-                        youtubeChannelInfo.name ||
-                        "Nama Channel Tidak Diketahui"
-                      }
-                    >
-                      {youtubeChannelInfo.name ||
-                        "Nama Channel Tidak Diketahui"}
-                    </p>
-                  </div>
+            <div className="grid grid-cols-2"></div>
+            {youtubeStatusMessage && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className={`text-sm mb-3 p-2.5 rounded-md border ${
+                  isYoutubeConnected &&
+                  (youtubeStatusMessage.toLowerCase().includes("berhasil") ||
+                    youtubeStatusMessage.toLowerCase().includes("terhubung"))
+                    ? "bg-green-50 text-green-700 border-green-300"
+                    : youtubeStatusMessage.toLowerCase().includes("gagal")
+                      ? "bg-red-50 text-red-700 border-red-300"
+                      : "bg-blue-50 text-blue-700 border-blue-300"
+                }`}
+              >
+                {youtubeStatusMessage}
+              </motion.p>
+            )}
 
-                  {/* Kolom 2: Status "Terhubung" */}
-                  <div className="col-span-3 sm:col-span-1 flex items-center justify-start sm:justify-center py-1">
-                    <span className="text-xs px-3 py-1 font-medium bg-green-100 text-green-700 rounded-full">
-                      Terhubung
-                    </span>
-                  </div>
-
-                  {/* Kolom 3: Tombol Disconnect */}
-                  <div className="col-span-3 sm:col-span-1 flex items-center justify-start sm:justify-end py-1">
-                    <motion.button
-                      onClick={handleDisconnectYouTubeAccount}
-                      disabled={isDisconnectingYouTube}
-                      className="bg-slate-500 hover:bg-slate-600 text-white font-semibold py-2 px-3 rounded-md shadow-sm flex items-center justify-center text-xs sm:text-sm disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
-                      title="Putuskan Hubungan YouTube"
-                    >
-                      {isDisconnectingYouTube ? (
-                        <Loader2 size={16} className="animate-spin sm:mr-1.5" />
-                      ) : (
-                        <Unlink size={16} className="sm:mr-1.5" />
-                      )}
-                      <span className="hidden sm:inline">
-                        {" "}
-                        {/* Teks hanya tampil di layar sm ke atas */}
-                        {isDisconnectingYouTube ? "Memutuskan..." : "Putuskan"}
-                      </span>
-                    </motion.button>
-                  </div>
-                </>
-              ) : (
-                // Jika Belum Terhubung: Tombol Hubungkan span semua kolom
-                <div className="col-span-3 py-1">
-                  <motion.button
-                    onClick={handleConnectYouTubeAccount}
-                    disabled={isConnectingYouTube}
-                    className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2.5 px-5 rounded-md shadow-md flex items-center justify-center text-sm disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2"
-                  >
-                    {isConnectingYouTube ? (
-                      <Loader2 size={18} className="animate-spin mr-2" />
-                    ) : (
-                      <LinkIcon size={16} className="mr-2" />
-                    )}
-                    {isConnectingYouTube
-                      ? "Mengarahkan..."
-                      : "Hubungkan Akun YouTube"}
-                  </motion.button>
+            {isYoutubeConnected && youtubeChannelInfo && (
+              <div className="flex items-center mb-4 p-3 bg-sky-50 rounded-md border border-sky-200 shadow-sm">
+                {youtubeChannelInfo.thumbnailUrl && ( // Cek thumbnail juga
+                  <img
+                    src={youtubeChannelInfo.thumbnailUrl}
+                    alt="Thumbnail Channel"
+                    className="w-10 h-10 rounded-full mr-3 border-2 border-white"
+                  />
+                )}
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-slate-800 truncate">
+                    {youtubeChannelInfo.name || "Nama Channel Tidak Diketahui"}
+                  </p>
+                  <p className="text-xs text-green-600 font-medium">
+                    Terhubung
+                  </p>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+
+            {!isYoutubeConnected ? (
+              <motion.button
+                onClick={handleConnectYouTubeAccount}
+                disabled={isConnectingYouTube}
+                className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2.5 px-5 rounded-md shadow-md flex items-center justify-center text-sm disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-2"
+              >
+                {isConnectingYouTube ? (
+                  <Loader2 size={18} className="animate-spin mr-2" />
+                ) : (
+                  <LinkIcon size={16} className="mr-2" />
+                )}
+                {isConnectingYouTube
+                  ? "Mengarahkan..."
+                  : "Hubungkan Akun YouTube"}
+              </motion.button>
+            ) : (
+              <motion.button
+                onClick={handleDisconnectYouTubeAccount}
+                disabled={isDisconnectingYouTube}
+                className="w-full bg-slate-500 hover:bg-slate-600 text-white font-semibold py-2.5 px-5 rounded-md shadow-md flex items-center justify-center text-sm disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+              >
+                {isDisconnectingYouTube ? (
+                  <Loader2 size={18} className="animate-spin mr-2" />
+                ) : (
+                  <Unlink size={16} className="mr-2" />
+                )}
+                {isDisconnectingYouTube
+                  ? "Memutuskan..."
+                  : "Putuskan Hubungan YouTube"}
+              </motion.button>
+            )}
           </div>
         </motion.section>
 

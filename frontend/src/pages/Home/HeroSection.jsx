@@ -50,7 +50,7 @@ const HeroSection = () => {
       <div className="container mx-auto">
         <div className="flex flex-col-reverse lg:flex-row items-center justify-between gap-8 lg:gap-16 w-full">
           <motion.div
-            className="text-center lg:text-left max-w-md lg:max-w-xl xl:max-w-2xl flex-1" // max-w dan flex-1
+            className="text-center lg:text-left max-w-md lg:max-w-md xl:max-w-md flex-1 md:ms-10" // max-w dan flex-1
             variants={containerVariants}
             initial="hidden"
             animate="visible"
@@ -62,7 +62,7 @@ const HeroSection = () => {
               className="text-3xl font-bold text-teal-700 leading-tight mb-4 
                          sm:text-4xl 
                          md:text-5xl 
-                         lg:text-[3.2rem] lg:leading-tight"
+                         lg:text-7xl lg:leading-tight"
             >
               Pendeteksi Komentar Judi Online
             </motion.h1>

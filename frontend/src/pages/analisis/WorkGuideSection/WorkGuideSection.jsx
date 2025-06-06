@@ -7,23 +7,26 @@ import {
   ArrowDown,
   Link,
 } from "lucide-react";
+import { LinkToYoutubeIcon, ProcessAnalysisIcon } from "../../../assets/images";
 
 const WorkGuideSection = () => {
   const steps = [
     {
-      icon: <Link size={36} className="text-teal-600" />, // Ukuran ikon diperkecil
+      icon: <img src={LinkToYoutubeIcon} size={36} className="text-teal-600" />, // Ukuran ikon diperkecil
       title: "input Link Video",
       description:
         "Masukkan link video yang ingin Anda analisis pada kolom yang tersedia.",
     },
     {
-      icon: <BrainCircuit size={36} className="text-teal-600" />,
+      icon: (
+        <img src={ProcessAnalysisIcon} size={36} className="text-teal-600" />
+      ),
       title: "Proses Analisis",
       description:
         "Sistem akan secara otomatis memproses dan menganalisis semua komentar dari video anda.",
     },
     {
-      icon: <ClipboardList size={36} className="text-teal-600" />,
+      icon: <ClipboardList size={36} className="text-gray-800" />,
       title: "Lihat Hasilnya",
       description:
         "Hasil analisis video berupa JUDI atau NON-JUDI akan ditampilkan dengan jelas.",

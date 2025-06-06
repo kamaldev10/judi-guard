@@ -13,8 +13,9 @@ import {
   HandMetal,
 } from "lucide-react";
 
-import LogoImage from "../../assets/images/Logo.png";
 import { toast } from "react-toastify";
+import { Logo } from "@images";
+import Swal from "sweetalert2";
 
 const Header = () => {
   const { isAuthenticated, currentUser, logout } = useAuth();
@@ -24,10 +25,21 @@ const Header = () => {
   const mobileMenuRef = useRef(null);
 
   const handleLogout = () => {
-    logout();
-    setIsMobileMenuOpen(false);
-    navigate("/login");
-    toast.error("Anda berhasil logout");
+    Swal.fire({
+      title: "Ingin Keluar dari Aplikasi?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#545454",
+      confirmButtonText: "Logout",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        logout();
+        setIsMobileMenuOpen(false);
+        navigate("/login");
+        toast.error("Anda berhasil logout");
+      }
+    });
   };
 
   const toggleMobileMenu = () => {
@@ -125,7 +137,7 @@ const Header = () => {
               className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors"
             >
               <img
-                src={LogoImage}
+                src={Logo}
                 alt="Logo Judi Guard"
                 className="w-32 p-2 bg-transparent "
               />

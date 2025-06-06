@@ -19,7 +19,7 @@ const AboutUs = () => {
   return (
     <section
       id="about"
-      className="scroll-mt-20 bg-[#f0faff] min-h-screen px-6 md:px-20 pt-20"
+      className="scroll-mt-20 bg-[#cdeeff] min-h-screen px-6 md:px-20 py-20"
     >
       {/* Intro */}
       <motion.div
@@ -72,7 +72,7 @@ const AboutUs = () => {
         whileInView={{ opacity: 1 }}
         transition={{ delay: 0.3, duration: 0.8 }}
         viewport={{ once: true }}
-        className="text-center mb-5"
+        className="text-center "
       >
         <h2 className="text-3xl font-bold text-[#136854] mb-10">Tim Kami</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
@@ -80,18 +80,25 @@ const AboutUs = () => {
             <motion.div
               key={index}
               whileHover={{ scale: 1.05 }}
-              className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition"
+              className="bg-white/25 ring  p-6 rounded-xl shadow-md hover:shadow-lg transition "
             >
               <img
                 src={member.image}
                 alt={member.name}
-                className="w-36 h-36 mx-auto rounded-full mb-4 object-cover border"
+                className="w-36 h-36 mx-auto rounded-full  mb-4 object-cover "
               />
-              <h3 className="text-xl font-semibold text-[#0f766e]">
+              <h3 className="text-xl font-semibold text-black mb-1 ">
                 {member.name}
               </h3>
-              <p className="text-sm text-gray-500 mb-1">{member.university}</p>
-              <p className="text-sm text-gray-600">{member.role}</p>
+              <p className="text-sm text-[#0f766e] mb-1 font-semibold">
+                {member.cohortID}
+              </p>
+              <p className="text-sm text-[#0f766e] mb-1 font-semibold">
+                {member.university}
+              </p>
+              <p className="text-sm text-[#0f766e] font-semibold">
+                {member.role}
+              </p>
             </motion.div>
           ))}
         </div>

@@ -7,6 +7,9 @@ export default {
         primary: "#b9e6fd",
         secondary: "#d7f2fb",
       },
+      fontFamily: {
+        sans: ["Roboto", "sans-serif"],
+      },
     },
   },
   safelist: ["bg-primary", "bg-secondary"],

@@ -5,7 +5,7 @@ const videoAnalysisSchema = new mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // Referensi ke model User
+      ref: "User",
       required: true,
     },
     youtubeVideoId: {
@@ -13,28 +13,40 @@ const videoAnalysisSchema = new mongoose.Schema(
       required: true,
     },
     videoTitle: {
-      // Opsional, bisa diisi saat mengambil detail video
       type: String,
     },
     status: {
       type: String,
-      enum: ["PENDING", "PROCESSING", "COMPLETED", "FAILED"],
+      // PERBAIKAN: Tambahkan semua status baru yang terkait dengan proses penghapusan
+      enum: [
+        "PENDING",
+        "PROCESSING",
+        "COMPLETED",
+        "FAILED",
+        "DELETING_CLASSIFIED_COMMENTS", // Status saat proses hapus berjalan
+        "COMPLETED_ALL_DELETIONS_SUCCESSFULLY", // Status jika semua berhasil dihapus
+        "COMPLETED_DELETION_WITH_PARTIAL_ERRORS", // Status jika ada yang gagal dihapus
+        "FAILED_ALL_DELETIONS", // Status jika semua gagal dihapus
+        // Anda juga bisa menggunakan status yang lebih umum seperti "COMPLETED_JUDI_DELETION"
+      ],
       default: "PENDING",
     },
     totalCommentsFetched: {
-      // Jumlah komentar yang berhasil diambil
       type: Number,
       default: 0,
     },
     totalCommentsAnalyzed: {
-      // Jumlah komentar yang berhasil dianalisis
       type: Number,
       default: 0,
     },
     errorMessage: {
-      // Jika status FAILED
       type: String,
     },
+    // Menambahkan field untuk melacak status batch delete (opsional tapi informatif)
+    lastBatchDeletionAttemptAt: { type: Date },
+    lastBatchDeletionSuccessCount: { type: Number },
+    lastBatchDeletionFailureCount: { type: Number },
+    // ...
     requestedAt: {
       type: Date,
       default: Date.now,
@@ -42,10 +54,10 @@ const videoAnalysisSchema = new mongoose.Schema(
     processingStartedAt: { type: Date },
     completedAt: { type: Date },
   },
-  { timestamps: true } // createdAt dan updatedAt otomatis
+  { timestamps: true }
 );
 
-// Index untuk query yang lebih efisien
+// Index tetap sama
 videoAnalysisSchema.index({ userId: 1, youtubeVideoId: 1 });
 videoAnalysisSchema.index({ status: 1 });
 

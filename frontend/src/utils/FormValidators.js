@@ -50,3 +50,14 @@ export const validateLoginPassword = (password) => {
   if (!password.trim()) return "Password tidak boleh kosong."; // Cukup cek ini
   return "";
 };
+
+export const validateYoutubeUrl = (url) => {
+  if (!url || typeof url !== "string" || url.trim() === "") {
+    return "URL video YouTube tidak boleh kosong.";
+  }
+  const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+/;
+  if (!youtubeRegex.test(url.trim())) {
+    return "Format URL video YouTube tidak valid. Pastikan menggunakan link dari youtube.com atau youtu.be.";
+  }
+  return null; // Valid
+};

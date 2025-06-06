@@ -35,12 +35,12 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error(
-      "[API Interceptor] Error in response for path:",
-      error.config?.url,
-      error.response?.status,
-      error.response?.data
-    ); // DEBUG
+    // console.error(
+    //   "[API Interceptor] Error in response for path:",
+    //   error.config?.url,
+    //   error.response?.status,
+    //   error.response?.data
+    // ); // DEBUG
     // Anda bisa menambahkan logika global di sini, misalnya jika error.response.status === 401,
     // panggil fungsi logout dari AuthContext atau redirect.
     // Namun, pastikan tidak tumpang tindih dengan penanganan error di komponen/hook.
@@ -87,7 +87,7 @@ export const signInWithGoogleApi = async (idToken) => {
   } catch (error) {
     const message =
       error.response?.data?.message ||
-      "Google Sign-In gagal. Silakan coba lagi atau gunakan metode login lain.";
+      "Google Sign-In gagal. Silakan coba lagi atau gunakan metode login biasa.";
     throw new Error(message);
   }
 };
@@ -195,8 +195,112 @@ export const disconnectYoutubeAccountApi = async () => {
   }
 };
 
-// Contoh: export const fetchSomeDataApi = async (params) => { ... }
+export const forgotPasswordApi = async (email) => {
+  try {
+    const response = await apiClient.post("/auth/forgot-password", { email });
+    return response.data;
+  } catch (error) {
+    const message =
+      error.response?.data?.message ||
+      "Terjadi kesalahan saat meminta reset kata sandi.";
+    throw new Error(message);
+  }
+};
 
-// export const submitVideoForAnalysisApi = (videoUrl) => { ... };
+export const resetPasswordApi = async (token, newPassword) => {
+  try {
+    const response = await apiClient.post(`/auth/reset-password/${token}`, {
+      password: newPassword,
+    });
+    return response.data;
+  } catch (error) {
+    const message =
+      error.response?.data?.message ||
+      "Terjadi kesalahan saat mereset kata sandi Anda.";
+    throw new Error(message);
+  }
+};
 
-export default apiClient; // Ekspor instance apiClient jika diperlukan di tempat lain (opsional)
+export const changePasswordApi = async (currentPassword, newPassword) => {
+  try {
+    const response = await apiClient.post("/auth/change-password", {
+      currentPassword,
+      newPassword,
+    });
+    return response.data;
+  } catch (error) {
+    const message =
+      error.response?.data?.message ||
+      "Terjadi kesalahan saat mengubah kata sandi.";
+    throw new Error(message);
+  }
+};
+
+//submit video analysis
+export const submitVideoForAnalysisApi = async (videoUrl) => {
+  try {
+    const response = await apiClient.post("/analysis/videos", { videoUrl });
+    // response.data seharusnya adalah objek VideoAnalysis yang sudah diproses (atau minimal ID dan status awal)
+    return response.data.data; // Asumsi backend mengembalikan { success: true, data: videoAnalysisObject }
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
+/**
+ * Mengambil detail dan status dari sebuah VideoAnalysis.
+ * Digunakan untuk polling jika analisis di backend bersifat asinkron.
+ * Untuk V1 (sinkron), ini mungkin tidak terlalu dipakai untuk polling status analisis,
+ * tapi berguna untuk mendapatkan update data VideoAnalysis.
+ */
+export const getVideoAnalysisApi = async (analysisId) => {
+  try {
+    const response = await apiClient.get(`/analysis/videos/${analysisId}`);
+    return response.data.data; // Asumsi backend mengembalikan { success: true, data: videoAnalysisObject }
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
+/**
+ * Mengambil semua komentar yang telah dianalisis untuk sebuah VideoAnalysis.
+ */
+export const getAnalyzedCommentsApi = async (analysisId) => {
+  try {
+    const response = await apiClient.get(
+      `/analysis/videos/${analysisId}/comments`
+    );
+    return response.data.data; // Asumsi backend mengembalikan { success: true, data: [arrayOfComments] }
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
+/**
+ * Meminta penghapusan semua komentar "JUDI" untuk sebuah VideoAnalysis.
+ * Untuk V1, kita asumsikan backend memproses ini secara sinkron.
+ */
+export const batchDeleteJudiCommentsApi = async (analysisId) => {
+  try {
+    const response = await apiClient.delete(
+      `/analysis/videos/${analysisId}/judi-comments`
+    );
+    return response.data.data; // Asumsi backend mengembalikan { success: true, data: { summary } }
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
+// Meminta penghapusan satu komentar spesifik.
+export const deleteSingleCommentApi = async (commentAppId) => {
+  try {
+    const response = await apiClient.delete(
+      `/analysis/comments/${commentAppId}`
+    );
+    return response.data; // Asumsi backend mengembalikan { success: true, message: "..." }
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
+export default apiClient;

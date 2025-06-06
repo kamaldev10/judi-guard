@@ -14,14 +14,20 @@ const analyzedCommentSchema = new mongoose.Schema(
       required: true,
     },
     youtubeVideoId: {
+      // ID video YouTube tempat komentar ini berada
       type: String,
       required: true,
     },
     youtubeCommentId: {
-      // ID unik komentar dari YouTube
+      // ID unik komentar dari YouTube (bisa top-level atau reply)
       type: String,
       required: true,
-      unique: true, // CUKUP DENGAN INI UNTUK UNIQUE INDEX PADA FIELD INI
+      unique: true,
+    },
+    parentYoutubeCommentId: {
+      // ID komentar YouTube induk jika ini adalah balasan
+      type: String, // Akan null atau undefined jika ini adalah komentar tingkat atas
+      index: true, // Tambahkan index jika Anda sering query berdasarkan ini
     },
     commentTextOriginal: {
       type: String,
@@ -37,7 +43,11 @@ const analyzedCommentSchema = new mongoose.Schema(
     commentPublishedAt: { type: Date },
     commentUpdatedAt: { type: Date },
     likeCount: { type: Number, default: 0 },
-    totalReplyCount: { type: Number, default: 0 },
+    // totalReplyCount hanya relevan untuk top-level comments jika Anda menyimpannya di sini.
+    // Jika tidak, field ini bisa dihapus dari AnalyzedComment dan hanya ada di CommentThread dari YouTube API.
+    // Untuk V1 ini, kita bisa hapus dari model AnalyzedComment untuk menyederhanakan,
+    // karena totalReplyCount ada di objek CommentThread dari youtube.service.js.
+    // totalReplyCount: { type: Number, default: 0 },
     classification: {
       type: String,
       enum: [
@@ -60,10 +70,9 @@ const analyzedCommentSchema = new mongoose.Schema(
 
 // Index untuk query yang lebih efisien
 analyzedCommentSchema.index({ videoAnalysisId: 1 });
-analyzedCommentSchema.index({ userId: 1, youtubeVideoId: 1 });
+analyzedCommentSchema.index({ userId: 1, youtubeVideoId: 1 }); // Mungkin tidak perlu userId di sini jika sudah ada di videoAnalysisId
 analyzedCommentSchema.index({ classification: 1 });
-// HAPUS BARIS BERIKUT KARENA unique:true DI FIELD youtubeCommentId SUDAH CUKUP:
-// analyzedCommentSchema.index({ youtubeCommentId: 1 }, { unique: true });
+// Index untuk youtubeCommentId sudah ada karena unique: true
 
 const AnalyzedComment = mongoose.model(
   "AnalyzedComment",

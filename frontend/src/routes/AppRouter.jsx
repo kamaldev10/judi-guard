@@ -16,6 +16,11 @@ const Register = lazy(() => import("../pages/auth/register/Register"));
 const OtpPage = lazy(() => import("../pages/otp/OtpPage"));
 const NotFoundPage = lazy(() => import("../pages/status/NotFound"));
 
+const ForgotPasswordPage = lazy(
+  () => import("../pages/auth/ForgotPasswordPage")
+); // Tambahkan ini
+const ResetPasswordPage = lazy(() => import("../pages/auth/ResetPasswordPage")); // Tambahkan ini
+
 const AppRouter = () => {
   return (
     <Suspense fallback={<Loader />}>
@@ -51,12 +56,13 @@ const AppRouter = () => {
           />
           <Route path="not-found" element={<NotFoundPage />} />
         </Route>
-
         {/* Rute Autentikasi (tanpa Layout Utama) */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/otp" element={<OtpPage />} />
 
+        {/* <Route path="/forgot-password" element={<ForgotPasswordPage />} /> */}
+        <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
         <Route path="*" element={<Navigate to="/not-found" replace />} />
       </Routes>
     </Suspense>

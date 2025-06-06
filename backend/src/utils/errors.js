@@ -1,4 +1,5 @@
 // src/utils/errors.js
+
 class AppError extends Error {
   constructor(message, statusCode) {
     super(message);
@@ -33,10 +34,21 @@ class ForbiddenError extends AppError {
   }
 }
 
+/**
+ * Error class spesifik untuk menandakan bahwa kuota API telah terlampaui.
+ * Menggunakan status code 429 Too Many Requests.
+ */
+class QuotaExceededError extends AppError {
+  constructor(message = "Kuota API harian telah terlampaui.") {
+    super(message, 429);
+  }
+}
+
 module.exports = {
   AppError,
   NotFoundError,
   BadRequestError,
   UnauthorizedError,
   ForbiddenError,
+  QuotaExceededError,
 };

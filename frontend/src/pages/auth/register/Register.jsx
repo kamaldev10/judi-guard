@@ -13,7 +13,6 @@ import {
 } from "../../../utils/FormValidators"; // Impor validateUserName
 import { registerUserApi } from "../../../services/api";
 import GoogleSignInButton from "../../../components/auth/GoogleSignInButton";
-// import GoogleSignInButton from "./GoogleSignInButton";
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);

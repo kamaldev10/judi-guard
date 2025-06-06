@@ -10,7 +10,7 @@ import { useAuth } from "../../contexts/AuthContext";
 const GoogleSignInButton = ({
   onSuccessCustom,
   onErrorCustom,
-  buttonText = "Masuk Dengan Google",
+  buttonText = "",
 }) => {
   const { login } = useAuth();
   const navigate = useNavigate();

@@ -3,7 +3,11 @@ const express = require("express");
 const videoAnalysisController = require("../controllers/videoAnalysis.controller");
 const isAuthenticated = require("../middlewares/isAuthenticated"); // Middleware autentikasi
 const validateRequest = require("../middlewares/validateRequest"); // Jika Anda membuat skema validasi untuk body
-const { submitVideoSchema } = require("../validators/video.validator");
+const {
+  submitVideoSchema,
+  analysisIdParamSchema,
+  commentAppIdParamSchema,
+} = require("../validators/video.validator");
 
 const router = express.Router();
 
@@ -20,14 +24,27 @@ router.post(
 router.get(
   "/videos/:analysisId/comments", // :analysisId adalah parameter URL
   isAuthenticated,
+  // Opsional: Validasi parameter analysisId jika Anda punya skema validatornya
+  // validateRequest(analysisIdParamSchema, "params"),
   videoAnalysisController.getAnalyzedCommentsForVideo
 );
 
+// Rute untuk menghapus SATU komentar spesifik dari YouTube (berdasarkan ID aplikasi kita)
 // :analyzedCommentAppId adalah _id dari komentar di database kita
 router.delete(
   "/comments/:analyzedCommentAppId",
   isAuthenticated,
-  videoAnalysisController.deleteAnalyzedCommentController
+  videoAnalysisController.deleteAnalyzedCommentController // Controller untuk hapus satu komentar
+);
+
+// --- RUTE BARU UNTUK BATCH DELETE KOMENTAR 'JUDI' ---
+// Menargetkan videoAnalysisId untuk menghapus semua komentar "judi" terkait.
+router.delete(
+  "/videos/:analysisId/judi-comments", // :analysisId adalah parameter URL
+  isAuthenticated,
+  // Opsional: Validasi parameter analysisId
+  // validateRequest(analysisIdParamSchema, "params"),
+  videoAnalysisController.batchDeleteJudiCommentsController // Controller baru untuk batch delete
 );
 
 module.exports = router;

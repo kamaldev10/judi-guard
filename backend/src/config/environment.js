@@ -4,6 +4,7 @@
 require("dotenv").config();
 
 const config = {
+  appName: process.env.APP_NAME || "Judi Guard Application",
   port: process.env.PORT || 3001,
   mongodbUri: process.env.MONGODB_URI,
   frontendUrl: process.env.FRONTEND_URL,
@@ -20,6 +21,16 @@ const config = {
     redirectUri: process.env.YOUTUBE_REDIRECT_URI,
     apiKey: process.env.YOUTUBE_API_KEY,
   },
+  // Konfigurasi Email umum (jika masih digunakan untuk SMTP lain)
+  email: {
+    host: process.env.EMAIL_HOST,
+    port: parseInt(process.env.EMAIL_PORT, 10),
+    secure: process.env.EMAIL_SECURE === "true",
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+    from: process.env.EMAIL_FROM,
+  },
+
   mailgun: {
     apiKey: process.env.MAILGUN_API_KEY,
     domain: process.env.MAILGUN_DOMAIN,
@@ -29,6 +40,9 @@ const config = {
         process.env.MAILGUN_DOMAIN
       }>`,
   },
+  //maksimal top level comment dan replies per comment
+  MAX_TOP_LEVEL_COMMENTS: 200,
+  MAX_REPLIES_PER_COMMENT: 50,
 };
 
 if (

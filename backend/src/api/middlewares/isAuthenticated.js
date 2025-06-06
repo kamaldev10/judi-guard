@@ -28,6 +28,10 @@ const isAuthenticated = async (req, res, next) => {
 
     // 2. Verifikasi token
     const decodedPayload = verifyToken(token);
+    // console.log(
+    //   `[AuthMiddleware] Token diterima. User ID dari token: ${decodedPayload.userId}`
+    // ); // atau decoded._id
+
     if (!decodedPayload) {
       // Jika verifyToken mengembalikan null karena token tidak valid atau error lainnya
       return next(
@@ -72,6 +76,7 @@ const isAuthenticated = async (req, res, next) => {
 
     next(); // Lanjutkan ke middleware atau handler berikutnya
   } catch (error) {
+    // console.error("[AuthMiddleware] Terjadi error:", error.message);
     // Jika ada error tak terduga selama verifikasi token atau query user
     // (misalnya, error dari jwt.verify() selain yang sudah ditangani verifyToken)
     if (error.name === "JsonWebTokenError") {

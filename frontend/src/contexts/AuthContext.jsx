@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }) => {
 
   const clearAuthData = useCallback(() => {
     localStorage.removeItem("judiGuardToken");
-    // Tidak perlu lagi localStorage.removeItem("judiGuardUser");
+    localStorage.removeItem("judiGuardUser");
     setAuthToken(null);
     setCurrentUser(null);
     // Jika Anda menggunakan interceptor Axios yang diset secara dinamis,
@@ -83,7 +83,7 @@ export const AuthProvider = ({ children }) => {
   // Fungsi login, dipanggil setelah registrasi, login standar, atau login via Google berhasil dari backend
   const login = useCallback((userData, token) => {
     localStorage.setItem("judiGuardToken", token);
-    // Tidak perlu lagi localStorage.setItem("judiGuardUser", JSON.stringify(userData));
+    localStorage.setItem("judiGuardUser", JSON.stringify(userData));
 
     setAuthToken(token);
     setCurrentUser(userData); // `userData` harusnya objek pengguna yang lengkap dari backend

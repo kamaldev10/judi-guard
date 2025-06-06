@@ -17,7 +17,7 @@ const passwordResetSchema = new mongoose.Schema(
       type: Date,
       required: true,
       // MongoDB akan otomatis menghapus dokumen setelah waktu ini tercapai
-      index: { expires: "1s" }, // Token akan dihapus setelah 1 detik dari 'expiresAt'
+      index: { expires: "60s" }, // Token akan dihapus setelah 1 detik dari 'expiresAt'
     },
   },
   {

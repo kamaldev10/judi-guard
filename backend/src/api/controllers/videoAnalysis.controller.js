@@ -14,9 +14,9 @@ const submitVideoForAnalysis = async (req, res, next) => {
       throw new BadRequestError('Parameter "videoUrl" diperlukan.');
     }
 
-    console.log(
-      `[Controller] Menerima permintaan analisis video: ${videoUrl} dari user: ${userId}`
-    );
+    // console.log(
+    //   `[Controller] Menerima permintaan analisis video: ${videoUrl} dari user: ${userId}`
+    // );
 
     // PENTING: Seperti yang didiskusikan, service startVideoAnalysis saat ini
     // akan berjalan hingga semua komentar dianalisis sebelum mengembalikan respons.
@@ -68,8 +68,39 @@ const getAnalyzedCommentsForVideo = async (req, res, next) => {
   }
 };
 
+const batchDeleteJudiCommentsController = async (req, res, next) => {
+  try {
+    const userId = req.user._id; // Diambil dari middleware isAuthenticated
+    const { analysisId } = req.params; // Ambil analysisId dari parameter URL
+
+    if (!analysisId) {
+      throw new BadRequestError("Parameter analysisId diperlukan.");
+    }
+
+    const result = await videoAnalysisService.requestBatchDeleteJudiComments(
+      userId,
+      analysisId
+    );
+
+    res.status(200).json({
+      success: true,
+      message:
+        result.message ||
+        "Proses penghapusan massal komentar 'judi' telah diproses.",
+      data: {
+        totalTargeted: result.totalTargeted,
+        successfullyDeleted: result.successfullyDeleted,
+        failedToDelete: result.failedToDelete,
+        failures: result.failures,
+      },
+    });
+  } catch (error) {
+    next(error); // Teruskan error ke global error handler
+  }
+};
+
 /**
- * Menangani permintaan penghapusan komentar yang sudah dianalisis.
+ * Menangani permintaan penghapusan komentar yang sudah dianalisis.(satu komentar)
  */
 const deleteAnalyzedCommentController = async (req, res, next) => {
   try {
@@ -101,5 +132,6 @@ const deleteAnalyzedCommentController = async (req, res, next) => {
 module.exports = {
   submitVideoForAnalysis,
   getAnalyzedCommentsForVideo,
+  batchDeleteJudiCommentsController,
   deleteAnalyzedCommentController,
 };

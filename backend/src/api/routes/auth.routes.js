@@ -39,7 +39,7 @@ router.post(
   authController.handleLogin
 );
 
-router.post("/google/signin", authController.handleGoogleAppSignIn);
+router.post("/google/signin", authController.handleGoogleAuth);
 
 router.get(
   "/youtube/connect",

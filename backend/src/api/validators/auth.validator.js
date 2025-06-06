@@ -47,6 +47,7 @@ const otpSchema = Joi.object({
 const emailSchema = Joi.object({
   email: Joi.string().email().required(),
 });
+
 const forgotPasswordSchema = Joi.object({
   // Asumsi ini adalah skema untuk req.body
   email: Joi.string().email().required().messages({

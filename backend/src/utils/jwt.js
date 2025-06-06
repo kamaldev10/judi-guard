@@ -26,7 +26,7 @@ const verifyToken = (token) => {
     return jwt.verify(token, config.jwt.secret);
   } catch (error) {
     // Tangani error token (misalnya, TokenExpiredError, JsonWebTokenError)
-    // console.error('Invalid token:', error.message);
+    console.error("Invalid token:", error.message);
     return null;
   }
 };

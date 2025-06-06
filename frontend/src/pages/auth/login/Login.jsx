@@ -5,7 +5,6 @@ import { Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Title } from "react-head";
 import { toast } from "react-toastify";
-import { Icon } from "@iconify/react";
 
 import { loginUserApi } from "../../../services/api";
 import { useAuth } from "../../../contexts/AuthContext";
@@ -24,7 +23,7 @@ const Login = () => {
   const [formValues, setFormValues] = useState({ email: "", password: "" });
   const [formErrors, setFormErrors] = useState({ email: "", password: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorServer, setErrorServer] = useState("");
+  // const [errorServer, setErrorServer] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -54,7 +53,7 @@ const Login = () => {
     }
 
     setIsSubmitting(true);
-    setErrorServer("");
+    // setErrorServer("");
 
     try {
       const response = await loginUserApi(formValues);
@@ -64,11 +63,11 @@ const Login = () => {
     } catch (error) {
       console.error("Login error:", error);
       const errorMessage =
-        error.message ||
-        "Login gagal. Periksa kembali email dan password Anda.";
+        "Login gagal.Anda Mendaftarkan akun ini dengan Google.";
+      //karena ketika dengan google, password itu tidak wajib
       // Tampilkan error dari server di toast atau di bawah form
       toast.error(errorMessage, { position: "bottom-right" });
-      setErrorServer(errorMessage);
+      // setErrorServer(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -78,7 +77,6 @@ const Login = () => {
     <>
       <Title>Login | Judi Guard</Title>
       <div className="relative fade-in-transition min-h-screen flex items-center justify-center ">
-        {/* ... (background dan logo Anda tetap sama) ... */}
         <div className="absolute inset-0">
           <div className="h-1/2 bg-blue-200"></div>
           <div className="h-1/2 bg-blue-100"></div>
@@ -95,7 +93,7 @@ const Login = () => {
             <h1 className="text-center text-[var(--primary-color)] font-semibold text-xl mb-5">
               Masuk
             </h1>
-            {errorServer && (
+            {/* {errorServer && (
               <p
                 style={{
                   color: "red",
@@ -105,7 +103,7 @@ const Login = () => {
               >
                 {errorServer}
               </p>
-            )}
+            )} */}
             <div className="mb-4">
               <label
                 htmlFor="email"

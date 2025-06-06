@@ -6,6 +6,7 @@ const {
   AppError,
   UnauthorizedError,
   NotFoundError,
+  ForbiddenError,
 } = require("../../utils/errors"); // Utilitas error
 const config = require("../../config/environment"); // Konfigurasi environment
 
@@ -172,39 +173,27 @@ const getVideoDetails = async (videoId, { youtubeClient, apiKey }) => {
   }
 };
 
-/**
- * Mengambil komentar (top-level) dari sebuah video YouTube. Menangani paginasi.
- * @param {string} videoId - ID Video YouTube.
- * @param {object} options
- * @param {google.youtube_v3.Youtube} options.youtubeClient - Client YouTube yang sudah terautentikasi (WAJIB untuk komentar).
- * @param {number} [options.maxResultsPerPage=100] - Jumlah hasil per halaman (maks 100).
- * @param {number} [options.limitTotalResults=1000] - Batas total komentar yang akan diambil.
- * @returns {Promise<Array<object>>} Array objek komentar (snippet dari topLevelComment).
- * @throws {AppError} Jika terjadi error atau komentar dinonaktifkan.
- */
 const fetchCommentsForVideo = async (
   videoId,
+  userId,
   { youtubeClient },
   maxResultsPerPage = 100,
   limitTotalResults = 1000
 ) => {
   if (!youtubeClient) {
-    // Sebenarnya, getAuthenticatedYouTubeClient akan throw error jika user tidak terhubung,
-    // jadi youtubeClient seharusnya selalu ada jika dipanggil dengan benar.
-    // Namun, ini sebagai pengaman tambahan.
     throw new AppError(
       "Diperlukan youtubeClient yang terautentikasi untuk mengambil komentar.",
       500
     );
   }
 
-  let allTopLevelComments = [];
+  let allCommentThreads = []; // Akan menyimpan objek CommentThread utuh
   let nextPageToken = null;
   let fetchedCount = 0;
-  const actualMaxPerPage = Math.min(maxResultsPerPage, 100); // Maksimum dari API adalah 100
+  const actualMaxPerPage = Math.min(maxResultsPerPage, 100);
 
   console.log(
-    `[YouTubeService] Mulai mengambil komentar untuk video ID: ${videoId}. Target: ${limitTotalResults} komentar.`
+    `[YouTubeService] Mulai mengambil komentar (threads) untuk video ID: ${videoId}. UserID: ${userId}. Target: ${limitTotalResults} komentar.`
   );
 
   try {
@@ -213,37 +202,65 @@ const fetchCommentsForVideo = async (
         actualMaxPerPage,
         limitTotalResults - fetchedCount
       );
-      if (resultsToFetchThisPage <= 0) break; // Sudah mencapai limit
+      if (resultsToFetchThisPage <= 0) break;
 
       console.log(
-        `[YouTubeService] Mengambil halaman komentar... PageToken: ${nextPageToken}, MaxResults: ${resultsToFetchThisPage}`
+        `[YouTubeService] Mengambil halaman commentThreads... PageToken: ${nextPageToken}, MaxResults: ${resultsToFetchThisPage}`
       );
       const response = await youtubeClient.commentThreads.list({
-        part: "snippet,replies", // snippet (info komentar), replies (info tentang balasan, misal totalReplyCount)
+        part: "snippet,replies", // Meminta snippet dan replies
         videoId: videoId,
         maxResults: resultsToFetchThisPage,
         pageToken: nextPageToken,
-        textFormat: "plainText", // Ambil teks komentar sebagai plain text
-        order: "relevance", // Bisa juga 'time' untuk komentar terbaru
+        textFormat: "plainText",
+        order: "time", // Diubah ke 'time' untuk potensi hasil yang lebih lengkap/konsisten
       });
 
       if (response.data.items && response.data.items.length > 0) {
-        response.data.items.forEach((item) => {
-          // 'item' di sini adalah CommentThread
-          // Validasi sederhana bahwa struktur yang kita butuhkan ada
+        response.data.items.forEach((threadItem) => {
+          // Validasi dasar untuk CommentThread dan topLevelComment
           if (
-            item &&
-            item.snippet &&
-            item.snippet.topLevelComment &&
-            item.snippet.topLevelComment.id &&
-            item.snippet.topLevelComment.snippet
+            threadItem &&
+            threadItem.snippet &&
+            threadItem.snippet.topLevelComment &&
+            threadItem.snippet.topLevelComment.id &&
+            threadItem.snippet.topLevelComment.snippet
           ) {
-            allTopLevelComments.push(item); // Simpan seluruh objek 'item' (CommentThread)
+            // Memproses balasan yang mungkin sudah ada di threadItem.replies.comments
+            const initialReplies = [];
+            if (threadItem.replies && threadItem.replies.comments) {
+              threadItem.replies.comments = threadItem.replies.comments.filter(
+                (reply) => reply && reply.id && reply.snippet
+              );
+
+              threadItem.replies.comments.forEach((replyComment) => {
+                // Validasi dasar untuk balasan
+                if (replyComment && replyComment.id && replyComment.snippet) {
+                  initialReplies.push({
+                    // Simpan hanya data yang relevan dari balasan
+                    id: replyComment.id,
+                    textDisplay: replyComment.snippet.textDisplay,
+                    authorDisplayName: replyComment.snippet.authorDisplayName,
+                    publishedAt: replyComment.snippet.publishedAt,
+                    likeCount: replyComment.snippet.likeCount,
+                    parentId: replyComment.snippet.parentId, // Seharusnya ID dari topLevelComment
+                    // ... field lain yang mungkin Anda butuhkan dari snippet balasan
+                  });
+                }
+              });
+            }
+
+            // Menambahkan struktur yang dimodifikasi ke hasil
+            // Anda bisa memilih untuk menyimpan threadItem utuh, atau memformatnya di sini.
+            // Untuk konsistensi dengan cara Anda memproses komentar, mungkin lebih baik
+            // service videoAnalysis.service.js yang mengekstrak topLevelComment dan initialReplies ini.
+            // Untuk saat ini, kita simpan threadItem utuh, service lain yang akan memproses.
+            allCommentThreads.push(threadItem); // Menyimpan objek CommentThread utuh
             fetchedCount++;
           } else {
             console.warn(
-              `[YouTubeService] Item komentar tidak memiliki struktur yang diharapkan, dilewati:`,
-              JSON.stringify(item, null, 2)
+              `[YouTubeService] Item commentThread tidak memiliki struktur yang diharapkan, dilewati:`,
+              JSON.stringify(threadItem, null, 2)
             );
           }
         });
@@ -251,24 +268,54 @@ const fetchCommentsForVideo = async (
 
       nextPageToken = response.data.nextPageToken;
       console.log(
-        `[YouTubeService] Fetched ${fetchedCount} comments so far for video ${videoId}. Next page: ${!!nextPageToken}`
+        `[YouTubeService] Fetched ${fetchedCount} comment threads so far for video ${videoId}. Next page: ${!!nextPageToken}`
       );
     } while (nextPageToken && fetchedCount < limitTotalResults);
 
     console.log(
-      `[YouTubeService] Total ${allTopLevelComments.length} komentar (threads) diambil untuk video ID: ${videoId}`
+      `[YouTubeService] Total ${allCommentThreads.length} comment threads diambil untuk video ID: ${videoId}`
     );
-    return allTopLevelComments; // Kembalikan array objek CommentThread utuh
+    return allCommentThreads; // Mengembalikan array objek CommentThread utuh
   } catch (error) {
+    // Cek terlebih dahulu apakah ini error karena kuota habis.
+    const isQuotaError =
+      error.response?.data?.error?.errors?.[0]?.reason === "quotaExceeded" ||
+      error.message?.toLowerCase().includes("quotaexceeded");
+
+    if (isQuotaError) {
+      // Log error di backend
+      console.error(
+        `[YouTubeService] QUOTA EXCEEDED saat mencoba mengakses resource untuk video ${videoId}. UserID: ${userId}.`
+      );
+
+      // --- PERBAIKAN: Gunakan error class yang spesifik ---
+      throw new QuotaExceededError(
+        "Kuota harian YouTube API telah habis. Silakan coba lagi besok."
+      );
+    }
+
+    // ... (blok catch error Anda yang sudah baik tetap di sini) ...
     console.error(
-      `[YouTubeService] Error mengambil komentar untuk video ${videoId}:`,
+      `[YouTubeService] Error mengambil commentThreads untuk video ${videoId} (UserID: ${userId}):`,
       error.response ? error.response.data : error.message
     );
-    // Error umum dari Google API (error.errors adalah array)
+
     const googleApiErrorMessage =
       error.errors && error.errors[0] ? error.errors[0].message : error.message;
-
     if (error.code === 403) {
+      console.error(
+        `[YouTubeService] Error 403 (Forbidden) saat mengambil commentThreads untuk video ${videoId}. UserID: ${userId}. Detail Error Google:`,
+        JSON.stringify(
+          error.errors ||
+            error.response?.data?.error || {
+              message: googleApiErrorMessage,
+              code: error.code,
+            },
+          null,
+          2
+        )
+      );
+
       if (
         googleApiErrorMessage &&
         googleApiErrorMessage.toLowerCase().includes("commentsdisabled")
@@ -279,22 +326,14 @@ const fetchCommentsForVideo = async (
         googleApiErrorMessage &&
         googleApiErrorMessage.toLowerCase().includes("quotaexceeded")
       ) {
-        throw new AppError("Kuota YouTube API telah terlampaui.", 429); // Too Many Requests
+        throw new AppError("Kuota YouTube API telah terlampaui.", 429);
       }
       throw new AppError(
         `Akses ditolak untuk mengambil komentar: ${googleApiErrorMessage}`,
         403
       );
     }
-    if (
-      error.code === 404 &&
-      googleApiErrorMessage &&
-      googleApiErrorMessage.toLowerCase().includes("videonotfound")
-    ) {
-      throw new NotFoundError(
-        `Video dengan ID ${videoId} tidak ditemukan (API Error).`
-      );
-    }
+    // ... sisa penanganan error ...
     throw new AppError(
       `Gagal mengambil komentar: ${googleApiErrorMessage}`,
       error.code && typeof error.code === "number" ? error.code : 500

@@ -1,41 +1,41 @@
 // src/utils/youtubeHelper.js
 
 /**
- * Mengambil YouTube Video ID dari berbagai format URL.
- * @param {string} url - URL Video YouTube.
+ * Mengambil YouTube Video ID dari berbagai format URL atau langsung dari ID.
+ * @param {string} urlOrId - URL Video YouTube atau Video ID.
  * @returns {string|null} Video ID atau null jika tidak valid.
  */
-const getYouTubeVideoId = (url) => {
-  if (!url) return null;
-  // Pola regex untuk mencocokkan berbagai format URL YouTube
+const getYouTubeVideoId = (urlOrId) => {
+  if (!urlOrId || typeof urlOrId !== "string") return null;
+
+  const trimmedInput = urlOrId.trim();
+
+  // 1. Cek apakah input adalah ID video yang valid (11 karakter alfanumerik, -, _)
+  if (trimmedInput.length === 11 && /^[a-zA-Z0-9_-]+$/.test(trimmedInput)) {
+    return trimmedInput;
+  }
+
+  // 2. Jika bukan ID langsung, coba cocokkan dengan pola URL umum
+  // Pola regex diurutkan dari yang lebih spesifik atau umum digunakan
   const patterns = [
-    /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([^&]+)/, // Standard URL
-    /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([^?]+)/, // Embed URL
-    /(?:https?:\/\/)?youtu\.be\/([^?]+)/, // Shortened URL
-    /(?:https?:\/\/)?(?:www\.)?youtube\.com\/v\/([^?]+)/, // V URL
-    /(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([^?]+)/, // Shorts URL
-    /(?:https?:\/\/)?(?:www\.)?youtube\.com\/live\/([^?]+)/, // Live URL
-    /^[a-zA-Z0-9_-]{11}$/, // Langsung ID
+    /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?(?:.*&)?v=([a-zA-Z0-9_-]{11})/, // Standard URL (parameter v bisa di mana saja)
+    /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/, // Embed URL
+    /(?:https?:\/\/)?youtu\.be\/([a-zA-Z0-9_-]{11})/, // Shortened URL
+    /(?:https?:\/\/)?(?:www\.)?youtube\.com\/v\/([a-zA-Z0-9_-]{11})/, // V URL
+    /(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/, // Shorts URL
+    /(?:https?:\/\/)?(?:www\.)?youtube\.com\/live\/([a-zA-Z0-9_-]{11})/, // Live URL
   ];
 
   for (const pattern of patterns) {
-    const match = url.match(pattern);
+    const match = trimmedInput.match(pattern);
     if (match && match[1]) {
-      // Pastikan ID yang didapat adalah 11 karakter (standar YouTube Video ID)
-      if (match[1].length === 11) {
-        return match[1];
-      }
-      // Jika pola terakhir (langsung ID) cocok dan panjangnya 11
-      if (pattern.toString() === "/^[a-zA-Z0-9_-]{11}$/" && url.length === 11) {
-        return url;
-      }
+      // Grup pertama (match[1]) seharusnya adalah ID video 11 karakter
+      // Regex di atas sudah memastikan panjang 11 karakter untuk ID
+      return match[1];
     }
   }
-  // Jika URL adalah ID video itu sendiri (11 karakter)
-  if (url.length === 11 && /^[a-zA-Z0-9_-]+$/.test(url)) {
-    return url;
-  }
 
+  // Jika tidak ada pola yang cocok
   return null;
 };
 

@@ -12,7 +12,7 @@ const sendEmail = require("../../utils/emailSender"); // Impor pengirim email
 const crypto = require("crypto"); // Modul bawaan Node.js untuk generate string acak
 const config = require("../../config/environment");
 const { OAuth2Client } = require("google-auth-library"); // Penting untuk verifikasi ID Token
-const PasswordReset = require("../../models/PasswordReset.model.js");
+const { PasswordReset } = require("../../models/PasswordReset.model");
 
 const generateOtp = () => {
   return crypto.randomInt(100000, 999999).toString();
@@ -278,8 +278,7 @@ const signInWithGoogle = async (idTokenString) => {
         `Percobaan masuk dengan email Google yang belum terverifikasi: ${payload.email}`
       );
     }
-    // ... (sisa logika signInWithGoogle seperti yang telah diperbaiki sebelumnya) ...
-    // ... (mencari user, membuat user baru jika perlu, membuat token aplikasi) ...
+
     const googleId = payload.sub;
     const email = payload.email;
     const nameFromGoogle = payload.name || email.split("@")[0];
@@ -288,10 +287,13 @@ const signInWithGoogle = async (idTokenString) => {
     let user = await User.findOne({
       $or: [{ googleId: googleId }, { email: email }],
     });
-    let isNewUser = false;
 
+    let isNewUser = false; // Flag untuk menandai apakah pengguna ini baru atau tidak
+
+    //---------------skenario login dan register---------------//
+    // Jika user TIDAK ditemukan di database (berdasarkan googleId ATAU email) => buat pengguna baru
     if (!user) {
-      isNewUser = true;
+      isNewUser = true; // Set flag menjadi true, artinya ini pendaftaran baru
       let username = nameFromGoogle.replace(/\s+/g, "").toLowerCase();
       let count = 0;
       let tempUsername = username;
@@ -310,12 +312,14 @@ const signInWithGoogle = async (idTokenString) => {
         profilePictureUrl: picture,
       });
     } else {
+      // Jika user DITEMUKAN di database ==> ... logika untuk memperbarui pengguna yang sudah ada
       if (!user.googleId) user.googleId = googleId;
       if (!user.isVerified && payload.email_verified) user.isVerified = true;
       user.fullName = nameFromGoogle;
       user.profilePictureUrl = picture;
       await user.save();
     }
+    //---------------end skenario login dan register---------------//
 
     const appTokenPayload = { userId: user._id, username: user.username };
     const token = generateToken(appTokenPayload);
@@ -476,79 +480,148 @@ const disconnectYouTubeAccount = async (userId) => {
   return userToReturn; // Mengembalikan user yang sudah diupdate
 };
 
+/**
+ * Memproses permintaan reset password.
+ * Mengembalikan objek status yang menunjukkan hasil operasi.
+ *
+ * @param {string} emailAddress - Alamat email pengguna yang meminta reset.
+ * @returns {Promise<object>} Objek status seperti { status: 'STATUS_CODE', ...dataLain }
+ * Kemungkinan status:
+ * - 'USER_NOT_FOUND'
+ * - 'IS_GOOGLE_ONLY_ACCOUNT' (jika pengguna hanya login via Google)
+ * - 'RESET_EMAIL_SENT' (jika email instruksi berhasil dikirim)
+ * - 'EMAIL_SEND_FAILED' (jika pengiriman email gagal)
+ * - 'UNKNOWN_USER_STATE' (jika kondisi user tidak terduga)
+ */
 const requestPasswordReset = async (emailAddress) => {
-  const user = await User.findOne({ email: emailAddress });
-
-  if (!user) {
-    console.warn(
-      `Password reset attempt for non-existent email: ${emailAddress}`
-    );
-    return;
-  }
-
-  await PasswordReset.deleteMany({ userId: user._id });
-
-  const resetToken = generateRandomToken();
-  const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // Token berlaku 15 menit
-
-  await PasswordReset.create({
-    userId: user._id,
-    token: resetToken,
-    expiresAt,
-  });
-
-  const resetUrl = `${config.frontendUrl}/reset-password/${resetToken}`;
-
-  // Konten email sekarang hanya teks biasa
-  const emailText = `
-Halo ${user.username || "Pengguna"},
-
-Anda menerima email ini karena ada permintaan untuk mereset kata sandi akun JudiGuard Anda.
-Silakan gunakan tautan berikut untuk mereset kata sandi Anda:
-${resetUrl}
-
-Tautan ini akan kedaluwarsa dalam 15 menit.
-Jika Anda tidak meminta reset kata sandi ini, abaikan email ini.
-
-Terima kasih,
-Tim JudiGuard
-  `.trim();
-
   try {
-    const emailResult = await sendEmail({
-      email: user.email,
-      subject: "Instruksi Reset Kata Sandi JudiGuard Anda",
-      text: emailText,
-    });
+    const user = await User.findOne({ email: emailAddress.toLowerCase() }) // ATAU .select('+password') jika sudah diperbaiki
+      .select("+password +googleId");
 
-    if (!emailResult.success) {
-      console.error(
-        "Failed to send password reset email (reported by emailSender):",
-        emailResult.error
-      );
-      throw new InternalServerError(
-        "Gagal mengirim email instruksi. Silakan coba beberapa saat lagi."
-      );
+    if (!user) {
+      return { status: "USER_NOT_FOUND" };
     }
-    if (emailResult.previewUrl) {
-      console.log(
-        `Ethereal preview URL for password reset: ${emailResult.previewUrl}`
-      );
+
+    // Periksa apakah pengguna adalah pengguna Google murni (punya googleId tapi tidak punya password lokal)
+    if (user.googleId && !user.password) {
+      return { status: "IS_GOOGLE_ONLY_ACCOUNT", email: user.email };
     }
-  } catch (error) {
-    console.error("Error during sendEmail call for password reset:", error);
-    await PasswordReset.deleteOne({ token: resetToken });
-    if (error instanceof InternalServerError) {
-      throw error;
+
+    // Jika pengguna ada dan punya password lokal (user.password ada nilainya)
+    if (user.password) {
+      // Hapus token reset password lama untuk pengguna ini (jika ada)
+      await PasswordReset.deleteMany({ userId: user._id });
+
+      // Buat token reset baru
+      const resetToken = generateRandomToken(); // Asumsi ini menghasilkan token string
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // Token berlaku 15 menit
+
+      // Simpan token reset ke database
+
+      await PasswordReset.create({
+        userId: user._id,
+        token: resetToken,
+        expiresAt,
+      });
+
+      // Siapkan URL reset untuk frontend
+      const resetUrl = `${config.frontendUrl}/reset-password/${resetToken}`; // Pastikan rute frontend benar
+
+      // Konten email (gunakan teks biasa atau HTML)
+      // Sesuaikan nama aplikasi dan detail lainnya
+      const emailSubject = "Instruksi Reset Kata Sandi Akun Anda";
+      const emailText = `
+          Halo ${user.username || "Pengguna"},
+
+          Anda (atau seseorang) telah meminta untuk mereset kata sandi untuk akun Anda di ${
+            config.appName || "Judi Guard Application"
+          }.
+          Jika ini adalah Anda, silakan klik tautan di bawah ini untuk melanjutkan:
+          ${resetUrl}
+
+          Tautan ini akan kedaluwarsa dalam 15 menit.
+
+          Jika Anda tidak meminta reset kata sandi ini, Anda bisa mengabaikan email ini dengan aman.
+
+          Terima kasih,
+          Tim ${config.appName || "Judi Guard Application"}
+      `.trim();
+
+      // Kirim email
+      try {
+        const emailResult = await sendEmail({
+          email: user.email,
+          subject: emailSubject,
+          text: emailText,
+          // html: "<h1>Versi HTML jika ada</h1><p>" + emailText.replace(/\n/g, "<br>") + "</p>" // Opsional
+        });
+
+        if (emailResult && emailResult.success) {
+          if (emailResult.previewUrl) {
+            // Jika menggunakan Ethereal untuk development
+            console.log(
+              `Password reset email preview URL (Ethereal): ${emailResult.previewUrl}`
+            );
+          }
+          console.info(
+            `Password reset email sent successfully to: ${user.email}`
+          );
+          return { status: "RESET_EMAIL_SENT" };
+        } else {
+          // Jika sendEmail mengembalikan { success: false, error: ... }
+          console.error(
+            `Failed to send password reset email (reported by emailSender) to ${user.email}:`,
+            emailResult ? emailResult.error : "Unknown email sending error"
+          );
+          // Hapus token yang baru dibuat karena email gagal terkirim
+          await PasswordReset.deleteOne({
+            token: resetToken,
+            userId: user._id,
+          });
+          return {
+            status: "EMAIL_SEND_FAILED",
+            error: emailResult
+              ? emailResult.error
+              : new Error("Unknown email sending error"),
+          };
+        }
+      } catch (error) {
+        // Error saat memanggil sendEmail itu sendiri
+        console.error(
+          `Critical error during sendEmail call for password reset to ${user.email}:`,
+          error
+        );
+        // Hapus token yang baru dibuat karena email gagal terkirim
+        await PasswordReset.deleteOne({ token: resetToken, userId: user._id });
+        return { status: "EMAIL_SEND_FAILED", error };
+      }
     }
-    throw new InternalServerError(
-      "Gagal mengirim email instruksi karena kesalahan sistem. Silakan coba beberapa saat lagi."
+
+    // Jika sampai sini, berarti user ada tapi tidak punya googleId maupun password.
+    // Ini kondisi yang aneh dan seharusnya tidak terjadi jika data user konsisten.
+    console.error(
+      `Password reset attempt for user in unknown state (no password, no googleId): ${emailAddress}`
     );
+    return { status: "UNKNOWN_USER_STATE" };
+  } catch (error) {
+    // Tangani error sistem/database yang lebih umum di sini
+    console.error(
+      `System error in requestPasswordReset for email ${emailAddress}:`,
+      error
+    );
+
+    return { status: "SERVICE_ERROR", error };
   }
 };
 
-const processPasswordReset = async (token, newPassword) => {
-  const passwordResetEntry = await PasswordReset.findOne({ token });
+const processPasswordReset = async (plainTokenFromURL, newPassword) => {
+  const hashedTokenToSearch = crypto
+    .createHash("sha256")
+    .update(plainTokenFromURL)
+    .digest("hex");
+  const passwordResetEntry = await PasswordReset.findOne({
+    token: hashedTokenToSearch,
+  });
 
   if (!passwordResetEntry) {
     throw new BadRequestError(

@@ -1,17 +1,17 @@
 import React from "react";
 import { motion } from "framer-motion";
 import {
-  MessageSquarePlus,
   BrainCircuit,
   ClipboardList,
   ChevronRight,
   ArrowDown,
+  Link,
 } from "lucide-react";
 
 const WorkGuideSection = () => {
   const steps = [
     {
-      icon: <MessageSquarePlus size={36} className="text-teal-600" />, // Ukuran ikon diperkecil
+      icon: <Link size={36} className="text-teal-600" />, // Ukuran ikon diperkecil
       title: "input Link Video",
       description:
         "Masukkan link video yang ingin Anda analisis pada kolom yang tersedia.",

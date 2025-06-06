@@ -3,45 +3,49 @@
 const User = require("../../models/User.model");
 const { NotFoundError, BadRequestError } = require("../../utils/errors");
 
+/**
+ * Mengambil data profil dari pengguna yang sedang login.
+ * Data diambil berdasarkan `req.user` yang sudah disiapkan oleh middleware `isAuthenticated`.
+ */
 const getMe = async (req, res, next) => {
   try {
-    const userFromDb = await User.findById(req.user.id).select(
-      "+youtubeAccessToken"
-    ); // Hanya inklusi untuk field yang dibutuhkan virtual dan select:false
+    // Middleware `isAuthenticated` sudah menempelkan objek `user` Mongoose ke `req.user`.
+    // Kita tidak perlu query ke DB lagi di sini kecuali jika ada field `select: false`
+    // yang perlu dimuat secara eksplisit, seperti yang Anda lakukan.
+    // console.log(
+    //   `[Controller: getMe] Mengambil data untuk user ID: ${req.user._id}`
+    // );
+
+    // Query ulang ke DB ini bagus jika Anda ingin memastikan data paling update dan memuat virtuals.
+    // Jika tidak, Anda bisa langsung menggunakan `req.user`.
+    const userFromDb = await User.findById(req.user._id);
+    // .select("+youtubeAccessToken"); // HANYA select field yang benar-benar dibutuhkan oleh virtuals.
+    // Jika virtual 'isYoutubeConnected' hanya butuh 'youtubeChannelId', maka tidak perlu select apa-apa
+    // karena 'youtubeChannelId' tidak 'select: false'. Jika butuh 'youtubeAccessToken' juga, maka ini benar.
 
     if (!userFromDb) {
-      throw new NotFoundError("Pengguna tidak ditemukan.");
+      // Kondisi ini seharusnya tidak pernah tercapai jika middleware `isAuthenticated` bekerja,
+      // karena middleware sudah memverifikasi bahwa user ada. Tapi ini pengaman yang bagus.
+      throw new NotFoundError(
+        "Pengguna tidak ditemukan di database meskipun token valid."
+      );
     }
 
-    // 2. Konversi ke objek JavaScript biasa.
-    //    Ini akan menghitung semua virtual fields, termasuk 'isYoutubeConnected'.
-    //    Pada titik ini, userFromDb.youtubeAccessToken (karena di-select +) dan
-    //    userFromDb.youtubeChannelId (karena default) akan tersedia untuk getter virtual.
+    // Konversi ke objek JavaScript biasa untuk mengaktifkan virtuals.
     const userObject = userFromDb.toObject({ virtuals: true });
 
-    // 3. Hapus field 'youtubeAccessToken' dari objek userObject SEBELUM dikirim ke frontend.
-    //    Ini penting karena kita memuatnya secara eksplisit untuk virtual, tapi token itu sendiri sensitif.
+    // Hapus field sensitif dari objek yang akan dikirim ke frontend.
+    // Ini adalah lapisan keamanan tambahan yang sangat baik.
+    delete userObject.password; // Meskipun select: false, lebih aman dihapus jika termuat.
     delete userObject.youtubeAccessToken;
-    // Bidang lain seperti youtubeRefreshToken, youtubeTokenExpiresAt, password, otpCode, googleId
-    // seharusnya tidak ada di userObject jika mereka `select: false` di skema dan tidak
-    // secara eksplisit di-include dalam query select di atas.
-
-    // // Log untuk debugging di backend:
-    // console.log(
-    //   "[Backend /users/me] User object FINAL being sent:",
-    //   JSON.stringify(userObject, null, 2)
-    // );
-    // console.log(
-    //   "[Backend /users/me] isYoutubeConnected from object:",
-    //   userObject.isYoutubeConnected
-    // );
-    // console.log(
-    //   "[Backend /users/me] youtubeChannelName from object:",
-    //   userObject.youtubeChannelName
-    // );
+    delete userObject.youtubeRefreshToken;
+    delete userObject.youtubeTokenExpiresAt;
+    delete userObject.otpCode;
+    delete userObject.otpExpiresAt;
 
     res.status(200).json({
       status: "success",
+      message: "Data pengguna berhasil diambil.",
       data: {
         user: userObject,
       },
@@ -51,9 +55,15 @@ const getMe = async (req, res, next) => {
   }
 };
 
+/**
+ * Memperbarui data profil pengguna (misal: username, bio).
+ * Mencegah pengguna mengubah field sensitif seperti email, role, atau password.
+ */
 const updateMe = async (req, res, next) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user._id; // Gunakan _id agar konsisten dengan Mongoose
+
+    // Daftar field yang tidak boleh diubah melalui rute ini
     const forbiddenFields = [
       "email",
       "password",
@@ -63,10 +73,18 @@ const updateMe = async (req, res, next) => {
       "id",
       "createdAt",
       "updatedAt",
+      "googleId",
+      "youtubeChannelId",
+      "youtubeChannelName",
+      "youtubeAccessToken",
+      "youtubeRefreshToken",
+      "youtubeTokenExpiresAt",
     ];
 
+    // Cek apakah ada upaya mengubah field terlarang
     for (const field of forbiddenFields) {
       if (req.body[field] !== undefined) {
+        // PERBAIKAN: Gunakan return agar eksekusi berhenti di sini
         return next(
           new BadRequestError(
             `Field '${field}' tidak dapat diubah melalui rute ini.`
@@ -75,18 +93,15 @@ const updateMe = async (req, res, next) => {
       }
     }
 
+    // Ambil hanya field yang diizinkan untuk diubah
     const allowedUpdates = {};
-    const modifiableFields = ["username", "bio", "profilePicture"];
+    const modifiableFields = ["username", "bio", "profilePicture"]; // Contoh field yang bisa diubah
 
     modifiableFields.forEach((field) => {
       if (req.body[field] !== undefined) {
         allowedUpdates[field] = req.body[field];
       }
     });
-
-    // if (req.body.email) {
-    //   // allowedUpdates.isVerified = false;
-    // }
 
     if (Object.keys(allowedUpdates).length === 0) {
       return next(
@@ -95,31 +110,32 @@ const updateMe = async (req, res, next) => {
     }
 
     const updatedUser = await User.findByIdAndUpdate(userId, allowedUpdates, {
-      new: true,
-      runValidators: true,
-    }).select("-password");
+      new: true, // Kembalikan dokumen yang sudah diupdate
+      runValidators: true, // Jalankan validator skema saat update
+    });
+    // .select("-password"); // Tidak perlu select jika password sudah 'select: false' di skema
 
     if (!updatedUser) {
+      // Seharusnya tidak terjadi jika user ID valid
       return next(new NotFoundError("User tidak ditemukan untuk diupdate."));
     }
 
-    // if (req.body.email && allowedUpdates.isVerified === false) {
-    //   // logic untuk kirim email verifikasi
-    // }
-
     res.status(200).json({
       status: "success",
+      message: "Profil berhasil diperbarui.",
       data: {
-        user: updatedUser,
+        user: updatedUser.toObject({ virtuals: true }), // Kirim kembali sebagai objek plain dengan virtuals
       },
     });
   } catch (error) {
+    // Penanganan error validasi dan duplikasi sudah baik
     if (error.name === "ValidationError") {
       const messages = Object.values(error.errors).map((el) => el.message);
       const message = `Data input tidak valid: ${messages.join(". ")}`;
       return next(new BadRequestError(message));
     }
     if (error.code === 11000) {
+      // Error duplikasi key (misal, username unique)
       const field = Object.keys(error.keyValue)[0];
       const value = error.keyValue[field];
       const message = `Nilai '${value}' untuk field '${field}' sudah digunakan. Silakan gunakan nilai lain.`;
@@ -129,12 +145,20 @@ const updateMe = async (req, res, next) => {
   }
 };
 
+/**
+ * Menangani penghapusan akun oleh pengguna itu sendiri (soft delete).
+ * Mengubah status 'active' menjadi false.
+ */
 const deleteMe = async (req, res, next) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user._id; // Gunakan _id agar konsisten
+
+    // Di sini kita melakukan soft delete dengan mengubah field 'active'
+    // Pastikan skema User Anda memiliki field `active: { type: Boolean, default: true }`
     const user = await User.findByIdAndUpdate(
       userId,
-      { active: false },
+      { active: false }, // Contoh soft delete
+      // Jika ingin hard delete: await User.findByIdAndDelete(userId);
       { new: true }
     );
 
@@ -142,9 +166,10 @@ const deleteMe = async (req, res, next) => {
       return next(new NotFoundError("User tidak ditemukan untuk dihapus."));
     }
 
+    // Kirim respons sukses. Frontend harus menangani logout setelah ini.
     res.status(200).json({
       status: "success",
-      message: "Akun pengguna telah berhasil dihapus.",
+      message: "Akun pengguna telah berhasil dinonaktifkan.",
       data: null,
     });
   } catch (error) {

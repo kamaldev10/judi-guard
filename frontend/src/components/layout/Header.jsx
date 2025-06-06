@@ -127,7 +127,7 @@ const Header = () => {
               <img
                 src={LogoImage}
                 alt="Logo Judi Guard"
-                className="w-26 border border-sky-500 rounded-full p-2 bg-transparent "
+                className="w-32 p-2 bg-transparent "
               />
             </Link>
           </div>

@@ -1,26 +1,30 @@
-// Komunikasi dengan service AI Anda
 // src/api/services/ai.service.js
 
 /**
- * Mensimulasikan analisis teks komentar oleh AI.
- * Ganti ini dengan logika pemanggilan API ke model AI Anda yang sebenarnya.
+ * Mensimulasikan analisis teks komentar oleh AI untuk klasifikasi "JUDI" atau "NON_JUDI".
+ * PENTING: Ini adalah logika dummy dan harus diganti dengan pemanggilan API
+ * ke model Machine Learning Anda yang sebenarnya di lingkungan produksi.
+ *
+ * @async
+ * @function analyzeCommentText
  * @param {string} commentText - Teks komentar yang akan dianalisis.
  * @returns {Promise<{classification: string, confidenceScore: number, modelVersion: string}>}
+ * Sebuah objek yang berisi hasil klasifikasi ("JUDI" atau "NON_JUDI"),
+ * skor kepercayaan (antara 0 dan 1), dan versi model dummy yang digunakan.
  */
 const analyzeCommentText = async (commentText) => {
-  console.log(
-    `AI Service: Menganalisis komentar -> "${commentText.substring(0, 50)}..."`
+  // Log bahwa service AI dipanggil dengan potongan komentar
+  // console.log(
+  //   `[AIService] Menganalisis komentar -> "${commentText.substring(0, 50)}..."` // Prefix log untuk konsistensi
+  // );
+
+  // Simulasi delay pemanggilan API AI yang sebenarnya
+  await new Promise(
+    (resolve) => setTimeout(resolve, Math.random() * 400 + 100) // Penyesuaian delay (100-500ms)
   );
 
-  // Simulasi pemanggilan API AI (delay)
-  await new Promise((resolve) =>
-    setTimeout(resolve, Math.random() * 500 + 100)
-  ); // Delay 100-600ms
-
-  // Logika dummy:
-  // Jika komentar mengandung kata "slot", "gacor", "rtp", "dana", "jp", anggap "JUDI"
-  // Selain itu, anggap "NON_JUDI"
-  // Ini HANYA untuk placeholder, model AI Anda akan jauh lebih canggih.
+  // Logika dummy untuk klasifikasi berdasarkan kata kunci.
+  // INI HARUS DIGANTI dengan logika pemanggilan model AI Anda.
   const lowerCaseText = commentText.toLowerCase();
   const judiKeywords = [
     "slot",
@@ -34,36 +38,65 @@ const analyzeCommentText = async (commentText) => {
     "link",
     "daftar",
     "agen",
-  ]; // Tambahkan keyword lain
+    "situs",
+    "bandar",
+    "togel",
+    "pola",
+    "scatter",
+    "bonus",
+    "promo",
+    "server luar",
+    "akun pro",
+    "bocoran",
+    // Anda menyebutkan "rapi" dan "ali" di contoh sebelumnya.
+    // Jika ini adalah keyword spesifik untuk domain Anda, biarkan.
+    // Jika tidak, mungkin perlu dihapus atau disesuaikan.
+    "rapi", // Pastikan keyword ini relevan
+    "ali", // Pastikan keyword ini relevan
+  ];
 
-  let classification = "NON_JUDI";
-  let confidenceScore = 0.85 + Math.random() * 0.1; // Skor acak tinggi untuk NON_JUDI
+  let classification = "NON_JUDI"; // Default klasifikasi
+  let confidenceScore = 0.85 + Math.random() * 0.14; // Skor acak antara 0.85 - 0.99 untuk NON_JUDI
 
   for (const keyword of judiKeywords) {
     if (lowerCaseText.includes(keyword)) {
       classification = "JUDI";
-      confidenceScore = 0.75 + Math.random() * 0.2; // Skor acak lebih bervariasi untuk JUDI
-      break;
+      confidenceScore = 0.7 + Math.random() * 0.29; // Skor acak antara 0.70 - 0.99 untuk JUDI
+      break; // Hentikan loop jika keyword ditemukan
     }
   }
 
-  // Jika ada QR code (placeholder, butuh CV)
-  if (lowerCaseText.includes("qr code") || lowerCaseText.includes("kode qr")) {
-    classification = "JUDI"; // Asumsi sementara
-    confidenceScore = 0.8;
+  // Placeholder untuk deteksi QR code (membutuhkan Computer Vision yang lebih canggih)
+  // Untuk simulasi, jika teks menyebutkan QR, bisa dianggap relevan.
+  if (
+    lowerCaseText.includes("qr code") ||
+    lowerCaseText.includes("kode qr") ||
+    lowerCaseText.includes("scan qr")
+  ) {
+    // Keputusan apakah QR code selalu "JUDI" tergantung pada konteks aplikasi Anda.
+    // Bisa jadi memerlukan analisis tambahan atau kategori sendiri.
+    // Untuk simulasi, kita bisa asumsikan ini meningkatkan potensi "JUDI" atau menjadi kategori khusus.
+    // classification = "JUDI";
+    // confidenceScore = Math.max(confidenceScore, 0.80); // Tingkatkan confidence jika sudah JUDI, atau set jika belum
+    console.log(
+      `[AIService] Potensi QR code terdeteksi dalam teks untuk analisis lebih lanjut.`
+    );
   }
 
+  // Log hasil analisis dari service AI dummy ini
   console.log(
-    `AI Service: Hasil analisis untuk "${commentText.substring(
+    `[AIService] Hasil analisis untuk "${commentText.substring(
       0,
       50
-    )}..." -> ${classification} (Score: ${confidenceScore.toFixed(2)})`
+    )}..." -> Klasifikasi: ${classification} (Skor Kepercayaan: ${confidenceScore.toFixed(
+      3
+    )})`
   );
 
   return {
-    classification,
-    confidenceScore: parseFloat(confidenceScore.toFixed(2)),
-    modelVersion: "dummy-v0.1",
+    classification, // Akan "JUDI" atau "NON_JUDI"
+    confidenceScore: parseFloat(confidenceScore.toFixed(3)), // Mengembalikan skor dengan 3 desimal
+    modelVersion: "dummy-text-keyword-v0.1.0", // Versi model dummy
   };
 };
 

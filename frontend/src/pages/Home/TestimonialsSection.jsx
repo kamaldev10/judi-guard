@@ -1,122 +1,127 @@
 /* eslint-disable react/prop-types */
-import React from "react";
-import { motion } from "motion/react";
-import { Star, MessageCircle } from "lucide-react"; // Contoh ikon
+import { useState, useEffect, useCallback } from "react";
+import useEmblaCarousel from "embla-carousel-react";
+import Autoplay from "embla-carousel-autoplay";
+import { motion } from "framer-motion"; // Diubah dari motion/react
+import { Star, MessageCircle, ArrowLeft, ArrowRight } from "lucide-react";
+import { TestimonialsData } from "../../constants";
 
-// Data testimoni dummy (ganti dengan data asli Anda)
-const testimonialsData = [
-  {
-    id: 1,
-    quote:
-      "Judi Guard sangat membantu membersihkan kolom komentar channel YouTube saya dari spam judi yang mengganggu. Akurasinya luar biasa!",
-    author: "Budi Gaming",
-    title: "YouTuber Gaming",
-    avatarUrl: "https://i.pravatar.cc/100?u=budi", // Ganti dengan URL avatar asli atau null
-    rating: 5,
-  },
-  {
-    id: 2,
-    quote:
-      "Sebagai pengelola komunitas online, fitur deteksi cepat Judi Guard menghemat banyak waktu moderasi manual. Highly recommended!",
-    author: "Citra Lestari",
-    title: "Admin Komunitas Online",
-    avatarUrl: "https://i.pravatar.cc/100?u=citra",
-    rating: 5,
-  },
-  {
-    id: 3,
-    quote:
-      "Awalnya ragu, tapi setelah mencoba, Judi Guard terbukti efektif. Fitur hapusnya juga sangat praktis. Terima kasih Judi Guard!",
-    author: "Anton W.",
-    title: "Content Creator",
-    avatarUrl: "https://i.pravatar.cc/100?u=anton", // Contoh tanpa avatar, kita bisa handle
-    rating: 4,
-  },
-];
-
-// Varian animasi untuk container dan item
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.3,
-      delayChildren: 0.2,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 50, scale: 0.9 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: {
-      type: "spring",
-      stiffness: 100,
-      damping: 15,
-      duration: 0.6,
-    },
-  },
-};
-
-const TestimonialCard = ({ quote, author, title, avatarUrl, rating }) => {
-  return (
-    <motion.div
-      className="bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 flex flex-col h-full " // h-full untuk tinggi sama jika dalam grid
-      variants={itemVariants}
-      whileHover={{ y: -5, transition: { type: "spring", stiffness: 300 } }}
-    >
-      <MessageCircle className="text-teal-500 w-8 h-8 mb-4" />{" "}
-      {/* Ikon kutipan */}
-      <p className="text-gray-600 italic text-sm sm:text-base leading-relaxed mb-6 flex-grow">
-        &rdquo;{quote}&quot;
-      </p>
-      <div className="mt-auto">
-        {" "}
-        {/* Dorong bagian author ke bawah jika card punya tinggi berbeda */}
-        <div className="flex items-center">
-          {avatarUrl ? (
-            <img
-              src={avatarUrl}
-              alt={author}
-              className="w-12 h-12 rounded-full mr-4 object-cover"
-            />
-          ) : (
-            <div className="w-12 h-12 rounded-full mr-4 bg-teal-500 flex items-center justify-center text-white font-bold text-xl">
-              {author.substring(0, 1)} {/* Inisial jika tidak ada avatar */}
-            </div>
-          )}
-          <div>
-            <p className="font-semibold text-teal-700 text-sm sm:text-base">
-              {author}
-            </p>
-            <p className="text-gray-500 text-xs sm:text-sm">{title}</p>
-          </div>
-        </div>
-        {rating && (
-          <div className="flex mt-3">
-            {[...Array(5)].map((_, i) => (
-              <Star
-                key={i}
-                className={`w-4 h-4 sm:w-5 sm:h-5 ${
-                  i < rating ? "text-yellow-400 fill-current" : "text-gray-300"
-                }`}
-              />
-            ))}
+// Komponen Card Testimoni (Tidak perlu diubah, tapi bisa disederhanakan)
+const TestimonialCard = ({ quote, author, title, avatarUrl, rating }) => (
+  <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col h-full mx-2 border border-gray-100">
+    <MessageCircle className="text-teal-500 w-8 h-8 mb-4" />
+    <p className="text-gray-600 italic text-sm sm:text-base leading-relaxed mb-6 flex-grow">
+      &rdquo;{quote}&quot;
+    </p>
+    <div className="mt-auto">
+      <div className="flex items-center">
+        {avatarUrl ? (
+          <img
+            src={avatarUrl}
+            alt={author}
+            className="w-12 h-12 rounded-full mr-4 object-cover"
+          />
+        ) : (
+          <div className="w-12 h-12 rounded-full mr-4 bg-teal-500 flex items-center justify-center text-white font-bold text-xl">
+            {author.substring(0, 1)}
           </div>
         )}
+        <div>
+          <p className="font-semibold text-teal-700 text-sm sm:text-base">
+            {author}
+          </p>
+          <p className="text-gray-500 text-xs sm:text-sm">{title}</p>
+        </div>
       </div>
-    </motion.div>
-  );
-};
+      {rating && (
+        <div className="flex mt-4">
+          {[...Array(5)].map((_, i) => (
+            <Star
+              key={i}
+              className={`w-5 h-5 ${i < rating ? "text-yellow-400 fill-current" : "text-gray-300"}`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+);
 
+// Komponen Navigasi Slider (Tombol & Titik)
+const DotButton = ({ selected, onClick }) => (
+  <button
+    className={`w-3 h-3 rounded-full mx-1 transition-all duration-300 ${
+      selected ? "bg-teal-500 w-6" : "bg-gray-300"
+    }`}
+    type="button"
+    onClick={onClick}
+  />
+);
+
+const PrevButton = ({ enabled, onClick }) => (
+  <button
+    className="absolute top-1/2 left-0 sm:-left-4 transform -translate-y-1/2 bg-white/80 backdrop-blur-sm shadow-md rounded-full p-2 disabled:opacity-30 transition-opacity z-10"
+    onClick={onClick}
+    disabled={!enabled}
+  >
+    <ArrowLeft className="w-6 h-6 text-teal-600" />
+  </button>
+);
+
+const NextButton = ({ enabled, onClick }) => (
+  <button
+    className="absolute top-1/2 right-0 sm:-right-4 transform -translate-y-1/2 bg-white/80 backdrop-blur-sm shadow-md rounded-full p-2 disabled:opacity-30 transition-opacity z-10"
+    onClick={onClick}
+    disabled={!enabled}
+  >
+    <ArrowRight className="w-6 h-6 text-teal-600" />
+  </button>
+);
+
+// Komponen Utama Slider Testimoni
 const TestimonialsSection = () => {
+  const [emblaRef, emblaApi] = useEmblaCarousel(
+    { loop: true, align: "start" },
+    [Autoplay({ delay: 5000, stopOnInteraction: false })]
+  );
+
+  const [prevBtnEnabled, setPrevBtnEnabled] = useState(false);
+  const [nextBtnEnabled, setNextBtnEnabled] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [scrollSnaps, setScrollSnaps] = useState([]);
+
+  const scrollPrev = useCallback(
+    () => emblaApi && emblaApi.scrollPrev(),
+    [emblaApi]
+  );
+  const scrollNext = useCallback(
+    () => emblaApi && emblaApi.scrollNext(),
+    [emblaApi]
+  );
+  const scrollTo = useCallback(
+    (index) => emblaApi && emblaApi.scrollTo(index),
+    [emblaApi]
+  );
+
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setSelectedIndex(emblaApi.selectedScrollSnap());
+    setPrevBtnEnabled(emblaApi.canScrollPrev());
+    setNextBtnEnabled(emblaApi.canScrollNext());
+  }, [emblaApi, setSelectedIndex]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    onSelect();
+    setScrollSnaps(emblaApi.scrollSnapList());
+    emblaApi.on("select", onSelect);
+    emblaApi.on("reInit", onSelect);
+  }, [emblaApi, setScrollSnaps, onSelect]);
+
   return (
     <section
       id="testimonials-section"
-      className="py-16 sm:py-24 bg-gradient-to-br from-teal-50 via-cyan-50 to-sky-100 border-b-4 border-b-teal-800 "
+      className="py-16 sm:py-24 bg-gradient-to-br from-teal-50 via-cyan-50 to-sky-100 border-b-4 border-b-teal-800"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
@@ -131,21 +136,36 @@ const TestimonialsSection = () => {
           </h2>
           <p className="text-gray-600 text-sm sm:text-base md:text-lg max-w-2xl mx-auto">
             Dengarkan pengalaman dari pengguna yang telah merasakan manfaat Judi
-            Guard dalam melindungi komunitas online mereka.
+            Guard.
           </p>
         </motion.div>
 
-        <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10"
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.1 }} // Picu saat 10% grid terlihat
-        >
-          {testimonialsData.map((testimonial) => (
-            <TestimonialCard key={testimonial.id} {...testimonial} />
+        <div className="relative max-w-6xl mx-auto">
+          <div className="overflow-hidden" ref={emblaRef}>
+            <div className="flex -ml-4">
+              {TestimonialsData.map((testimonial) => (
+                <div
+                  key={testimonial.id}
+                  className="flex-grow-0 flex-shrink-0 basis-full sm:basis-1/2 lg:basis-1/3 pl-4"
+                >
+                  <TestimonialCard {...testimonial} />
+                </div>
+              ))}
+            </div>
+          </div>
+          <PrevButton onClick={scrollPrev} enabled={prevBtnEnabled} />
+          <NextButton onClick={scrollNext} enabled={nextBtnEnabled} />
+        </div>
+
+        <div className="flex justify-center mt-10">
+          {scrollSnaps.map((_, index) => (
+            <DotButton
+              key={index}
+              selected={index === selectedIndex}
+              onClick={() => scrollTo(index)}
+            />
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   );

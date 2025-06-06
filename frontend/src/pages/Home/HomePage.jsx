@@ -54,6 +54,7 @@ const HomePage = () => {
   return (
     <>
       <Title>Beranda | Judi Guard</Title>
+
       <div>
         {sections.map((section) => {
           const SectionComponent = section.component;

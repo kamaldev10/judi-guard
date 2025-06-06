@@ -8,7 +8,7 @@ export default {
         secondary: "#d7f2fb",
       },
       fontFamily: {
-        sans: ["Roboto", "sans-serif"],
+        sans: ["Zain", "Roboto", "sans-serif"],
       },
     },
   },

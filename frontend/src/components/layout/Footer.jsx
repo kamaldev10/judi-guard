@@ -113,8 +113,11 @@ const Footer = () => {
           </div>
         </div>
         {/* Copyright */}
-        <div className="pt-8 mt-8 border-t border-gray-700 text-xs sm:text-sm text-center text-gray-400">
-          &copy; {new Date().getFullYear()} Judi Guard. All rights reserved.
+        <div className=" pt-6 mt-8 border-t border-gray-700 text-xs sm:text-sm text-center text-gray-400">
+          &copy; {new Date().getFullYear()} Judi Guard v1.0.0
+          <span className="font-semibold capitalize ms-1">
+            All Rights Reserved.
+          </span>
         </div>
       </div>
     </footer>

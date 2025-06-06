@@ -1,5 +1,5 @@
 // src/pages/UserProfilePage.jsx
-import React from "react"; // Impor React (opsional di versi React >17 jika JSX dipakai, tapi baik untuk kejelasan)
+import React, { useEffect, useRef } from "react"; // Impor React (opsional di versi React >17 jika JSX dipakai, tapi baik untuk kejelasan)
 import { motion } from "framer-motion";
 import {
   User,
@@ -19,6 +19,7 @@ import Swal from "sweetalert2"; // Digunakan untuk konfirmasi hapus akun
 import PropTypes from "prop-types";
 
 import { useProfilePresenter } from "../../hooks/profile/useProfilePresenter"; // Pastikan path ini benar
+import { useLocation } from "react-router-dom";
 
 // Komponen InfoItem untuk menampilkan item informasi profil
 const InfoItem = ({
@@ -111,6 +112,21 @@ const UserProfilePage = () => {
     handleDisconnectYouTubeAccount, // Fungsi untuk memutuskan koneksi YouTube
   } = useProfilePresenter();
 
+  const profilePageRef = useRef(null);
+  const location = useLocation();
+
+  useEffect(() => {
+    if (
+      location.pathname === "/profile" &&
+      !isLoading &&
+      user &&
+      profilePageRef.current
+    ) {
+      setTimeout(() => {
+        profilePageRef.current.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+    }
+  }, [location, isLoading, user]);
   // Handler konfirmasi hapus akun di View (memanggil executeDeleteAccount dari presenter)
   const confirmDeleteAccountHandlerInView = () => {
     if (isDeleting) return; // Mencegah klik ganda
@@ -204,17 +220,20 @@ const UserProfilePage = () => {
     : "N/A";
 
   return (
-    <div className="min-h-[calc(100vh-4.5rem)] bg-[#d8f6ff] text-slate-800 p-4 sm:p-6 md:p-8 flex flex-col items-center overflow-y-auto selection:bg-sky-200 selection:text-sky-900">
+    <div
+      className="min-h-[calc(100vh-4.5rem)] scroll-mt-96 bg-[#d8f6ff] text-slate-800 p-4 sm:p-6 md:p-8 flex flex-col items-center overflow-y-auto selection:bg-sky-200 selection:text-sky-900 "
+      ref={profilePageRef}
+    >
       <motion.div
         variants={pageVariants}
         initial="hidden"
         animate="visible"
-        className="w-full max-w-4xl space-y-6 md:space-y-8" // Max width untuk konten utama
+        className="w-full max-w-4xl space-y-6 md:space-y-8 " // Max width untuk konten utama
       >
         {/* BAGIAN 1: HEADER PROFIL (Avatar, Nama, Info Dasar) */}
         <motion.section
           variants={sectionItemVariants}
-          className="bg-white shadow-xl rounded-xl p-6 md:p-8 flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8"
+          className=" bg-white shadow-xl rounded-xl p-6 md:p-8 flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8"
         >
           {/* Avatar dan Nama */}
           <div className="flex-shrink-0 flex flex-col items-center text-center md:text-left">
@@ -227,6 +246,10 @@ const UserProfilePage = () => {
             >
               <div className="w-32 h-32 md:w-36 md:h-36 rounded-full bg-gradient-to-br from-sky-400 via-cyan-400 to-teal-500 flex items-center justify-center text-white shadow-lg ring-4 ring-white ring-offset-4 ring-offset-[#d8f6ff]">
                 <User size={80} strokeWidth={1.2} />
+                {/* <img
+                  className="w-32 h-32 md:w-36 md:h-36 rounded-full "
+                  src={AliImage}
+                /> */}
               </div>
               {user.isVerified && (
                 <motion.div

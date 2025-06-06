@@ -45,7 +45,7 @@ const HeroSection = () => {
   return (
     <motion.section
       id="hero-section"
-      className="bg-gradient-to-r from-white via-blue-50 to-[#E1F2FF] min-h-screen flex flex-col justify-center items-center px-4 pt-24 pb-12 sm:px-6 lg:px-8 overflow-hidden  border-b-4 border-b-teal-800" // pt lebih besar untuk memberi ruang Header
+      className="bg-gradient-to-r from-white via-blue-50 to-[#E1F2FF] min-h-screen flex flex-col justify-center items-center px-4 pt-24 pb-12 sm:px-6 lg:px-8 overflow-hidden  border-b-4 border-b-teal-800 scroll-mt-18" // pt lebih besar untuk memberi ruang Header
     >
       <div className="container mx-auto">
         <div className="flex flex-col-reverse lg:flex-row items-center justify-between gap-8 lg:gap-16 w-full">

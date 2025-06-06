@@ -78,10 +78,13 @@ const ConnectSection = () => {
               mendalam dan ambil tindakan cepat untuk menjaga komunitas Anda
               tetap bersih dan aman.
             </motion.p>
-            <motion.div variants={itemVariantsLeft}>
+            <motion.div
+              className="flex justify-center md:justify-center lg:justify-start"
+              variants={itemVariantsLeft}
+            >
               <Link to="/profile#connections-heading">
                 <motion.button
-                  className="flex gap-1 bg-rose-600 text-white font-semibold px-5 sm:px-2 md:px-5 py-3 sm:py-1 md:py-3 rounded-lg text-sm sm:text-base sm:justify-center-safe 
+                  className="flex gap-1 bg-rose-600 text-white font-semibold px-3 sm:px-4 md:px-5 py-3 sm:py-3 md:py-4 rounded-lg text-sm sm:text-base 
                              hover:bg-rose-700 shadow-md hover:shadow-lg
                              focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50
                              transition-all duration-300 ease-in-out"
@@ -90,7 +93,7 @@ const ConnectSection = () => {
                   whileTap="tap"
                 >
                   <Youtube />
-                  Hubungkan dengan Akun Youtube Anda sekarang
+                  Hubungkan dengan youtube anda sekarang
                 </motion.button>
               </Link>
             </motion.div>
@@ -98,11 +101,11 @@ const ConnectSection = () => {
 
           {/* Gambar Ilustrasi (Mobile: Bawah, Desktop: Kanan) */}
           <motion.div
-            className="w-full sm:w-3/4 md:w-2/3 lg:w-1/2 mt-10 lg:mt-0 flex justify-center lg:justify-end"
+            className="flex-1 w-full sm:w-3/4 md:w-2/3 lg:w-1/2 mt-5 lg:mt-0 flex justify-center lg:justify-end"
             variants={itemVariantsRight}
           >
             <img
-              src={IlustrasiAnalisis} // GANTI DENGAN PATH GAMBAR ANDA
+              src={IlustrasiAnalisis}
               alt="Ilustrasi Analisis Komentar Judi Guard"
               className="rounded-lg shadow-xl object-cover max-h-[300px] sm:max-h-[350px] md:max-h-[400px] lg:max-h-[450px] w-auto"
               // style={{ filter: "drop-shadow(0 10px 8px rgba(0,0,0,0.04)) drop-shadow(0 4px 3px rgba(0,0,0,0.1))" }} // Contoh drop shadow

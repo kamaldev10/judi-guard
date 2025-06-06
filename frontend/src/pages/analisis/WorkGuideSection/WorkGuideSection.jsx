@@ -74,7 +74,7 @@ const WorkGuideSection = () => {
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.15 }}
-      className="min-h-3/4 rounded-2xl flex flex-col justify-center items-center bg-transparent border-double border-4 shadow-lg border-teal-800 px-4 py-12 md:py-16 scroll-mt-20 mb-16 md:mb-20 lg:mb-25"
+      className="scroll-mt-44 min-h-3/4 rounded-2xl flex flex-col justify-center items-center bg-transparent border-double border-4 shadow-lg border-teal-800 px-4 py-12 md:py-16  mb-16 md:mb-20 lg:mb-25"
     >
       <div className="w-full max-w-4/5 mx-auto">
         <motion.h2

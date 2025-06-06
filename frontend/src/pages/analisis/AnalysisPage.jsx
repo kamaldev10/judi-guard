@@ -28,7 +28,7 @@ const AnalysisPage = () => {
   );
 
   useEffect(() => {
-    if (location.pathname === "/") {
+    if (location.pathname === "/analisis") {
       const WorkGuideDetail = sections.find((s) => s.id === "work-guide");
       if (WorkGuideDetail && WorkGuideDetail.ref.current) {
         setTimeout(() => {
@@ -42,7 +42,7 @@ const AnalysisPage = () => {
     <>
       <Title>Analisis | Judi Guard</Title>
 
-      <div className="min-h-screen bg-[#d8f6ff] px-6 py-16 md:px-24">
+      <div className="min-h-screen bg-[#d8f6ff] px-6 py-16 md:px-24 ">
         <div>
           {sections.map((section) => {
             const SectionComponent = section.component;

@@ -57,17 +57,17 @@ const ContactSection = () => {
   const contactInfo = [
     {
       icon: <Mail className="w-5 h-5 text-teal-600" />,
-      text: "support@judiguard.com", // Ganti dengan email Anda
+      text: "support@judiguard.com",
       href: "mailto:support@judiguard.com",
     },
     {
       icon: <Phone className="w-5 h-5 text-teal-600" />,
-      text: "+62 123 4567 890", // Ganti dengan nomor telepon Anda (opsional)
-      href: "tel:+621234567890",
+      text: "+628 1372 4664 72",
+      href: "tel:+6281372466472",
     },
     {
       icon: <MapPin className="w-5 h-5 text-teal-600" />,
-      text: "Pekanbaru, Riau, Indonesia", // Ganti dengan alamat Anda (opsional)
+      text: "Pekanbaru, Riau, Indonesia",
     },
   ];
 

@@ -1,7 +1,12 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import Swal from "sweetalert2";
 
 const Footer = () => {
+  const handleComingSoon = () => {
+    Swal.fire("Coming Soon");
+  };
+
   return (
     <footer className="bg-gray-800 text-white pt-10 pb-6 px-4 sm:px-6 md:px-12 lg:px-20">
       <div className="container mx-auto">
@@ -60,6 +65,7 @@ const Footer = () => {
                 <Link
                   to="/faq"
                   className="hover:text-blue-400 transition-colors"
+                  onClick={handleComingSoon}
                 >
                   FAQ
                 </Link>

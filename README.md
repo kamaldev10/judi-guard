@@ -1,5 +1,5 @@
 # Judi Guard (v1)🛡 
-<p align="center">Membantu Anda Menjaga Ruang Digital Tetap Aman.</p>
+<p align="left">Membantu Anda Menjaga Ruang Digital Tetap Aman.</p>
 
 *<p align="center">![LogoWithSloganBgBlack](https://github.com/user-attachments/assets/162c46d0-584a-40ce-bfab-5f4290028cb9) </p>*
 

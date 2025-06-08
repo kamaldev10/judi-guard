@@ -1,5 +1,5 @@
 # Judi Guard (v1)🛡 
-
+<p align="center">Membantu Anda Menjaga Ruang Digital Tetap Aman.</p>
 
 *<p align="center">![LogoWithSloganBgBlack](https://github.com/user-attachments/assets/162c46d0-584a-40ce-bfab-5f4290028cb9) </p>*
 
@@ -144,5 +144,4 @@ Kontribusi Anda sangat kami hargai! Jika Anda ingin berkontribusi, silakan lakuk
 Didistribusikan di bawah Lisensi MIT. Lihat `LICENSE` untuk informasi lebih lanjut.
 
 ---
-<p align="center">Membantu Anda Menjaga Ruang Digital Tetap Aman.</p>
 <p align="center">Dibuat dengan ❤️ oleh Kamaldev10 and team</p>

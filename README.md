@@ -1,6 +1,7 @@
-# Judi Guard (v1)🛡️
+# Judi Guard (v1)🛡 
 
-**Membantu Anda Menjaga Ruang Digital Tetap Aman.**
+
+*<p align="center">![LogoWithSloganBgBlack](https://github.com/user-attachments/assets/162c46d0-584a-40ce-bfab-5f4290028cb9) </p>*
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-yellow?logo=javascript&logoColor=black)](https://www.javascript.com/)
@@ -10,8 +11,6 @@
 
 Judi Guard adalah aplikasi web berbasis AI yang dirancang untuk mendeteksi dan menganalisis komentar yang mengandung unsur judi online pada platform seperti YouTube. Dengan teknologi cerdas, Judi Guard memberikan solusi cepat, akurat, dan efisien untuk membantu kreator konten dan manajer komunitas menjaga ruang interaksi mereka tetap bersih dan aman dari konten berbahaya.
 
-![Judi Guard Banner](httpsg://via.placeholder.com/1200x400.png?text=Judi+Guard+Aplikasi+Demo)
-*<p align="center">Letakkan screenshot atau GIF demo aplikasi Anda di sini.</p>*
 
 ---
 
@@ -145,4 +144,5 @@ Kontribusi Anda sangat kami hargai! Jika Anda ingin berkontribusi, silakan lakuk
 Didistribusikan di bawah Lisensi MIT. Lihat `LICENSE` untuk informasi lebih lanjut.
 
 ---
-<p align="center">Dibuat dengan ❤️ oleh Kamaldev10</p>
+<p align="center">Membantu Anda Menjaga Ruang Digital Tetap Aman.</p>
+<p align="center">Dibuat dengan ❤️ oleh Kamaldev10 and team</p>

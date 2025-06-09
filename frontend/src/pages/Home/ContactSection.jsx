@@ -74,7 +74,7 @@ const ContactSection = () => {
   return (
     <section id="contact-section" className="py-16 sm:py-24 bg-white">
       <motion.div
-        className="container mx-auto px-20 sm:px-6 lg:px-70"
+        className="container mx-auto px-10 sm:px-6 lg:px-70"
         variants={sectionVariants}
         initial="hidden"
         whileInView="visible"
@@ -82,12 +82,12 @@ const ContactSection = () => {
       >
         <motion.div
           variants={itemVariants}
-          className="text-center mb-12 sm:mb-16"
+          className="text-center mb-12 sm:mb-16 w-full "
         >
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-teal-700 mb-3">
             Hubungi Kami
           </h2>
-          <p className="text-gray-600 text-sm sm:text-base md:text-lg max-w-xl mx-auto">
+          <p className="text-gray-600 text-xs sm:text-sm md:text-lg max-w-full mx-auto">
             Punya pertanyaan atau butuh bantuan? Jangan ragu untuk menghubungi
             tim kami.
           </p>

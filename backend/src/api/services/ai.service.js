@@ -26,34 +26,8 @@ const analyzeCommentText = async (commentText) => {
   // Logika dummy untuk klasifikasi berdasarkan kata kunci.
   // INI HARUS DIGANTI dengan logika pemanggilan model AI Anda.
   const lowerCaseText = commentText.toLowerCase();
-  const judiKeywords = [
-    "slot",
-    "gacor",
-    "rtp",
-    "dana kaget",
-    "jp",
-    "maxwin",
-    "deposit",
-    "wd",
-    "link",
-    "daftar",
-    "agen",
-    "situs",
-    "bandar",
-    "togel",
-    "pola",
-    "scatter",
-    "bonus",
-    "promo",
-    "server luar",
-    "akun pro",
-    "bocoran",
-    // Anda menyebutkan "rapi" dan "ali" di contoh sebelumnya.
-    // Jika ini adalah keyword spesifik untuk domain Anda, biarkan.
-    // Jika tidak, mungkin perlu dihapus atau disesuaikan.
-    "rapi", // Pastikan keyword ini relevan
-    "ali", // Pastikan keyword ini relevan
-  ];
+  // const judiKeywords = ["JP", "gacor", "rungkad"];
+  const judiKeywords = ["jackpot", "JP", "cuan", "rapi", "gacor"];
 
   let classification = "NON_JUDI"; // Default klasifikasi
   let confidenceScore = 0.85 + Math.random() * 0.14; // Skor acak antara 0.85 - 0.99 untuk NON_JUDI
@@ -68,20 +42,20 @@ const analyzeCommentText = async (commentText) => {
 
   // Placeholder untuk deteksi QR code (membutuhkan Computer Vision yang lebih canggih)
   // Untuk simulasi, jika teks menyebutkan QR, bisa dianggap relevan.
-  if (
-    lowerCaseText.includes("qr code") ||
-    lowerCaseText.includes("kode qr") ||
-    lowerCaseText.includes("scan qr")
-  ) {
-    // Keputusan apakah QR code selalu "JUDI" tergantung pada konteks aplikasi Anda.
-    // Bisa jadi memerlukan analisis tambahan atau kategori sendiri.
-    // Untuk simulasi, kita bisa asumsikan ini meningkatkan potensi "JUDI" atau menjadi kategori khusus.
-    // classification = "JUDI";
-    // confidenceScore = Math.max(confidenceScore, 0.80); // Tingkatkan confidence jika sudah JUDI, atau set jika belum
-    console.log(
-      `[AIService] Potensi QR code terdeteksi dalam teks untuk analisis lebih lanjut.`
-    );
-  }
+  // if (
+  //   lowerCaseText.includes("qr code") ||
+  //   lowerCaseText.includes("kode qr") ||
+  //   lowerCaseText.includes("scan qr")
+  // ) {
+  //   // Keputusan apakah QR code selalu "JUDI" tergantung pada konteks aplikasi Anda.
+  //   // Bisa jadi memerlukan analisis tambahan atau kategori sendiri.
+  //   // Untuk simulasi, kita bisa asumsikan ini meningkatkan potensi "JUDI" atau menjadi kategori khusus.
+  //   // classification = "JUDI";
+  //   // confidenceScore = Math.max(confidenceScore, 0.80); // Tingkatkan confidence jika sudah JUDI, atau set jika belum
+  //   console.log(
+  //     `[AIService] Potensi QR code terdeteksi dalam teks untuk analisis lebih lanjut.`
+  //   );
+  // }
 
   // Log hasil analisis dari service AI dummy ini
   console.log(

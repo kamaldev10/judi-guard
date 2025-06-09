@@ -9,19 +9,18 @@ const { NotFoundError, BadRequestError } = require("../../utils/errors");
  */
 const getMe = async (req, res, next) => {
   try {
-    // Middleware `isAuthenticated` sudah menempelkan objek `user` Mongoose ke `req.user`.
-    // Kita tidak perlu query ke DB lagi di sini kecuali jika ada field `select: false`
-    // yang perlu dimuat secara eksplisit, seperti yang Anda lakukan.
+    // req.user._id berasal dari middleware isAuthenticated
+    const userId = req.user._id;
+
     // console.log(
     //   `[Controller: getMe] Mengambil data untuk user ID: ${req.user._id}`
     // );
 
-    // Query ulang ke DB ini bagus jika Anda ingin memastikan data paling update dan memuat virtuals.
-    // Jika tidak, Anda bisa langsung menggunakan `req.user`.
-    const userFromDb = await User.findById(req.user._id);
-    // .select("+youtubeAccessToken"); // HANYA select field yang benar-benar dibutuhkan oleh virtuals.
-    // Jika virtual 'isYoutubeConnected' hanya butuh 'youtubeChannelId', maka tidak perlu select apa-apa
-    // karena 'youtubeChannelId' tidak 'select: false'. Jika butuh 'youtubeAccessToken' juga, maka ini benar.
+    // 1. Ambil pengguna dari DB dan secara eksplisit sertakan semua token YouTube.
+    // Ini diperlukan agar virtual property 'isYoutubeConnected' bisa menghitung nilainya dengan benar.
+    const userFromDb = await User.findById(userId).select(
+      "+youtubeAccessToken +youtubeRefreshToken"
+    );
 
     if (!userFromDb) {
       // Kondisi ini seharusnya tidak pernah tercapai jika middleware `isAuthenticated` bekerja,

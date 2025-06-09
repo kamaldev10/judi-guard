@@ -45,7 +45,7 @@ const HeroSection = () => {
   return (
     <motion.section
       id="hero-section"
-      className="bg-gradient-to-r from-white via-blue-50 to-[#E1F2FF] min-h-screen flex flex-col justify-center items-center px-4 pt-24 pb-12 sm:px-6 lg:px-8 overflow-hidden  border-b-4 border-b-teal-800 scroll-mt-18" // pt lebih besar untuk memberi ruang Header
+      className="bg-gradient-to-r from-white via-blue-50 to-[#E1F2FF] min-h-screen flex flex-col justify-center items-center  pt-0 sm:pt-4 lg:pt-12 pb-0 lg:pb-24 px-4 sm:px-6 lg:px-8 overflow-hidden scroll-mt-18 " // pt lebih besar untuk memberi ruang Header
     >
       <div className="container mx-auto">
         <div className="flex flex-col-reverse lg:flex-row items-center justify-between gap-8 lg:gap-16 w-full">
@@ -60,7 +60,7 @@ const HeroSection = () => {
             <motion.h1
               variants={itemVariants}
               className="text-3xl font-bold text-teal-700 leading-tight mb-4 
-                         sm:text-4xl 
+                         sm:text-base 
                          md:text-5xl 
                          lg:text-7xl lg:leading-tight"
             >
@@ -68,8 +68,7 @@ const HeroSection = () => {
             </motion.h1>
             <motion.p
               variants={itemVariants}
-              className="text-base text-gray-600 italic mb-8 
-                         sm:text-lg 
+              className="text-xs text-gray-600 italic mb-8 
                          md:text-xl"
             >
               Dengan Cepat Dan Akurat Melindungi Ruang Digital Anda.
@@ -89,7 +88,7 @@ const HeroSection = () => {
           </motion.div>
 
           <motion.div
-            className="flex justify-center lg:justify-end flex-1 w-full lg:w-auto" // flex-1 dan w-full untuk mobile
+            className="flex justify-center lg:justify-end flex-1 w-full lg:w-auto " // flex-1 dan w-full untuk mobile
             variants={imageVariants}
             initial="hidden"
             animate="visible"

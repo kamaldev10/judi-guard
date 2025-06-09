@@ -375,6 +375,7 @@ const deleteYoutubeComment = async (commentId, { youtubeClient }) => {
       `[YouTubeService] Gagal menghapus komentar ID ${commentId}:`,
       googleApiErrorMessage
     );
+
     if (error.code === 403) {
       throw new AppError(
         `Akses ditolak untuk menghapus komentar ID ${commentId}: ${googleApiErrorMessage}. Pastikan Anda adalah pemilik atau moderator.`,
@@ -386,6 +387,7 @@ const deleteYoutubeComment = async (commentId, { youtubeClient }) => {
         `Komentar dengan ID ${commentId} tidak ditemukan di YouTube.`
       );
     }
+
     throw new AppError(
       `Gagal menghapus komentar ID ${commentId} dari YouTube: ${googleApiErrorMessage}`,
       error.code && typeof error.code === "number" ? error.code : 500

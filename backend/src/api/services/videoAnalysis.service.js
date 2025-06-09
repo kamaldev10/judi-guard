@@ -93,9 +93,20 @@ const startVideoAnalysis = async (userId, youtubeVideoUrl) => {
       }
 
       const topLevelCommentResource = threadItem.snippet.topLevelComment;
+      const idKomentarYangBenar = topLevelCommentResource.id; // Ini ID yang seharusnya dipakai
+      const idThread = threadItem.id; // Ini ID thread/wadah
 
       // AMBIL ID DARI `topLevelComment`, BUKAN DARI `threadItem`
       const topLevelCommentYoutubeId = topLevelCommentResource.id; // Ini adalah ID dari komentar spesifik, bukan thread.
+
+      // --- TAMBAHKAN LOG PENTING INI ---
+      console.log({
+        pesan: "--- DEBUGGING ID KOMENTAR ---",
+        id_thread: idThread,
+        id_komentar_sebenarnya: idKomentarYangBenar,
+        apakah_id_sama: idThread === idKomentarYangBenar, // Akan menampilkan true atau false
+      });
+      // --- AKHIR LOG PENTING ---
 
       // 1. Proses Komentar Tingkat Atas menggunakan ID yang benar
       try {
@@ -280,7 +291,7 @@ const getAnalysisResults = async (videoAnalysisId, userId) => {
 
 /**
  * Memulai proses penghapusan semua komentar yang diklasifikasikan sebagai "judi"
- * untuk sebuah VideoAnalysis tertentu.
+ * untuk sebuah VideoAnalysis tertentu secara paralel.
  * @param {string} userId - ID User Judi Guard yang meminta.
  * @param {string} videoAnalysisId - ID dari VideoAnalysis.
  * @returns {Promise<object>} Objek yang berisi ringkasan hasil operasi.
@@ -298,32 +309,30 @@ const requestBatchDeleteJudiComments = async (userId, videoAnalysisId) => {
     );
   }
 
-  // 2. Dapatkan YouTube client yang terautentikasi
+  // 2. Dapatkan YouTube client yang terautentikasi (hanya sekali di awal)
   let youtubeClient;
   try {
     youtubeClient = await youtubeService.getAuthenticatedYouTubeClient(userId);
   } catch (authError) {
-    // Jika gagal mendapatkan client (misal, user perlu re-link akun YouTube)
     console.error(
       `[VideoAnalysis-${videoAnalysisId}] Error autentikasi YouTube untuk batch delete:`,
       authError.message
     );
-    throw authError; // Teruskan error autentikasi (mungkin AppError dari youtubeService)
+    throw authError; // Teruskan error autentikasi
   }
 
-  // 3. Ambil semua komentar yang diklasifikasikan "judi" dan belum ditandai terhapus
-  //    Pastikan klasifikasi 'judi' sesuai dengan yang Anda gunakan.
-  const classificationForJudi = "JUDI"; // Definisikan sebagai konstanta agar mudah diubah
+  // 3. Ambil semua komentar yang akan dihapus
+  const classificationForJudi = "JUDI"; // Definisikan sebagai konstanta
   const commentsToBatchDelete = await AnalyzedComment.find({
     videoAnalysisId: videoAnalysisId,
-    userId: userId, // Pastikan komentar juga milik user ini untuk keamanan tambahan
     classification: classificationForJudi,
     isDeletedOnYoutube: { $ne: true }, // Hanya yang belum ditandai terhapus
   });
 
+  // Jika tidak ada komentar yang perlu dihapus, langsung selesaikan
   if (commentsToBatchDelete.length === 0) {
     return {
-      message: `Tidak ada komentar berkategori '${classificationForJudi}' yang perlu dihapus untuk analisis video ID: ${videoAnalysisId}.`,
+      message: `Tidak ada komentar baru berkategori '${classificationForJudi}' yang perlu dihapus.`,
       totalTargeted: 0,
       successfullyDeleted: 0,
       failedToDelete: 0,
@@ -335,60 +344,74 @@ const requestBatchDeleteJudiComments = async (userId, videoAnalysisId) => {
     `[VideoAnalysis-${videoAnalysisId}] Memulai batch delete untuk ${commentsToBatchDelete.length} komentar '${classificationForJudi}'. User ID: ${userId}`
   );
 
-  // --- PERINGATAN PENTING UNTUK PRODUKSI ---
-  // Iterasi penghapusan di bawah ini adalah operasi yang berpotensi berjalan lama
-  // dan memakan banyak kuota API jika jumlah komentar banyak.
-  // Untuk aplikasi produksi, SANGAT DISARANKAN menjalankan ini sebagai background job
-  // (misalnya menggunakan message queue seperti BullMQ, RabbitMQ, atau Kue)
-  // agar request HTTP awal bisa langsung merespons dengan cepat.
-  // Frontend kemudian bisa melakukan polling atau menggunakan WebSockets untuk status.
-  // Untuk V1 atau skala kecil, proses sekuensial ini mungkin bisa diterima dengan risiko timeout.
-  // ---------------------------------------------------------------------------------------
+  // Update status VideoAnalysis untuk menandakan proses sedang berjalan
+  videoAnalysis.status = "DELETING_CLASSIFIED_COMMENTS";
+  videoAnalysis.lastBatchDeletionAttemptAt = Date.now();
+  await videoAnalysis.save();
 
+  // 4. Buat array dari semua promise penghapusan
+  const deletionPromises = commentsToBatchDelete.map(async (comment) => {
+    try {
+      // Tandai usaha penghapusan
+      comment.deletionAttemptedAt = Date.now();
+
+      // Panggil service untuk menghapus dari YouTube
+      await youtubeService.deleteYoutubeComment(comment.youtubeCommentId, {
+        youtubeClient,
+      });
+
+      // Jika berhasil, update status di DB kita
+      comment.isDeletedOnYoutube = true;
+      comment.deletionError = null;
+      await comment.save();
+
+      // Kembalikan objek sukses untuk Promise.allSettled
+      return { commentId: comment.youtubeCommentId };
+    } catch (error) {
+      // Jika youtubeService.deleteYoutubeComment melempar error
+      const errorMessage = error.message || "Unknown error during deletion";
+      console.error(
+        `[VideoAnalysisService] Gagal menghapus komentar ${comment.youtubeCommentId} dari YouTube:`,
+        errorMessage
+      );
+
+      // Update status di DB kita bahwa terjadi error
+      comment.isDeletedOnYoutube = false;
+      comment.deletionError = errorMessage;
+      await comment.save();
+
+      // Lempar error yang berisi info berguna agar ditangkap oleh Promise.allSettled
+      // Ini akan membuat status promise menjadi 'rejected'
+      throw {
+        commentId: comment.youtubeCommentId,
+        reason: errorMessage,
+      };
+    }
+  });
+
+  // 5. Tunggu SEMUA promise penghapusan selesai, baik yang sukses maupun gagal
+  const results = await Promise.allSettled(deletionPromises);
+
+  // 6. Hitung hasil berdasarkan array results
   let successfullyDeletedCount = 0;
   let failedToDeleteCount = 0;
   const deletionFailures = [];
 
-  // Update status VideoAnalysis (opsional, tapi informatif)
-  const originalStatus = videoAnalysis.status;
-  videoAnalysis.status = "DELETING_CLASSIFIED_COMMENTS"; // Status baru, misal 'DELETING_JUDI_COMMENTS'
-  videoAnalysis.lastBatchDeletionAttemptAt = Date.now();
-  await videoAnalysis.save();
-
-  for (const comment of commentsToBatchDelete) {
-    comment.deletionAttemptedAt = Date.now();
-    try {
-      await youtubeService.deleteYoutubeComment(comment.youtubeCommentId, {
-        youtubeClient,
-      });
-      comment.isDeletedOnYoutube = true;
-      comment.deletionError = null; // Bersihkan error sebelumnya jika ada
-      await comment.save();
+  results.forEach((result) => {
+    if (result.status === "fulfilled") {
       successfullyDeletedCount++;
-      console.log(
-        `[VideoAnalysis-${videoAnalysisId}] Komentar YouTube ID ${comment.youtubeCommentId} (App ID: ${comment._id}) berhasil dihapus.`
-      );
-    } catch (error) {
-      // Tangani error dari youtubeService.deleteYoutubeComment
-      // Error ini bisa jadi AppError dengan status code yang sesuai atau error lainnya.
-      comment.isDeletedOnYoutube = false;
-      comment.deletionError =
-        error.message || "Unknown error during YouTube comment deletion";
-      await comment.save();
+    } else {
+      // status === 'rejected'
       failedToDeleteCount++;
+      // result.reason adalah objek error yang kita lempar dari blok catch di atas
       deletionFailures.push({
-        analyzedCommentAppId: comment._id.toString(),
-        youtubeCommentId: comment.youtubeCommentId,
-        error: comment.deletionError,
+        youtubeCommentId: result.reason.commentId,
+        error: result.reason.reason,
       });
-      console.error(
-        `[VideoAnalysis-${videoAnalysisId}] Gagal menghapus komentar YouTube ID ${comment.youtubeCommentId} (App ID: ${comment._id}): ${comment.deletionError}`
-      );
-      // Lanjutkan ke komentar berikutnya, jangan hentikan seluruh proses batch
     }
-  }
+  });
 
-  // Update status akhir VideoAnalysis
+  // 7. Update status akhir pada VideoAnalysis
   if (failedToDeleteCount > 0 && successfullyDeletedCount > 0) {
     videoAnalysis.status = "COMPLETED_DELETION_WITH_PARTIAL_ERRORS";
   } else if (failedToDeleteCount > 0 && successfullyDeletedCount === 0) {
@@ -396,22 +419,23 @@ const requestBatchDeleteJudiComments = async (userId, videoAnalysisId) => {
   } else if (failedToDeleteCount === 0 && successfullyDeletedCount > 0) {
     videoAnalysis.status = "COMPLETED_ALL_DELETIONS_SUCCESSFULLY";
   } else {
-    // Jika tidak ada yang diproses (seharusnya sudah ditangani oleh pengecekan commentsToBatchDelete.length === 0)
-    // atau kembali ke status original jika tidak ada perubahan signifikan.
-    videoAnalysis.status = originalStatus; // Atau status lain yang sesuai
+    // Jika tidak ada yang diproses (tidak seharusnya terjadi jika length > 0)
+    videoAnalysis.status = "COMPLETED"; // Kembali ke status umum
   }
-  // Anda bisa juga menyimpan jumlah sukses/gagal di videoAnalysis
+
+  // Simpan statistik penghapusan ke dokumen analisis utama
   videoAnalysis.lastBatchDeletionSuccessCount = successfullyDeletedCount;
   videoAnalysis.lastBatchDeletionFailureCount = failedToDeleteCount;
-  videoAnalysis.processingEndedAt = Date.now(); // Atau field khusus deletionEndedAt
+  videoAnalysis.completedAt = Date.now(); // Atau gunakan field `lastBatchDeletionCompletedAt`
   await videoAnalysis.save();
 
   console.log(
-    `[VideoAnalysis-${videoAnalysisId}] Batch delete untuk '${classificationForJudi}' selesai. Berhasil: ${successfullyDeletedCount}, Gagal: ${failedToDeleteCount}.`
+    `[VideoAnalysis-${videoAnalysisId}] Batch delete selesai. Berhasil: ${successfullyDeletedCount}, Gagal: ${failedToDeleteCount}.`
   );
 
+  // 8. Kembalikan ringkasan hasil ke controller
   return {
-    message: `Proses penghapusan komentar '${classificationForJudi}' selesai untuk analisis video ID: ${videoAnalysisId}.`,
+    message: `Proses penghapusan komentar '${classificationForJudi}' selesai.`,
     totalTargeted: commentsToBatchDelete.length,
     successfullyDeleted: successfullyDeletedCount,
     failedToDelete: failedToDeleteCount,
@@ -426,24 +450,25 @@ const requestBatchDeleteJudiComments = async (userId, videoAnalysisId) => {
  * @returns {Promise<object>} Objek AnalyzedComment yang sudah diupdate.
  */
 const requestDeleteYoutubeComment = async (userId, analyzedCommentAppId) => {
-  // 1. Ambil detail komentar yang akan dihapus dari database kita
-  const commentToDelete = await AnalyzedComment.findById({
+  // 1. Gunakan 'findOne' untuk mencari berdasarkan ID aplikasi DAN ID pengguna.
+  // Ini secara otomatis memastikan hanya pengguna yang benar yang bisa menemukan (dan menghapus) komentar ini.
+  const commentToDelete = await AnalyzedComment.findOne({
     _id: analyzedCommentAppId,
     userId: userId,
   });
 
   if (!commentToDelete) {
     throw new NotFoundError(
-      `Komentar dengan ID aplikasi ${analyzedCommentAppId} tidak ditemukan di database.`
+      `Komentar dengan ID aplikasi ${analyzedCommentAppId} tidak ditemukan atau Anda tidak memiliki akses.`
     );
   }
 
-  // 2. Verifikasi apakah komentar ini milik analisis yang diminta oleh user ini
-  if (commentToDelete.userId.toString() !== userId) {
-    throw new ForbiddenError(
-      "Anda tidak memiliki izin untuk menghapus komentar ini."
-    );
-  }
+  // // 2. Verifikasi apakah komentar ini milik analisis yang diminta oleh user ini
+  // if (commentToDelete.userId.toString() !== userId) {
+  //   throw new ForbiddenError(
+  //     "Anda tidak memiliki izin untuk menghapus komentar ini."
+  //   );
+  // }
 
   // 3. Jika sudah pernah ditandai terhapus, tidak perlu proses lagi (opsional, tergantung logika bisnis)
   if (commentToDelete.isDeletedOnYoutube) {

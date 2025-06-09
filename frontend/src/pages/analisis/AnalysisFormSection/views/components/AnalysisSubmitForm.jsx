@@ -67,12 +67,7 @@ const AnalysisSubmitForm = ({
             disabled={isActionInProgress}
             defaultValue="Youtube" // Gunakan defaultValue untuk placeholder di React
           >
-            <option value="youtube">
-              <div>
-                <Youtube width={24} color="#a5e8e2" />
-                YouTube
-              </div>
-            </option>
+            <option value="youtube">YouTube</option>
             <option disabled>Other is Upcoming </option>
             {/* <option value="instagram">Instagram</option>
             <option value="tiktok">TikTok</option> */}

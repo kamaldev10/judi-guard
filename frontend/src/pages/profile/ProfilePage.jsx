@@ -203,7 +203,7 @@ const UserProfilePage = () => {
           Data pengguna tidak tersedia. Silakan{" "}
           <a href="/" className="text-sky-600 hover:underline">
             login
-          </a>{" "}
+          </a>
           kembali.
         </p>
       </div>

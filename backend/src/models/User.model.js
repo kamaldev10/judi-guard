@@ -62,7 +62,11 @@ const userSchema = new mongoose.Schema(
 
 userSchema.virtual("isYoutubeConnected").get(function () {
   // Dianggap terhubung jika ada access token dan channel ID (atau salah satunya, sesuai definisi Anda)
-  return !!(this.youtubeAccessToken && this.youtubeChannelId);
+  return !!(
+    this.youtubeChannelId &&
+    this.youtubeAccessToken &&
+    this.youtubeRefreshToken
+  );
 });
 
 // Middleware: Hash password sebelum user disimpan

@@ -37,7 +37,6 @@ router.delete(
   videoAnalysisController.deleteAnalyzedCommentController // Controller untuk hapus satu komentar
 );
 
-// --- RUTE BARU UNTUK BATCH DELETE KOMENTAR 'JUDI' ---
 // Menargetkan videoAnalysisId untuk menghapus semua komentar "judi" terkait.
 router.delete(
   "/videos/:analysisId/judi-comments", // :analysisId adalah parameter URL

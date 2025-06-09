@@ -5,6 +5,7 @@ import App from "./App";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { AuthProvider } from "./contexts/AuthContext";
 import "./style.css";
+import { BrowserRouter as Router } from "react-router-dom";
 
 // Ambil Client ID dari environment variable Vite
 // Pastikan Anda sudah membuat file .env di root frontend Anda
@@ -20,19 +21,21 @@ if (!googleClientId) {
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    {googleClientId ? ( // Hanya render provider jika client ID ada
-      <GoogleOAuthProvider clientId={googleClientId}>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </GoogleOAuthProvider>
-    ) : (
-      <div>
-        Konfigurasi Google Sign-In belum lengkap. Harap hubungi administrator.
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </div>
-    )}
+    <Router>
+      {googleClientId ? ( // Hanya render provider jika client ID ada
+        <GoogleOAuthProvider clientId={googleClientId}>
+          <AuthProvider>
+            <App />
+          </AuthProvider>
+        </GoogleOAuthProvider>
+      ) : (
+        <div>
+          Konfigurasi Google Sign-In belum lengkap. Harap hubungi administrator.
+          <AuthProvider>
+            <App />
+          </AuthProvider>
+        </div>
+      )}
+    </Router>
   </React.StrictMode>
 );

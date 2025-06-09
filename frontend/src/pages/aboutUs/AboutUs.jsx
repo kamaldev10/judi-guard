@@ -19,9 +19,8 @@ const AboutUs = () => {
   return (
     <section
       id="about"
-      className=" bg-[#cdeeff] min-h-screen px-6 md:px-20 py-18 "
+      className=" bg-[#cdeeff] min-h-screen px-6 md:px-20 py-4 md:py-12 "
     >
-      {/* Intro */}
       <motion.div
         id="intro-section"
         ref={introSectionRef}
@@ -32,17 +31,11 @@ const AboutUs = () => {
       >
         <h1
           id="intro-header"
-          className="text-4xl md:text-5xl font-bold text-teal-600 mb-4"
+          className="text-2xl lg:text-4xl md:text-5xl font-bold text-black mb-4"
         >
-          Tentang{" "}
-          <span
-            className="font-bold text-teal-700"
-            style={{ fontFamily: "Kanit" }}
-          >
-            JUDI GUARD
-          </span>
+          Tentang Judi Guard
         </h1>
-        <p className="text-lg text-teal-500">
+        <p className="text-xs lg:text-lg text-gray-700  text-justify lg:text-center">
           Judi Guard adalah aplikasi berbasis AI yang mampu mendeteksi komentar
           yang mengandung unsur judi online secara cepat, akurat, dan efisien.
           Kami berkomitmen untuk menjaga ruang digital Anda tetap aman dari
@@ -59,14 +52,33 @@ const AboutUs = () => {
         className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center mb-20"
       >
         <div>
-          <h2 className="text-2xl font-semibold text-[#0f766e] mb-4">
+          <h2 className="text-base lg:text-2xl font-semibold text-black mb-2 lg:mb-4 ">
             Apa yang Kami Tawarkan
           </h2>
-          <ul className="list-disc list-inside text-teal-500 space-y-2">
-            <li>Deteksi komentar judi online dengan teknologi AI terbaru.</li>
-            <li>Analisis mendalam dan laporan terperinci.</li>
-            <li>Antarmuka pengguna yang sederhana dan intuitif.</li>
-            <li>Dukungan terhadap keamanan digital nasional.</li>
+          <ul className="list-disc list-outside text-gray-700 space-y-2 text-xs lg:text-lg ms-3 md:ms-0 text-justify">
+            <li>
+              🕵️ Analisis Komentar Berbasis AI: Menggunakan model machine
+              learning untuk mengidentifikasi pola dan kata kunci terkait judi
+              online dengan akurasi tinggi.
+            </li>
+            <li>
+              🔗 Integrasi YouTube API:** Terhubung langsung dengan YouTube Data
+              API v3 untuk mengambil data komentar dari video secara
+              <strong className="ms-1 md:ms-2">real-time </strong>.
+            </li>
+            <li>
+              👤 Otentikasi Pengguna Aman: Sistem login dan registrasi
+              menggunakan OAuth untuk memastikan keamanan data pengguna.
+            </li>
+            <li>
+              📊 Dashboard Interaktif: Antarmuka yang ramah pengguna untuk
+              memvisualisasikan hasil analisis, melacak komentar, dan mengelola
+              video yang dipantau.
+            </li>
+            <li>
+              ⚙️ Penanganan Error: Dirancang dengan sistem penanganan error yang
+              tangguh untuk memastikan pengalaman pengguna yang mulus.
+            </li>
           </ul>
         </div>
         <img

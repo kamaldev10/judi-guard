@@ -1,6 +1,5 @@
 // App.js (atau src/App.jsx)
 import React from "react";
-import { BrowserRouter as Router } from "react-router-dom";
 import { HeadProvider } from "react-head";
 import { Slide, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -24,11 +23,9 @@ function App() {
         theme="colored"
         transition={Slide}
       />
-      <Router>
-        <ErrorBoundary>
-          <AppRouter />
-        </ErrorBoundary>
-      </Router>
+      <ErrorBoundary>
+        <AppRouter />
+      </ErrorBoundary>
     </HeadProvider>
   );
 }

@@ -5,6 +5,7 @@ const config = require("./config/environment");
 
 const startServer = async () => {
   try {
+    await loadResources();
     await connectDB(); // Hubungkan ke database
     app.listen(config.port, () => {
       console.log(`Server is listening on http://localhost:${config.port} 🎧`);

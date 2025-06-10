@@ -13,7 +13,7 @@ import AliImage from "./team-images/ali.jpg";
 import FerdianImage from "./team-images/ferdian.jpg";
 import RafiImage from "./team-images/rafi.jpg";
 import RinaImage from "./team-images/rina.jpg";
-import SalwaImage from "./team-images/salwa.jpg";
+import SalwaImage from "./team-images/salwa.jpeg";
 import SolihunImage from "./team-images/solihun.jpg";
 
 //icons

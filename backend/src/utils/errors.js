@@ -39,7 +39,9 @@ class ForbiddenError extends AppError {
  * Menggunakan status code 429 Too Many Requests.
  */
 class QuotaExceededError extends AppError {
-  constructor(message = "Kuota API harian telah terlampaui.") {
+  constructor(
+    message = "Kuota API harian telah terlampaui. Silahkan lanjutkan esok atau update quota"
+  ) {
     super(message, 429);
   }
 }

@@ -12,11 +12,14 @@ const {
 } = require("../../utils/errors"); // <-- TAMBAHKAN ForbiddenError DI SINI
 const config = require("../../config/environment");
 const { processAndSaveSingleComment } = require("../../utils/commentProcessor");
+const aiService = require("./ai.service");
+
 /**
- * Memulai proses analisis komentar untuk sebuah video YouTube.
- * (Deskripsi JSDoc lainnya tetap sama)
+ * Memulai proses analisis HANYA untuk komentar tingkat atas (top-level comments)
+ * dengan alur kerja yang dioptimalkan untuk performa.
  */
 const startVideoAnalysis = async (userId, youtubeVideoUrl) => {
+  // --- Bagian 1: Setup Awal dan Validasi (Tetap Sama) ---
   const youtubeVideoId = getYouTubeVideoId(youtubeVideoUrl);
   if (!youtubeVideoId) {
     throw new BadRequestError(
@@ -24,241 +27,154 @@ const startVideoAnalysis = async (userId, youtubeVideoUrl) => {
     );
   }
 
-  let youtubeClient;
-  try {
-    youtubeClient = await youtubeService.getAuthenticatedYouTubeClient(userId);
-  } catch (authError) {
-    throw authError;
-  }
+  const youtubeClient = await youtubeService.getAuthenticatedYouTubeClient(
+    userId
+  );
 
   let analysisEntry = await VideoAnalysis.create({
     userId,
     youtubeVideoId,
     status: "PENDING",
   });
-  // console.log(
-  //   `[VideoAnalysis-${analysisEntry._id}] Memulai analisis untuk video: ${youtubeVideoId} oleh user: ${userId}`
-  // );
 
   try {
     analysisEntry.status = "PROCESSING";
     analysisEntry.processingStartedAt = Date.now();
+
+    // Ambil detail video
+    const videoDetails = await youtubeService.getVideoDetails(youtubeVideoId, {
+      youtubeClient,
+    });
+    if (videoDetails?.snippet) {
+      analysisEntry.videoTitle = videoDetails.snippet.title;
+    }
     await analysisEntry.save();
 
-    // ... (logika ambil detail video tetap sama) ...
-    try {
-      const videoDetails = await youtubeService.getVideoDetails(
-        youtubeVideoId,
-        { youtubeClient }
-      );
-      if (videoDetails && videoDetails.snippet) {
-        analysisEntry.videoTitle = videoDetails.snippet.title;
-        await analysisEntry.save();
-        console.log(
-          `[VideoAnalysis-${analysisEntry._id}] Judul video berhasil diambil: ${analysisEntry.videoTitle}`
-        );
-      }
-    } catch (videoDetailError) {
-      console.warn(
-        `[VideoAnalysis-${analysisEntry._id}] Gagal mengambil detail video: ${videoDetailError.message}. Proses analisis tetap dilanjutkan.`
-      );
-    }
-
+    // --- Bagian 2: Ambil Semua Top-Level Comments dari YouTube ---
     const commentThreads = await youtubeService.fetchCommentsForVideo(
       youtubeVideoId,
       userId,
       { youtubeClient },
-      100,
-      config.MAX_TOP_LEVEL_COMMENTS || 200
+      20, // maxResults per page
+      config.MAX_TOP_LEVEL_COMMENTS || 50 // total comments to fetch
     );
 
     analysisEntry.totalCommentsFetched = commentThreads.length;
     await analysisEntry.save();
+
+    if (commentThreads.length === 0) {
+      console.log(
+        `[VideoAnalysis-${analysisEntry._id}] Tidak ada komentar ditemukan. Analisis selesai.`
+      );
+      analysisEntry.status = "COMPLETED";
+      analysisEntry.completedAt = Date.now();
+      await analysisEntry.save();
+      return analysisEntry.toObject();
+    }
     console.log(
-      `[VideoAnalysis-${analysisEntry._id}] Berhasil mengambil ${analysisEntry.totalCommentsFetched} comment threads dari YouTube.`
+      `[VideoAnalysis-${analysisEntry._id}] Berhasil mengambil ${commentThreads.length} top-level comments.`
     );
 
-    let newlyAnalyzedCount = 0;
-    let totalRepliesFound = 0; // Diubah dari totalRepliesProcessed agar lebih jelas
+    // --- Bagian 3: Ekstrak, Analisis, dan Simpan Secara Optimal ---
 
-    for (const threadItem of commentThreads) {
-      if (
-        !threadItem?.snippet?.topLevelComment?.id ||
-        !threadItem.snippet.topLevelComment.snippet
-      ) {
-        console.warn(
-          `[VideoAnalysis] Struktur threadItem tidak valid. Dilewati.`
-        );
-        continue;
-      }
+    // 3a. Ekstrak hanya informasi yang kita butuhkan dari respons YouTube API
+    const commentsToProcess = commentThreads
+      .map((thread) => thread?.snippet?.topLevelComment)
+      .filter((comment) => comment && comment.id && comment.snippet); // Filter item yang tidak valid
 
-      const topLevelCommentResource = threadItem.snippet.topLevelComment;
-      const idKomentarYangBenar = topLevelCommentResource.id; // Ini ID yang seharusnya dipakai
-      const idThread = threadItem.id; // Ini ID thread/wadah
+    // 3b. Cek duplikat di database dalam satu query besar untuk efisiensi
+    const existingCommentIds = (
+      await AnalyzedComment.find({
+        youtubeCommentId: { $in: commentsToProcess.map((c) => c.id) },
+      }).select("youtubeCommentId -_id")
+    ).map((c) => c.youtubeCommentId);
 
-      // AMBIL ID DARI `topLevelComment`, BUKAN DARI `threadItem`
-      const topLevelCommentYoutubeId = topLevelCommentResource.id; // Ini adalah ID dari komentar spesifik, bukan thread.
+    // 3c. Filter hanya komentar yang BENAR-BENAR BARU dan belum ada di database kita
+    const newComments = commentsToProcess.filter(
+      (c) => !existingCommentIds.includes(c.id)
+    );
 
-      // --- TAMBAHKAN LOG PENTING INI ---
-      console.log({
-        pesan: "--- DEBUGGING ID KOMENTAR ---",
-        id_thread: idThread,
-        id_komentar_sebenarnya: idKomentarYangBenar,
-        apakah_id_sama: idThread === idKomentarYangBenar, // Akan menampilkan true atau false
-      });
-      // --- AKHIR LOG PENTING ---
+    if (newComments.length === 0) {
+      console.log(
+        `[VideoAnalysis-${analysisEntry._id}] Semua komentar yang diambil sudah pernah dianalisis sebelumnya. Selesai.`
+      );
+      // Tetap update status, karena proses fetch berhasil
+      analysisEntry.totalCommentsAnalyzed = 0; // Tidak ada yang baru dianalisis
+      analysisEntry.status = "COMPLETED";
+      analysisEntry.completedAt = Date.now();
+      await analysisEntry.save();
+      return analysisEntry.toObject();
+    }
 
-      // 1. Proses Komentar Tingkat Atas menggunakan ID yang benar
-      try {
-        const topLevelResult = await processAndSaveSingleComment(
-          topLevelCommentResource.snippet,
-          topLevelCommentYoutubeId, // <<< Pastikan variabel ini yang diteruskan
-          analysisEntry._id.toString(),
-          userId,
-          youtubeVideoId,
-          null
-        );
-        if (topLevelResult.isNew) newlyAnalyzedCount++;
-      } catch (commentError) {
-        console.error(
-          `[VideoAnalysis-${analysisEntry._id}] GAGAL memproses top-level comment ID ${topLevelCommentYoutubeId}: ${commentError.message}`
-        );
-      }
+    console.log(
+      `[VideoAnalysis-${analysisEntry._id}] Memulai analisis AI untuk ${newComments.length} komentar baru...`
+    );
 
-      // 2. Proses Balasan Awal menggunakan helper
-      const initialReplies = threadItem.replies?.comments || [];
-      for (const replyResource of initialReplies) {
-        if (!replyResource?.id || !replyResource.snippet) {
-          console.warn(
-            `[VideoAnalysis-${analysisEntry._id}] Struktur initial reply tidak valid untuk parent ${topLevelCommentYoutubeId}. Dilewati. Data:`,
-            JSON.stringify(replyResource, null, 2)
-          );
-          continue;
-        }
-        try {
-          const replyResult = await processAndSaveSingleComment(
-            // Memanggil helper
-            replyResource.snippet,
-            replyResource.id,
-            analysisEntry._id.toString(),
-            userId,
-            youtubeVideoId,
-            topLevelCommentYoutubeId
-          );
-          if (replyResult.isNew) newlyAnalyzedCount++;
-          totalRepliesFound++;
-        } catch (replyError) {
-          console.error(
-            `[VideoAnalysis-${analysisEntry._id}] GAGAL (via helper) memproses initial reply ID ${replyResource.id} untuk parent ${topLevelCommentYoutubeId}: ${replyError.message} \nStack: ${replyError.stack}`
-          );
-        }
-      }
+    // 3d. Buat semua promise analisis secara bersamaan (concurrently)
+    const analysisPromises = newComments.map((comment) =>
+      aiService.analyzeTextWithAI(comment.snippet.textOriginal)
+    );
 
-      // 3. Jika totalReplyCount > jumlah balasan awal, fetch sisa balasan dan proses menggunakan helper
-      const totalReplyCountOnThread = threadItem.snippet.totalReplyCount || 0;
-      if (totalReplyCountOnThread > initialReplies.length) {
-        console.log(
-          `[VideoAnalysis-${analysisEntry._id}] Komentar ${topLevelCommentYoutubeId} memiliki ${totalReplyCountOnThread} balasan (terdeteksi ${initialReplies.length} balasan awal). Mengambil sisa balasan...`
-        );
-        try {
-          let nextPageTokenForReplies = null;
-          let fetchedAdditionalRepliesCount = 0;
+    // 3e. Tunggu semua promise analisis AI selesai
+    const aiResults = await Promise.all(analysisPromises);
 
-          do {
-            const repliesResponse = await youtubeService.fetchRepliesForComment(
-              topLevelCommentYoutubeId,
-              {
-                userId,
-                youtubeClient,
-                pageToken: nextPageTokenForReplies,
-                maxResults: 50,
-              }
-            );
+    // 3f. Siapkan data untuk disimpan secara massal
+    const commentsToSave = newComments.map((comment, index) => {
+      const aiResult = aiResults[index];
+      return {
+        videoAnalysisId: analysisEntry._id,
+        userId,
+        youtubeVideoId,
+        youtubeCommentId: comment.id,
+        parentYoutubeCommentId: null, // Selalu null karena kita hanya proses top-level
+        commentTextOriginal: comment.snippet.textOriginal,
+        commentTextDisplay: comment.snippet.textDisplay,
+        commentAuthorDisplayName: comment.snippet.authorDisplayName,
+        commentAuthorChannelId: comment.snippet.authorChannelId?.value,
+        commentAuthorProfileImageUrl: comment.snippet.authorProfileImageUrl,
+        commentPublishedAt: new Date(comment.snippet.publishedAt),
+        commentUpdatedAt: new Date(comment.snippet.updatedAt),
+        likeCount: comment.snippet.likeCount || 0,
+        classification: aiResult.classification,
+        aiConfidenceScore: aiResult.confidenceScore,
+        aiModelVersion: aiResult.modelVersion,
+      };
+    });
 
-            for (const replyResource of repliesResponse.replies) {
-              if (!replyResource?.id || !replyResource.snippet) {
-                console.warn(
-                  `[VideoAnalysis-${analysisEntry._id}] Struktur fetched reply tidak valid untuk parent ${topLevelCommentYoutubeId}. Dilewati. Data:`,
-                  JSON.stringify(replyResource, null, 2)
-                );
-                continue;
-              }
-              try {
-                const replyResult = await processAndSaveSingleComment(
-                  // Memanggil helper
-                  replyResource.snippet,
-                  replyResource.id,
-                  analysisEntry._id.toString(),
-                  userId,
-                  youtubeVideoId,
-                  topLevelCommentYoutubeId
-                );
-                if (replyResult.isNew) newlyAnalyzedCount++;
-                fetchedAdditionalRepliesCount++;
-                totalRepliesFound++;
-              } catch (deepReplyError) {
-                console.error(
-                  `[VideoAnalysis-${analysisEntry._id}] GAGAL (via helper) memproses fetched reply ID ${replyResource.id} untuk parent ${topLevelCommentYoutubeId}: ${deepReplyError.message} \nStack: ${deepReplyError.stack}`
-                );
-              }
-            }
-            nextPageTokenForReplies = repliesResponse.nextPageToken;
+    // 3g. Simpan semua komentar baru dalam satu operasi database (bulk insert)
+    if (commentsToSave.length > 0) {
+      await AnalyzedComment.insertMany(commentsToSave, { ordered: false });
+    }
 
-            if (
-              initialReplies.length + fetchedAdditionalRepliesCount >=
-              (config.MAX_REPLIES_PER_COMMENT || 50)
-            ) {
-              console.warn(
-                `[VideoAnalysis-${
-                  analysisEntry._id
-                }] Mencapai batas pengambilan balasan (${
-                  initialReplies.length + fetchedAdditionalRepliesCount
-                }) untuk komentar ${topLevelCommentYoutubeId}.`
-              );
-              break;
-            }
-          } while (nextPageTokenForReplies);
-        } catch (fetchRepliesError) {
-          console.error(
-            `[VideoAnalysis-${analysisEntry._id}] Gagal mengambil sisa balasan untuk komentar ${topLevelCommentYoutubeId}: ${fetchRepliesError.message}`
-          );
-        }
-      }
-    } // Akhir loop for (const threadItem of commentThreads)
-
-    analysisEntry.totalCommentsAnalyzed = newlyAnalyzedCount;
+    // --- Bagian 4: Finalisasi (Tetap Sama) ---
+    analysisEntry.totalCommentsAnalyzed = commentsToSave.length;
     analysisEntry.status = "COMPLETED";
     analysisEntry.completedAt = Date.now();
     await analysisEntry.save();
 
     console.log(
-      `[VideoAnalysis-${analysisEntry._id}] Analisis selesai. Total comment threads awal: ${commentThreads.length}. Total komentar/balasan BARU dianalisis AI: ${newlyAnalyzedCount}. Total semua balasan yang ditemukan/diproses: ${totalRepliesFound}.`
+      `[VideoAnalysis-${analysisEntry._id}] Analisis selesai. Total komentar BARU dianalisis: ${commentsToSave.length}.`
     );
+
     return analysisEntry.toObject();
   } catch (error) {
+    // --- Blok Error Handling (Tetap Sama) ---
     console.error(
-      `[VideoAnalysis-${
-        analysisEntry?._id || "NEW"
-      }] Terjadi error besar saat proses analisis video:`,
+      `[VideoAnalysis-${analysisEntry?._id || "NEW"}] Terjadi error besar:`,
       error.stack
     );
-    if (analysisEntry && analysisEntry._id) {
+    if (analysisEntry) {
       analysisEntry.status = "FAILED";
       analysisEntry.errorMessage = error.message;
       await analysisEntry
         .save()
         .catch((saveErr) =>
-          console.error(
-            `[VideoAnalysis-${analysisEntry._id}] Gagal menyimpan status FAILED:`,
-            saveErr
-          )
+          console.error(`Gagal menyimpan status FAILED:`, saveErr)
         );
     }
-    if (error instanceof AppError) throw error;
-    throw new AppError(
-      `Proses analisis video gagal: ${error.message}`,
-      error.code && typeof error.code === "number" ? error.code : 500
-    );
+    // Asumsi Anda punya error handler kustom, jika tidak, lempar error biasa
+    // if (error instanceof AppError) throw error;
+    throw error;
   }
 };
 

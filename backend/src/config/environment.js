@@ -41,8 +41,8 @@ const config = {
       }>`,
   },
   //maksimal top level comment dan replies per comment
-  MAX_TOP_LEVEL_COMMENTS: 200,
-  MAX_REPLIES_PER_COMMENT: 50,
+  MAX_TOP_LEVEL_COMMENTS: 50,
+  MAX_REPLIES_PER_COMMENT: 20,
 };
 
 if (

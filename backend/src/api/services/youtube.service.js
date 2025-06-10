@@ -10,6 +10,9 @@ const {
 } = require("../../utils/errors"); // Utilitas error
 const config = require("../../config/environment"); // Konfigurasi environment
 
+// Tambahkan mutex untuk prevent race condition
+const tokenMutex = new Map();
+
 /**
  * Mendapatkan YouTube API client yang sudah terautentikasi untuk pengguna.
  * Akan mencoba me-refresh access token jika sudah kedaluwarsa atau hampir kedaluwarsa.
@@ -46,15 +49,20 @@ const getAuthenticatedYouTubeClient = async (userId) => {
     user.youtubeTokenExpiresAt.getTime() < Date.now() + fiveMinutesInMs;
 
   if (needsRefresh) {
-    if (!user.youtubeRefreshToken) {
-      // Jika token sudah mau habis tapi tidak ada refresh token, user harus re-autentikasi
-      // Hapus token yang tidak valid
-      user.youtubeAccessToken = undefined;
-      user.youtubeRefreshToken = undefined; // Sudah pasti tidak ada atau tidak valid
-      user.youtubeTokenExpiresAt = undefined;
-      await user.save();
-      throw new UnauthorizedError(
-        "Sesi YouTube Anda kedaluwarsa dan tidak dapat diperbarui. Silakan hubungkan kembali akun YouTube Anda."
+    if (!tokenMutex.has(userId)) {
+      tokenMutex.set(
+        userId,
+        new Promise(async (resolve, reject) => {
+          try {
+            const { credentials } = await oAuth2Client.refreshAccessToken();
+            // Update user dan credentials
+            resolve(credentials);
+          } catch (error) {
+            reject(error);
+          } finally {
+            tokenMutex.delete(userId);
+          }
+        })
       );
     }
 
@@ -63,8 +71,8 @@ const getAuthenticatedYouTubeClient = async (userId) => {
         `[YouTubeService] Refreshing YouTube access token for user ${userId}...`
       );
       // Minta token baru menggunakan refresh token
-      const { credentials } = await oAuth2Client.refreshAccessToken();
-      oAuth2Client.setCredentials(credentials); // Set kredensial baru ke client
+      const credentials = await tokenMutex.get(userId);
+      oAuth2Client.setCredentials(credentials);
 
       // Update token di database user
       user.youtubeAccessToken = credentials.access_token;
@@ -153,6 +161,7 @@ const getVideoDetails = async (videoId, { youtubeClient, apiKey }) => {
       error.response ? error.response.data : error.message
     );
     if (error instanceof NotFoundError) throw error; // Teruskan error NotFoundError
+
     if (
       error.code === 403 &&
       error.message &&
@@ -160,6 +169,7 @@ const getVideoDetails = async (videoId, { youtubeClient, apiKey }) => {
     ) {
       throw new AppError("Kuota YouTube API telah terlampaui.", 429); // Too Many Requests
     }
+
     if (error.code === 404) {
       // Error dari Google API juga bisa 404
       throw new NotFoundError(
@@ -342,14 +352,20 @@ const fetchCommentsForVideo = async (
 };
 
 /**
- * Menghapus komentar dari YouTube.
+ * Menghapus komentar dari YouTube dengan verifikasi dan retry mechanism.
  * @param {string} commentId - ID komentar YouTube yang akan dihapus.
  * @param {object} options
- * @param {google.youtube_v3.Youtube} options.youtubeClient - Client YouTube yang sudah terautentikasi.
+ * @param {google.youtube_v3.Youtube} options.youtubeClient - Client YouTube yang terautentikasi.
+ * @param {string} [options.userChannelId] - Channel ID pengguna untuk verifikasi kepemilikan.
+ * @param {number} [options.maxRetries=2] - Jumlah maksimal retry untuk transient errors.
  * @returns {Promise<void>}
  * @throws {AppError} Jika gagal menghapus komentar.
  */
-const deleteYoutubeComment = async (commentId, { youtubeClient }) => {
+const deleteYoutubeComment = async (
+  commentId,
+  { youtubeClient, userChannelId, maxRetries = 2 }
+) => {
+  // Validasi input
   if (!youtubeClient) {
     throw new AppError(
       "Diperlukan youtubeClient yang terautentikasi untuk menghapus komentar.",
@@ -360,39 +376,87 @@ const deleteYoutubeComment = async (commentId, { youtubeClient }) => {
     throw new AppError("Comment ID diperlukan untuk menghapus komentar.", 400);
   }
 
-  console.log(`[YouTubeService] Mencoba menghapus komentar ID: ${commentId}`);
-  try {
-    await youtubeClient.comments.delete({
-      id: commentId,
-    });
-    console.log(
-      `[YouTubeService] Komentar ID: ${commentId} berhasil dihapus dari YouTube.`
-    );
-  } catch (error) {
-    const googleApiErrorMessage =
-      error.errors && error.errors[0] ? error.errors[0].message : error.message;
-    console.error(
-      `[YouTubeService] Gagal menghapus komentar ID ${commentId}:`,
-      googleApiErrorMessage
-    );
+  console.log(
+    `[YouTubeService] Memulai proses hapus komentar ID: ${commentId}`
+  );
 
-    if (error.code === 403) {
-      throw new AppError(
-        `Akses ditolak untuk menghapus komentar ID ${commentId}: ${googleApiErrorMessage}. Pastikan Anda adalah pemilik atau moderator.`,
-        403
-      );
-    }
-    if (error.code === 404) {
-      throw new NotFoundError(
-        `Komentar dengan ID ${commentId} tidak ditemukan di YouTube.`
-      );
-    }
+  // Verifikasi kepemilikan komentar jika userChannelId disediakan
+  if (userChannelId) {
+    try {
+      const comment = await youtubeClient.comments.list({
+        id: commentId,
+        part: "snippet",
+      });
 
-    throw new AppError(
-      `Gagal menghapus komentar ID ${commentId} dari YouTube: ${googleApiErrorMessage}`,
-      error.code && typeof error.code === "number" ? error.code : 500
-    );
+      const commentAuthorId =
+        comment.data.items[0]?.snippet?.authorChannelId?.value;
+      if (commentAuthorId && commentAuthorId !== userChannelId) {
+        throw new AppError(
+          `Anda bukan pemilik komentar ${commentId}. Hanya pemilik atau moderator yang bisa menghapus.`,
+          403
+        );
+      }
+    } catch (error) {
+      // Handle error verifikasi khusus
+      if (error.code === 404) {
+        throw new NotFoundError(
+          `Komentar dengan ID ${commentId} tidak ditemukan.`
+        );
+      }
+      console.error(
+        `[YouTubeService] Gagal verifikasi kepemilikan komentar:`,
+        error.message
+      );
+      // Lanjutkan proses hapus meskipun verifikasi gagal (fallback)
+    }
   }
+
+  // Retry mechanism
+  let attempt = 0;
+  let lastError = null;
+
+  while (attempt <= maxRetries) {
+    try {
+      await youtubeClient.comments.delete({ id: commentId });
+      console.log(`[YouTubeService] Komentar ${commentId} berhasil dihapus.`);
+      return;
+    } catch (error) {
+      attempt++;
+      lastError = error;
+
+      if (error.code === 404) {
+        throw new NotFoundError(`Komentar ${commentId} tidak ditemukan.`);
+      }
+
+      if (error.code === 429 && error.code === 403) {
+        const retryAfter = error.response?.headers["retry-after"] || 5;
+        console.warn(
+          `[YouTubeService] Rate limit tercapai. Akan mencoba lagi dalam ${retryAfter} detik...`
+        );
+        await new Promise((resolve) => setTimeout(resolve, retryAfter * 1000));
+        continue;
+      }
+
+      // Untuk error 500/503 (server errors)
+      if (error.code >= 500 && attempt <= maxRetries) {
+        const delay = Math.pow(2, attempt) * 1000; // Exponential backoff
+        console.warn(
+          `[YouTubeService] Gagal attempt ${attempt}. Akan retry dalam ${delay}ms...`
+        );
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        continue;
+      }
+
+      // Throw error untuk kasus lainnya
+      throw error;
+    }
+  }
+
+  // Jika semua retry gagal
+  throw new AppError(
+    `Gagal menghapus komentar setelah ${maxRetries} percobaan: ${lastError.message}`,
+    lastError.code || 500
+  );
 };
 
 module.exports = {

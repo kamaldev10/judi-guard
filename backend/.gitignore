@@ -4,6 +4,12 @@ node_modules/
 # Environment Variables
 .env
 
+.vs
+
+#model
+core/
+assets/ml
+
 # Logs
 logs
 *.log

@@ -274,7 +274,7 @@ export const useVideoAnalysis = () => {
    * @param {Error} error - Objek error yang ditangkap dari panggilan API.
    * @param {string} actionName - Nama aksi yang sedang dilakukan (misal, "Analisis Video").
    */
-  const handleApiError = (error, actionName = "Operasi") => {
+  const handleApiError = (error, actionName = "Analisis Video") => {
     // Axios biasanya membungkus error HTTP dalam `error.response`
     if (error.response && error.response.status === 429) {
       // Kasus Spesifik: Kuota Habis (HTTP 429 Too Many Requests)

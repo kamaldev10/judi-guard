@@ -6,9 +6,8 @@ node_modules/
 
 .vs
 
-#model
-core/
-assets/ml
+# model
+src/assets/ml
 
 # Logs
 logs

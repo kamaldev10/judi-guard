@@ -153,7 +153,7 @@ const redirectToGoogleOAuth = (req, res, next) => {
 
     const authorizeUrl = oAuth2Client.generateAuthUrl({
       access_type: "offline", // Untuk mendapatkan refresh_token agar akses bisa diperpanjang
-      scope: YOUTUBE_SCOPES.join(" "), // Scope harus string dipisahkan spasi
+      scope: YOUTUBE_SCOPES, // Scope harus string dipisahkan spasi
       state: req.user._id.toString(), // ID pengguna Judi Guard sebagai 'state' untuk verifikasi callback
       prompt: "consent", // Opsional: 'consent' akan selalu menampilkan layar persetujuan Google. Hapus untuk SSO jika sudah pernah setuju.
     });

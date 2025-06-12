@@ -14,12 +14,176 @@ const config = require("../../config/environment");
 const { processAndSaveSingleComment } = require("../../utils/commentProcessor");
 const aiService = require("./ai.service");
 
+// /**
+//  * Memulai proses analisis HANYA untuk komentar tingkat atas (top-level comments)
+//  * dengan alur kerja yang dioptimalkan untuk performa.
+//  */
+// const startVideoAnalysis = async (userId, youtubeVideoUrl) => {
+//   // --- Bagian 1: Setup Awal dan Validasi (Tetap Sama) ---
+//   const youtubeVideoId = getYouTubeVideoId(youtubeVideoUrl);
+//   if (!youtubeVideoId) {
+//     throw new BadRequestError(
+//       "URL Video YouTube tidak valid atau format tidak didukung."
+//     );
+//   }
+
+//   const youtubeClient = await youtubeService.getAuthenticatedYouTubeClient(
+//     userId
+//   );
+
+//   let analysisEntry = await VideoAnalysis.create({
+//     userId,
+//     youtubeVideoId,
+//     status: "PENDING",
+//   });
+
+//   try {
+//     analysisEntry.status = "PROCESSING";
+//     analysisEntry.processingStartedAt = Date.now();
+
+//     // Ambil detail video
+//     const videoDetails = await youtubeService.getVideoDetails(youtubeVideoId, {
+//       youtubeClient,
+//     });
+//     if (videoDetails?.snippet) {
+//       analysisEntry.videoTitle = videoDetails.snippet.title;
+//     }
+//     await analysisEntry.save();
+
+//     // --- Bagian 2: Ambil Semua Top-Level Comments dari YouTube ---
+//     const commentThreads = await youtubeService.fetchCommentsForVideo(
+//       youtubeVideoId,
+//       userId,
+//       { youtubeClient },
+//       20, // maxResults per page
+//       config.MAX_TOP_LEVEL_COMMENTS || 50 // total comments to fetch
+//     );
+
+//     analysisEntry.totalCommentsFetched = commentThreads.length;
+//     await analysisEntry.save();
+
+//     if (commentThreads.length === 0) {
+//       console.log(
+//         `[VideoAnalysis-${analysisEntry._id}] Tidak ada komentar ditemukan. Analisis selesai.`
+//       );
+//       analysisEntry.status = "COMPLETED";
+//       analysisEntry.completedAt = Date.now();
+//       await analysisEntry.save();
+//       return analysisEntry.toObject();
+//     }
+//     console.log(
+//       `[VideoAnalysis-${analysisEntry._id}] Berhasil mengambil ${commentThreads.length} top-level comments.`
+//     );
+
+//     // --- Bagian 3: Ekstrak, Analisis, dan Simpan Secara Optimal ---
+
+//     // 3a. Ekstrak hanya informasi yang kita butuhkan dari respons YouTube API
+//     const commentsToProcess = commentThreads
+//       .map((thread) => thread?.snippet?.topLevelComment)
+//       .filter((comment) => comment && comment.id && comment.snippet); // Filter item yang tidak valid
+
+//     // 3b. Cek duplikat di database dalam satu query besar untuk efisiensi
+//     const existingCommentIds = (
+//       await AnalyzedComment.find({
+//         youtubeCommentId: { $in: commentsToProcess.map((c) => c.id) },
+//       }).select("youtubeCommentId -_id")
+//     ).map((c) => c.youtubeCommentId);
+
+//     // 3c. Filter hanya komentar yang BENAR-BENAR BARU dan belum ada di database kita
+//     const newComments = commentsToProcess.filter(
+//       (c) => !existingCommentIds.includes(c.id)
+//     );
+
+//     if (newComments.length === 0) {
+//       console.log(
+//         `[VideoAnalysis-${analysisEntry._id}] Semua komentar yang diambil sudah pernah dianalisis sebelumnya. Selesai.`
+//       );
+//       // Tetap update status, karena proses fetch berhasil
+//       analysisEntry.totalCommentsAnalyzed = 0; // Tidak ada yang baru dianalisis
+//       analysisEntry.status = "COMPLETED";
+//       analysisEntry.completedAt = Date.now();
+//       await analysisEntry.save();
+//       return analysisEntry.toObject();
+//     }
+
+//     console.log(
+//       `[VideoAnalysis-${analysisEntry._id}] Memulai analisis AI untuk ${newComments.length} komentar baru...`
+//     );
+
+//     // 3d. Buat semua promise analisis secara bersamaan (concurrently)
+//     const analysisPromises = newComments.map((comment) =>
+//       aiService.analyzeTextWithAI(comment.snippet.textOriginal)
+//     );
+
+//     // 3e. Tunggu semua promise analisis AI selesai
+//     const aiResults = await Promise.all(analysisPromises);
+
+//     // 3f. Siapkan data untuk disimpan secara massal
+//     const commentsToSave = newComments.map((comment, index) => {
+//       const aiResult = aiResults[index];
+//       return {
+//         videoAnalysisId: analysisEntry._id,
+//         userId,
+//         youtubeVideoId,
+//         youtubeCommentId: comment.id,
+//         parentYoutubeCommentId: null, // Selalu null karena kita hanya proses top-level
+//         commentTextOriginal: comment.snippet.textOriginal,
+//         commentTextDisplay: comment.snippet.textDisplay,
+//         commentAuthorDisplayName: comment.snippet.authorDisplayName,
+//         commentAuthorChannelId: comment.snippet.authorChannelId?.value,
+//         commentAuthorProfileImageUrl: comment.snippet.authorProfileImageUrl,
+//         commentPublishedAt: new Date(comment.snippet.publishedAt),
+//         commentUpdatedAt: new Date(comment.snippet.updatedAt),
+//         likeCount: comment.snippet.likeCount || 0,
+//         classification: aiResult.classification,
+//         aiConfidenceScore: aiResult.confidenceScore,
+//         aiModelVersion: aiResult.modelVersion,
+//       };
+//     });
+
+//     // 3g. Simpan semua komentar baru dalam satu operasi database (bulk insert)
+//     if (commentsToSave.length > 0) {
+//       await AnalyzedComment.insertMany(commentsToSave, { ordered: false });
+//     }
+
+//     // --- Bagian 4: Finalisasi (Tetap Sama) ---
+//     analysisEntry.totalCommentsAnalyzed = commentsToSave.length;
+//     analysisEntry.status = "COMPLETED";
+//     analysisEntry.completedAt = Date.now();
+//     await analysisEntry.save();
+
+//     console.log(
+//       `[VideoAnalysis-${analysisEntry._id}] Analisis selesai. Total komentar BARU dianalisis: ${commentsToSave.length}.`
+//     );
+
+//     return analysisEntry.toObject();
+//   } catch (error) {
+//     // --- Blok Error Handling (Tetap Sama) ---
+//     console.error(
+//       `[VideoAnalysis-${analysisEntry?._id || "NEW"}] Terjadi error besar:`,
+//       error.stack
+//     );
+//     if (analysisEntry) {
+//       analysisEntry.status = "FAILED";
+//       analysisEntry.errorMessage = error.message;
+//       await analysisEntry
+//         .save()
+//         .catch((saveErr) =>
+//           console.error(`Gagal menyimpan status FAILED:`, saveErr)
+//         );
+//     }
+//     // Asumsi Anda punya error handler kustom, jika tidak, lempar error biasa
+//     // if (error instanceof AppError) throw error;
+//     throw error;
+//   }
+// };
+
 /**
  * Memulai proses analisis HANYA untuk komentar tingkat atas (top-level comments)
  * dengan alur kerja yang dioptimalkan untuk performa.
  */
 const startVideoAnalysis = async (userId, youtubeVideoUrl) => {
-  // --- Bagian 1: Setup Awal dan Validasi (Tetap Sama) ---
+  // --- BAGIAN 1: SETUP DAN VALIDASI ---
   const youtubeVideoId = getYouTubeVideoId(youtubeVideoUrl);
   if (!youtubeVideoId) {
     throw new BadRequestError(
@@ -31,17 +195,16 @@ const startVideoAnalysis = async (userId, youtubeVideoUrl) => {
     userId
   );
 
+  // Buat entri log analisis di database
   let analysisEntry = await VideoAnalysis.create({
     userId,
     youtubeVideoId,
-    status: "PENDING",
+    status: "PROCESSING",
+    processingStartedAt: Date.now(),
   });
 
   try {
-    analysisEntry.status = "PROCESSING";
-    analysisEntry.processingStartedAt = Date.now();
-
-    // Ambil detail video
+    // Ambil detail video untuk disimpan
     const videoDetails = await youtubeService.getVideoDetails(youtubeVideoId, {
       youtubeClient,
     });
@@ -50,130 +213,114 @@ const startVideoAnalysis = async (userId, youtubeVideoUrl) => {
     }
     await analysisEntry.save();
 
-    // --- Bagian 2: Ambil Semua Top-Level Comments dari YouTube ---
+    // --- BAGIAN 2: AMBIL DATA KOMENTAR DARI YOUTUBE ---
     const commentThreads = await youtubeService.fetchCommentsForVideo(
       youtubeVideoId,
       userId,
       { youtubeClient },
-      20, // maxResults per page
-      config.MAX_TOP_LEVEL_COMMENTS || 50 // total comments to fetch
+      100, // maxResults per halaman
+      config.MAX_TOP_LEVEL_COMMENTS || 200 // total maksimal komentar yang diambil
     );
 
     analysisEntry.totalCommentsFetched = commentThreads.length;
-    await analysisEntry.save();
 
     if (commentThreads.length === 0) {
       console.log(
-        `[VideoAnalysis-${analysisEntry._id}] Tidak ada komentar ditemukan. Analisis selesai.`
+        `[VideoAnalysis-${analysisEntry._id}] Tidak ada komentar yang ditemukan. Analisis selesai.`
       );
       analysisEntry.status = "COMPLETED";
       analysisEntry.completedAt = Date.now();
       await analysisEntry.save();
-      return analysisEntry.toObject();
+      return analysisEntry;
     }
-    console.log(
-      `[VideoAnalysis-${analysisEntry._id}] Berhasil mengambil ${commentThreads.length} top-level comments.`
-    );
 
-    // --- Bagian 3: Ekstrak, Analisis, dan Simpan Secara Optimal ---
+    // --- BAGIAN 3: PROSES DENGAN AI DAN SIMPAN KE DATABASE (OPTIMAL) ---
 
-    // 3a. Ekstrak hanya informasi yang kita butuhkan dari respons YouTube API
-    const commentsToProcess = commentThreads
+    // 3a. Saring hanya komentar yang valid dari respons API
+    const validComments = commentThreads
       .map((thread) => thread?.snippet?.topLevelComment)
-      .filter((comment) => comment && comment.id && comment.snippet); // Filter item yang tidak valid
+      .filter((comment) => comment?.id && comment?.snippet);
 
     // 3b. Cek duplikat di database dalam satu query besar untuk efisiensi
+    const commentIdsFromYouTube = validComments.map((c) => c.id);
     const existingCommentIds = (
       await AnalyzedComment.find({
-        youtubeCommentId: { $in: commentsToProcess.map((c) => c.id) },
+        youtubeCommentId: { $in: commentIdsFromYouTube },
       }).select("youtubeCommentId -_id")
     ).map((c) => c.youtubeCommentId);
 
-    // 3c. Filter hanya komentar yang BENAR-BENAR BARU dan belum ada di database kita
-    const newComments = commentsToProcess.filter(
+    // 3c. Filter hanya komentar yang benar-benar baru
+    const newCommentsToAnalyze = validComments.filter(
       (c) => !existingCommentIds.includes(c.id)
     );
 
-    if (newComments.length === 0) {
+    if (newCommentsToAnalyze.length === 0) {
       console.log(
-        `[VideoAnalysis-${analysisEntry._id}] Semua komentar yang diambil sudah pernah dianalisis sebelumnya. Selesai.`
+        `[VideoAnalysis-${analysisEntry._id}] Semua komentar yang diambil sudah ada di database.`
       );
-      // Tetap update status, karena proses fetch berhasil
-      analysisEntry.totalCommentsAnalyzed = 0; // Tidak ada yang baru dianalisis
-      analysisEntry.status = "COMPLETED";
-      analysisEntry.completedAt = Date.now();
-      await analysisEntry.save();
-      return analysisEntry.toObject();
+    } else {
+      console.log(
+        `[VideoAnalysis-${analysisEntry._id}] Memulai analisis AI untuk ${newCommentsToAnalyze.length} komentar baru...`
+      );
+
+      // 3d. Buat array of promises untuk analisis AI secara paralel
+      const analysisPromises = newCommentsToAnalyze.map((comment) =>
+        aiService.analyzeTextWithAI(comment.snippet.textOriginal)
+      );
+
+      // 3e. Jalankan semua promise dan tunggu hasilnya
+      const aiResults = await Promise.all(analysisPromises);
+
+      // 3f. Siapkan data lengkap untuk disimpan ke database
+      const documentsToSave = newCommentsToAnalyze.map((comment, index) => {
+        const aiResult = aiResults[index];
+        return {
+          videoAnalysisId: analysisEntry._id,
+          userId,
+          youtubeVideoId,
+          youtubeCommentId: comment.id,
+          parentYoutubeCommentId: null,
+          commentTextOriginal: comment.snippet.textOriginal,
+          commentTextDisplay: comment.snippet.textDisplay,
+          commentAuthorDisplayName: comment.snippet.authorDisplayName,
+          commentAuthorProfileImageUrl: comment.snippet.authorProfileImageUrl,
+          commentPublishedAt: new Date(comment.snippet.publishedAt),
+          commentUpdatedAt: new Date(comment.snippet.updatedAt),
+          likeCount: comment.snippet.likeCount || 0,
+          classification: aiResult.classification,
+          aiConfidenceScore: aiResult.confidenceScore,
+          aiModelVersion: aiResult.modelVersion,
+        };
+      });
+
+      // 3g. Simpan semua dokumen baru dalam satu operasi 'insertMany'
+      await AnalyzedComment.insertMany(documentsToSave, { ordered: false });
+      analysisEntry.totalCommentsAnalyzed = documentsToSave.length;
     }
 
-    console.log(
-      `[VideoAnalysis-${analysisEntry._id}] Memulai analisis AI untuk ${newComments.length} komentar baru...`
-    );
-
-    // 3d. Buat semua promise analisis secara bersamaan (concurrently)
-    const analysisPromises = newComments.map((comment) =>
-      aiService.analyzeTextWithAI(comment.snippet.textOriginal)
-    );
-
-    // 3e. Tunggu semua promise analisis AI selesai
-    const aiResults = await Promise.all(analysisPromises);
-
-    // 3f. Siapkan data untuk disimpan secara massal
-    const commentsToSave = newComments.map((comment, index) => {
-      const aiResult = aiResults[index];
-      return {
-        videoAnalysisId: analysisEntry._id,
-        userId,
-        youtubeVideoId,
-        youtubeCommentId: comment.id,
-        parentYoutubeCommentId: null, // Selalu null karena kita hanya proses top-level
-        commentTextOriginal: comment.snippet.textOriginal,
-        commentTextDisplay: comment.snippet.textDisplay,
-        commentAuthorDisplayName: comment.snippet.authorDisplayName,
-        commentAuthorChannelId: comment.snippet.authorChannelId?.value,
-        commentAuthorProfileImageUrl: comment.snippet.authorProfileImageUrl,
-        commentPublishedAt: new Date(comment.snippet.publishedAt),
-        commentUpdatedAt: new Date(comment.snippet.updatedAt),
-        likeCount: comment.snippet.likeCount || 0,
-        classification: aiResult.classification,
-        aiConfidenceScore: aiResult.confidenceScore,
-        aiModelVersion: aiResult.modelVersion,
-      };
-    });
-
-    // 3g. Simpan semua komentar baru dalam satu operasi database (bulk insert)
-    if (commentsToSave.length > 0) {
-      await AnalyzedComment.insertMany(commentsToSave, { ordered: false });
-    }
-
-    // --- Bagian 4: Finalisasi (Tetap Sama) ---
-    analysisEntry.totalCommentsAnalyzed = commentsToSave.length;
+    // --- BAGIAN 4: FINALISASI ---
     analysisEntry.status = "COMPLETED";
     analysisEntry.completedAt = Date.now();
     await analysisEntry.save();
 
     console.log(
-      `[VideoAnalysis-${analysisEntry._id}] Analisis selesai. Total komentar BARU dianalisis: ${commentsToSave.length}.`
+      `[VideoAnalysis-${
+        analysisEntry._id
+      }] Analisis selesai. Komentar baru yang dianalisis: ${
+        analysisEntry.totalCommentsAnalyzed || 0
+      }.`
     );
 
-    return analysisEntry.toObject();
+    return analysisEntry;
   } catch (error) {
-    // --- Blok Error Handling (Tetap Sama) ---
+    // --- Error Handling ---
     console.error(
-      `[VideoAnalysis-${analysisEntry?._id || "NEW"}] Terjadi error besar:`,
-      error.stack
+      `[VideoAnalysis-${analysisEntry?._id}] Terjadi error besar selama proses:`,
+      error
     );
-    if (analysisEntry) {
-      analysisEntry.status = "FAILED";
-      analysisEntry.errorMessage = error.message;
-      await analysisEntry
-        .save()
-        .catch((saveErr) =>
-          console.error(`Gagal menyimpan status FAILED:`, saveErr)
-        );
-    }
-    // Asumsi Anda punya error handler kustom, jika tidak, lempar error biasa
-    // if (error instanceof AppError) throw error;
+    analysisEntry.status = "FAILED";
+    analysisEntry.errorMessage = error.message;
+    await analysisEntry.save();
     throw error;
   }
 };

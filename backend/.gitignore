@@ -4,7 +4,15 @@ node_modules/
 # Environment Variables
 .env
 
+# Editor directories and files
+.idea
 .vs
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.sublime-workspace
 
 # model
 src/assets/ml

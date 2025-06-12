@@ -1,0 +1,54 @@
+# --- Python Virtual Environment ---
+# Jangan pernah memasukkan folder dependensi ke Git.
+# Setiap developer akan membuatnya sendiri dengan 'pip install -r requirements.txt'.
+.venv/
+venv/
+env/
+*.env
+*.egg-info/
+dist/
+build/
+
+
+# --- Python Bytecode & Cache ---
+# File-file ini dibuat secara otomatis oleh Python untuk performa dan tidak diperlukan.
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+
+# --- Environment Variables ---
+# File .env berisi kunci API, password, dan konfigurasi sensitif lainnya.
+# SANGAT PENTING untuk tidak memasukkannya ke Git.
+.env
+.env.*
+# Namun, jangan abaikan file contohnya.
+!/.env.example
+
+
+# --- IDE & Editor-specific files ---
+# Abaikan file konfigurasi yang dibuat oleh editor kode.
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+
+# --- OS-generated files ---
+# Abaikan file-file yang dibuat oleh sistem operasi.
+.DS_Store
+Thumbs.db
+._*
+
+
+# --- Log Files ---
+*.log
+logs/
+
+
+# --- Model atau File Data Berukuran Besar ---
+saved_model/
+*.h5

@@ -60,6 +60,7 @@ judi-guard-app/
 │   ├── ... (File-file frontend)
 │   └── README.md  (Panduan khusus frontend)
 ├── .gitignore
+├── LICENSE
 └── README.md      (Anda sedang melihat file ini)
 ```
 

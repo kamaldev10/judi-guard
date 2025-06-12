@@ -1,6 +1,5 @@
 # Editor directories and files
 .idea
-.vs
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json

@@ -146,5 +146,4 @@ Error Response (400 Bad Request): Jika key text tidak ditemukan dalam request bo
 }
 ```
 
-Lisensi
-Proyek ini dilisensikan di bawah Lisensi MIT.
+

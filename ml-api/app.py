@@ -31,7 +31,7 @@ def predict_for_web():
         input_text=text
     )
 
-# --- Endpoint BARU untuk dikonsumsi oleh backend lain (API) ---
+# --- Endpoint untuk dikonsumsi oleh backend lain (API) ---
 @app.route('/api/predict', methods=['POST'])
 def predict_for_api():
     """Endpoint ini menerima JSON dan mengembalikan JSON."""
@@ -60,7 +60,7 @@ def get_prediction(text: str) -> dict:
     confidence = tf.reduce_max(probs).numpy()
 
     # Label mapping
-    label_map = {0: "Non-Judi", 1: "Judi"}
+    label_map = {0: "NON_JUDI", 1: "JUDI"}
     predicted_label = label_map.get(pred_index, "Tidak Dikenal")
     
     return {
@@ -69,4 +69,4 @@ def get_prediction(text: str) -> dict:
     }
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)

@@ -16,7 +16,6 @@ const AnalysisPage = () => {
         title: "Work Guide",
         ref: React.createRef(),
       },
-
       {
         id: "analysis-results",
         component: AnalysisFormSection,

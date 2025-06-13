@@ -45,7 +45,7 @@ const HeroSection = () => {
   return (
     <motion.section
       id="hero-section"
-      className="bg-gradient-to-r from-white via-blue-50 to-[#E1F2FF] min-h-screen flex flex-col justify-center items-center  pt-0 sm:pt-4 lg:pt-12 pb-0 lg:pb-24 px-4 sm:px-6 lg:px-8 overflow-hidden scroll-mt-18 " // pt lebih besar untuk memberi ruang Header
+      className="bg-[#B9E6FD] sm:bg-gradient-to-r from-white via-blue-50 to-[#E1F2FF] min-h-[70vh]  sm:min-h-screen flex flex-col justify-center items-center pt-4 lg:pt-12 pb-0 lg:pb-6 px-4 sm:px-6 lg:px-8 overflow-hidden scroll-mt-18 " // pt lebih besar untuk memberi ruang Header
     >
       <div className="container mx-auto">
         <div className="flex flex-col-reverse lg:flex-row items-center justify-between gap-8 lg:gap-16 w-full">
@@ -71,7 +71,7 @@ const HeroSection = () => {
               className="text-xs text-gray-600 italic mb-8 
                          md:text-xl"
             >
-              Dengan Cepat Dan Akurat Melindungi Ruang Digital Anda.
+              Dengan Cepat dan Akurat Melindungi Ruang Digital Anda.
             </motion.p>
             <motion.div variants={itemVariants}>
               <ScrollLink
@@ -107,7 +107,7 @@ const HeroSection = () => {
         </div>
 
         <motion.div
-          className="mt-16 lg:mt-24 w-full"
+          className="mt-8 lg:mt-24 w-full"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.8 }}

@@ -48,10 +48,10 @@ const ConnectSection = () => {
   return (
     <section
       id="analisis-section" // ID untuk ScrollLink dari HeroSection
-      className="py-12 sm:py-24 lg:ps-24 bg-slate-50 " // Background sedikit berbeda untuk memisahkan section
+      className="flex py-6 sm:py-24 items-center lg:ps-24 min-h-[70vh] bg-slate-50 sm:bg-linear-90 from-[#B9E6FD] to-slate-100 shadow-2xl shadow-[#B9E6FD] " // Background sedikit berbeda untuk memisahkan section
     >
       <motion.div
-        className="container mx-auto px-4 sm:px-6 lg:px-8 "
+        className="container mx-auto px-4 sm:px-6 lg:px-8  "
         variants={sectionVariants}
         initial="hidden"
         whileInView="visible" // Animasi terpicu saat section masuk viewport
@@ -64,13 +64,13 @@ const ConnectSection = () => {
             variants={itemVariantsLeft} // Menggunakan variant yang sama atau buat baru jika perlu arah berbeda
           >
             <motion.h2
-              className="text-xl sm:text-3xl md:text-4xl font-bold text-teal-700 mb-4 leading-tight"
+              className="text-2xl sm:text-3xl md:text-4xl font-bold text-teal-700 mb-3 sm:mb-10 leading-tight text-balance"
               variants={itemVariantsLeft} // Bisa juga varian individual
             >
-              Siap Mengamankan Ruang Digital Anda?
+              Siap Mengamankan Ruang Digital Anda
             </motion.h2>
             <motion.p
-              className="text-gray-600 text-xs sm:text-base md:text-lg mb-4 md:mb-8 px-2 md:px-0 leading-tight sm:indent-8 md:indent-0 text-justify"
+              className="text-gray-600 text-sm sm:text-base md:text-lg mb-4 md:mb-8 px-6 md:px-0 leading-6 sm:leading-8 indent-8 md:indent-0 text-justify"
               variants={itemVariantsLeft}
             >
               Fitur analisis canggih kami membantu Anda mengidentifikasi dan
@@ -84,7 +84,7 @@ const ConnectSection = () => {
             >
               <Link to="/profile#connections-heading">
                 <motion.button
-                  className="flex gap-1 bg-rose-600 text-white font-semibold px-3 sm:px-4 md:px-5 py-3 sm:py-3 md:py-4 rounded-lg text-sm  
+                  className="flex gap-1 bg-rose-600 text-gray-300 font-semibold px-3 sm:px-4 md:px-5 py-3 sm:py-3 md:py-4 rounded-lg text-sm sm:text-base  mx-6
                              hover:bg-rose-700 shadow-md hover:shadow-lg
                              focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50
                              transition-all duration-300 ease-in-out align-middle
@@ -93,8 +93,8 @@ const ConnectSection = () => {
                   whileHover="hover"
                   whileTap="tap"
                 >
-                  <Youtube />
-                  Hubungkan dengan youtube anda sekarang
+                  <Youtube className="" />
+                  Hubungkan youtube anda sekarang
                 </motion.button>
               </Link>
             </motion.div>
@@ -108,17 +108,12 @@ const ConnectSection = () => {
             <img
               src={IlustrasiAnalisis}
               alt="Ilustrasi Analisis Komentar Judi Guard"
-              className="rounded-lg shadow-xl object-cover max-h-[300px] sm:max-h-[350px] md:max-h-[400px] lg:max-h-[450px] w-auto"
+              className="rounded-lg shadow-xl object-cover max-h-[300px] sm:max-h-[350px] md:max-h-[400px] lg:max-h-[500px] w-auto"
               style={{
                 filter:
                   "drop-shadow(0 10px 8px rgba(0,0,0,0.04)) drop-shadow(0 4px 3px rgba(0,0,0,0.1))",
-              }} // Contoh drop shadow
+              }}
             />
-            {/* Jika tidak ada gambar, Anda bisa gunakan placeholder:
-            <div className="w-full h-64 sm:h-80 md:h-96 bg-gradient-to-br from-teal-200 to-cyan-300 rounded-lg shadow-xl flex items-center justify-center">
-              <p className="text-teal-700 font-semibold text-xl">Visual Analisis Menarik di Sini</p>
-            </div>
-            */}
           </motion.div>
         </div>
       </motion.div>

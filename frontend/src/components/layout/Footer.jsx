@@ -10,12 +10,15 @@ const Footer = () => {
   return (
     <footer className="bg-gray-800 text-white pt-10 pb-6 px-4 sm:px-6 md:px-12 lg:px-20">
       <div className="container mx-auto">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8  sm:pb-2 md:pb-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8  sm:pb-2 md:pb-5">
           <div className="sm:col-span-2 md:col-span-1 md:w-11/12">
             <h1 className="text-xl sm:text-2xl font-bold mb-3">JUDI GUARD</h1>{" "}
             <p className="text-xs sm:text-sm mb-4 leading-relaxed">
               Platform pendeteksi komentar spam judi otomatis dan akurat di
               ruang digital Anda.
+            </p>
+            <p className="text-sm sm:text-base mb-1 sm:mb-4 font-semibold leading-relaxed">
+              Say Goodbye to Spam Judi with Judi Guard
             </p>
           </div>
 

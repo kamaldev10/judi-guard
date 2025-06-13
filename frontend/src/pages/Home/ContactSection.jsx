@@ -72,7 +72,7 @@ const ContactSection = () => {
   ];
 
   return (
-    <section id="contact-section" className="py-16 sm:py-24 bg-white">
+    <section id="contact-section" className="py-16 sm:py-24 bg-slate-100">
       <motion.div
         className="container mx-auto px-10 sm:px-6 lg:px-70"
         variants={sectionVariants}
@@ -96,7 +96,7 @@ const ContactSection = () => {
         <div className="flex flex-col lg:flex-row gap-10 lg:gap-16 items-start">
           {/* Kolom Informasi Kontak (Mobile: Atas, Desktop: Kiri) */}
           <motion.div
-            className="w-full lg:w-2/5 space-y-6"
+            className="w-full lg:w-2/5 space-y-3 sm:space-y-6"
             variants={itemVariants}
           >
             <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4">

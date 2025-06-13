@@ -130,21 +130,25 @@ const UserProfilePage = () => {
   // Handler konfirmasi hapus akun di View (memanggil executeDeleteAccount dari presenter)
   const confirmDeleteAccountHandlerInView = () => {
     if (isDeleting) return; // Mencegah klik ganda
-    Swal.fire({
-      title: "Konfirmasi Hapus Akun",
-      text: "Apakah Anda yakin ingin menghapus akun Anda secara permanen? Tindakan ini tidak dapat diurungkan.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#e53e3e", // Merah untuk delete
-      cancelButtonColor: "#718096", // Abu-abu
-      confirmButtonText: "Ya, Hapus Akun Saya!",
-      cancelButtonText: "Batal",
-      customClass: { popup: "rounded-xl shadow-lg text-sm" },
-    }).then((result) => {
-      if (result.isConfirmed) {
-        executeDeleteAccount(); // Panggil fungsi dari presenter
-      }
-    });
+    Swal.fire("Coming Soon!");
+
+    // sementara coming soon
+
+    //   Swal.fire({
+    //     title: "Konfirmasi Hapus Akun",
+    //     text: "Apakah Anda yakin ingin menghapus akun Anda secara permanen? Tindakan ini tidak dapat diurungkan.",
+    //     icon: "warning",
+    //     showCancelButton: true,
+    //     confirmButtonColor: "#e53e3e", // Merah untuk delete
+    //     cancelButtonColor: "#718096", // Abu-abu
+    //     confirmButtonText: "Ya, Hapus Akun Saya!",
+    //     cancelButtonText: "Batal",
+    //     customClass: { popup: "rounded-xl shadow-lg text-sm" },
+    //   }).then((result) => {
+    //     if (result.isConfirmed) {
+    //       executeDeleteAccount(); // Panggil fungsi dari presenter
+    //     }
+    //   });
   };
 
   // Tampilan saat data profil sedang dimuat

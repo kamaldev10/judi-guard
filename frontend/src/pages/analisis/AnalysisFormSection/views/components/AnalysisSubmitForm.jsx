@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 // src/features/video-analysis/views/components/AnalysisSubmitForm.jsx
 import React from "react";
 import PropTypes from "prop-types";
@@ -20,6 +21,46 @@ const AnalysisSubmitForm = ({
   isActionInProgress,
   loadingMessage,
 }) => {
+  // Komponen untuk ikon "Play" (Mulai Analisis)
+  const PlayIcon = ({ className }) => (
+    <svg
+      className={className}
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+    >
+      <path
+        fillRule="evenodd"
+        d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.647c1.295.748 1.295 2.54 0 3.288L7.28 20.99c-1.25.722-2.779-.217-2.779-1.643V5.653z"
+        clipRule="evenodd"
+      />
+    </svg>
+  );
+
+  // Komponen untuk ikon "Loading Spinner"
+  const LoadingSpinner = ({ className }) => (
+    <svg
+      className={className}
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+      ></circle>
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      ></path>
+    </svg>
+  );
+
   return (
     <motion.section
       id="analysis-form"
@@ -32,7 +73,7 @@ const AnalysisSubmitForm = ({
       <h2 className="text-center text-xl md:text-2xl font-bold text-teal-700 mb-6">
         Analisis Komentar Video YouTube
       </h2>
-      <div className="space-y-6">
+      <div className="space-y-3 sm:space-y-6">
         <div>
           <label
             htmlFor="videoUrl"
@@ -52,10 +93,10 @@ const AnalysisSubmitForm = ({
           />
         </div>
 
-        <div className="flex items-center w-1/3 px-2 py-2 bg-[#A5E8E2] border border-gray-400 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 transition">
+        <div className="flex items-center w-full sm:w-1/3 px-2 py-1 sm:py-2 bg-[#A5E8E2] border border-gray-400 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 transition">
           <label
             htmlFor="commentSource"
-            className="text-teal-700 font-bold mr-3 whitespace-nowrap"
+            className="text-teal-700 font-bold mr-1 sm:mr-3 whitespace-nowrap text-sm sm:text-base"
           >
             Sumber Komentar :
           </label>
@@ -81,9 +122,26 @@ const AnalysisSubmitForm = ({
             type="button"
             onClick={onSubmit}
             disabled={isActionInProgress || !videoUrl.trim()}
-            className="bg-teal-600 text-white px-8 py-3 rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-all duration-300 font-semibold disabled:opacity-60 shadow-md hover:shadow-lg "
+            className={`
+              inline-flex items-center justify-center 
+               sm:w-auto px-3 sm:px-6 py-2  bg-teal-600 text-white font-semibold rounded-xl shadow-md hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500  disabled:cursor-not-allowed
+              transition-all duration-300 ease-in-out
+            `}
+            aria-label="Mulai Analisis"
           >
-            {isActionInProgress ? "Sedang Memproses..." : "Mulai Analisis"}
+            {isActionInProgress ? (
+              // State Loading: Ikon spinner dan teks responsif
+              <>
+                <LoadingSpinner className="w-5 h-5" />
+                <span className="ml-2">Memproses...</span>
+              </>
+            ) : (
+              // State Default: Ikon play dan teks responsif
+              <>
+                <PlayIcon className="w-5 h-5" />
+                <span className=" ml-2">Mulai Analisis</span>
+              </>
+            )}
           </button>
         </div>
       </div>

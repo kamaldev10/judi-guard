@@ -57,21 +57,20 @@ const AboutUs = () => {
           </h2>
           <ul className="list-disc list-outside text-gray-700 space-y-2 text-xs lg:text-lg ms-3 md:ms-0 text-justify">
             <li>
-              🕵️ Analisis Komentar Berbasis AI: Menggunakan model machine
-              learning untuk mengidentifikasi pola dan kata kunci terkait judi
-              online dengan akurasi tinggi.
+              Analisis Komentar Berbasis AI: Menggunakan model machine learning
+              untuk mengidentifikasi pola dan kata kunci terkait judi online
+              dengan akurasi tinggi.
             </li>
             <li>
-              🔗 Integrasi YouTube API:** Terhubung langsung dengan YouTube Data
-              API v3 untuk mengambil data komentar dari video secara
-              <strong className="ms-1 md:ms-2">real-time </strong>.
+              Integrasi YouTube API: Terhubung langsung dengan YouTube Data API
+              v3 untuk mengambil data komentar dari video secara real-time.
             </li>
             <li>
-              👤 Otentikasi Pengguna Aman: Sistem login dan registrasi
-              menggunakan OAuth untuk memastikan keamanan data pengguna.
+              Otentikasi Pengguna Aman: Sistem login dan registrasi menggunakan
+              OAuth untuk memastikan keamanan data pengguna.
             </li>
             <li>
-              📊 Dashboard Interaktif: Antarmuka yang ramah pengguna untuk
+              Dashboard Interaktif: Antarmuka yang ramah pengguna untuk
               memvisualisasikan hasil analisis, melacak komentar, dan mengelola
               video yang dipantau.
             </li>
@@ -98,30 +97,32 @@ const AboutUs = () => {
         className="text-center border-t-teal-600 border-t-1  "
       >
         <h2 className="text-3xl font-bold text-[#136854] my-10">Tim Kami</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-5 md:gap-10">
           {members.map((member, index) => (
             <motion.div
               key={index}
               whileHover={{ scale: 1.05 }}
-              className="bg-white/25 ring  p-6 rounded-xl shadow-md hover:shadow-lg transition "
+              className="flex-row items-center-safe  bg-white/25 ring p-2 md:p-6 border border-teal-700 rounded-xl shadow-md hover:shadow-lg transition "
             >
               <img
                 src={member.image}
                 alt={member.name}
-                className="w-36 h-36 mx-auto rounded-full  mb-4 object-cover "
+                className="w-20 sm:w-36 h-20 sm:h-36 mx-auto rounded-full  mb-4 object-cover "
               />
-              <h3 className="text-xl font-semibold text-black mb-1 ">
-                {member.name}
-              </h3>
-              <p className="text-sm text-[#0f766e] mb-1 font-semibold">
-                {member.cohortID}
-              </p>
-              <p className="text-sm text-[#0f766e] mb-1 font-semibold">
-                {member.university}
-              </p>
-              <p className="text-sm text-[#0f766e] font-semibold">
-                {member.role}
-              </p>
+              <div className="">
+                <h3 className="text-xs sm:text-xl font-semibold text-black mb-1 ">
+                  {member.name}
+                </h3>
+                <p className="text-xs sm:text-xl text-[#0f766e] mb-1 font-semibold">
+                  {member.cohortID}
+                </p>
+                <p className="text-xs sm:text-xl text-[#0f766e] mb-1 font-semibold">
+                  {member.university}
+                </p>
+                <p className="text-xs sm:text-xl text-[#0f766e] font-semibold">
+                  {member.role}
+                </p>
+              </div>
             </motion.div>
           ))}
         </div>

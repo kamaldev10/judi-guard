@@ -14,6 +14,7 @@ import {
   validateLoginPassword,
 } from "../../../utils/FormValidators";
 import GoogleSignInButton from "../../../components/auth/GoogleSignInButton";
+import Swal from "sweetalert2";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -73,6 +74,9 @@ const Login = () => {
     }
   };
 
+  const handleComingSoon = () => {
+    Swal.fire("Coming Soon!");
+  };
   return (
     <>
       <Title>Login | Judi Guard</Title>
@@ -135,7 +139,8 @@ const Login = () => {
                   Password
                 </label>
                 <Link
-                  to="/forgot-password"
+                  onClick={handleComingSoon}
+                  // to="/forgot-password"
                   className="text-sm text-[var(--primary-color)] hover:underline"
                 >
                   Lupa kata sandi

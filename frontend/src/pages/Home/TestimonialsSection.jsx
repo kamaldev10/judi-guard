@@ -121,7 +121,7 @@ const TestimonialsSection = () => {
   return (
     <section
       id="testimonials-section"
-      className="py-16 sm:py-24 bg-gradient-to-br from-teal-50 via-cyan-50 to-sky-100"
+      className="py-16 sm:py-24 bg-[#B9E6FD] sm:bg-linear-15 to-[#B9E6FD] from-slate-100 shadow-2xl shadow-[#B9E6FD]"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div

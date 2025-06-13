@@ -6,6 +6,7 @@ import HeroSection from "./HeroSection";
 import TestimonialsSection from "./TestimonialsSection";
 import ContactSection from "./ContactSection";
 import ConnectSection from "./ConnectSection";
+import TextPredictSection from "./TextPredictSection";
 
 const HomePage = () => {
   const location = useLocation();
@@ -22,6 +23,12 @@ const HomePage = () => {
         id: "connect-section",
         component: ConnectSection,
         title: "Analisis",
+        ref: React.createRef(),
+      },
+      {
+        id: "text-predict-section",
+        component: TextPredictSection,
+        title: "Text Predict",
         ref: React.createRef(),
       },
       {

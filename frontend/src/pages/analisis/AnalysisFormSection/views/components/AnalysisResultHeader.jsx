@@ -13,8 +13,8 @@ const AnalysisResultHeader = ({ analysisId, videoData, pollingMessage }) => {
   return (
     <>
       <h2 className="text-center text-lg md:text-xl font-semibold text-teal-800 mb-2">
-        Hasil Analisis untuk:{" "}
-        <em className="font-normal block md:inline mt-1 md:mt-0 break-all">
+        Hasil Analisis untuk:
+        <em className="text-base sm:text-lg font-normal block md:inline mt-1 md:mt-0 break-all sm:ms-2">
           {videoData.videoTitle || videoData.youtubeVideoId}
         </em>
       </h2>

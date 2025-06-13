@@ -132,7 +132,7 @@ Success Response (200 OK):
 ```JSON
 
 {
-"classification": "Judi",
+"classification": "JUDI",
 "confidenceScore": 0.9987
 }
 ```

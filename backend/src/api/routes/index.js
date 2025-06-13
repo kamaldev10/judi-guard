@@ -2,7 +2,8 @@
 const express = require("express");
 const authRoutes = require("./auth.routes");
 const userRoutes = require("./user.routes");
-const videoAnalysisRoutes = require("./videoAnalysis.routes"); // Impor ini
+const videoAnalysisRoutes = require("./videoAnalysis.routes");
+const textPredictRoutes = require("./textPredict.routes");
 
 const router = express.Router();
 
@@ -16,5 +17,6 @@ router.get("/health", (req, res) => {
 router.use("/auth", authRoutes);
 router.use("/users", userRoutes);
 router.use("/analysis", videoAnalysisRoutes);
+router.use("/text", textPredictRoutes);
 
 module.exports = router;

@@ -48,6 +48,10 @@ const getAnalyzedCommentsForVideo = async (req, res, next) => {
     const { analysisId } = req.params;
     const userId = req.user._id; // Dari middleware isAuthenticated
 
+    console.log(
+      `[video Analysis Controller] Mencari komentar untuk analysisId: ${analysisId}`
+    );
+
     if (!analysisId) {
       throw new BadRequestError('Parameter "analysisId" diperlukan.');
     }

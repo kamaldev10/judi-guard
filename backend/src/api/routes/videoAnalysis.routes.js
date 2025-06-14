@@ -30,9 +30,9 @@ router.get(
 );
 
 // Rute untuk menghapus SATU komentar spesifik dari YouTube (berdasarkan ID aplikasi kita)
-// :analyzedCommentAppId adalah _id dari komentar di database kita
+// :analyzedCommentId adalah _id dari komentar di database kita
 router.delete(
-  "/comments/:analyzedCommentAppId",
+  "/comments/:analyzedCommentId",
   isAuthenticated,
   videoAnalysisController.deleteAnalyzedCommentController // Controller untuk hapus satu komentar
 );

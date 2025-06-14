@@ -1,6 +1,7 @@
 // src/api/controllers/videoAnalysis.controller.js
 const videoAnalysisService = require("../services/videoAnalysis.service");
 const { BadRequestError, NotFoundError } = require("../../utils/errors"); // Pastikan NotFoundError diimpor jika belum
+const VideoAnalysis = require("../../models/VideoAnalysis.model");
 
 /**
  * Menerima URL video dari pengguna dan memulai proses analisis.
@@ -86,7 +87,7 @@ const batchDeleteJudiCommentsController = async (req, res, next) => {
       analysisId
     );
 
-    res.status(200).json({
+    res.status(204).json({
       success: true,
       message:
         result.message ||
@@ -103,32 +104,32 @@ const batchDeleteJudiCommentsController = async (req, res, next) => {
   }
 };
 
-/**
- * Menangani permintaan penghapusan komentar yang sudah dianalisis.(satu komentar)
- */
 const deleteAnalyzedCommentController = async (req, res, next) => {
   try {
-    const { analyzedCommentAppId } = req.params; // Ini adalah _id dari collection AnalyzedComment kita
-    const userId = req.user._id; // Dari middleware isAuthenticated
+    const { analysisId, analyzedCommentId, youtubeCommentId } = req.params;
+    const userId = req.user._id;
 
-    if (!analyzedCommentAppId) {
-      throw new BadRequestError('Parameter "analyzedCommentAppId" diperlukan.');
+    if (!analyzedCommentId) {
+      throw new BadRequestError('Parameter "analyzedCommentId" diperlukan.');
+    }
+
+    if (!youtubeCommentId) {
+      throw new BadRequestError('Parameter "analyzedCommentId" diperlukan.');
     }
 
     const updatedComment =
       await videoAnalysisService.requestDeleteYoutubeComment(
         userId,
-        analyzedCommentAppId
+        analyzedCommentId,
+        youtubeCommentId
       );
 
     res.status(200).json({
       status: "success",
-      message: `Komentar YouTube ID ${updatedComment.youtubeCommentId} berhasil diminta untuk dihapus dan status di database diperbarui.`,
+      message: `Permintaan penghapusan komentar YouTube dari AnalyzedComment ${analyzedCommentId} berhasil diproses.`,
       data: updatedComment,
     });
   } catch (error) {
-    // Error dari service (misalnya NotFoundError, ForbiddenError, atau error dari YouTube API)
-    // akan diteruskan ke global error handler
     next(error);
   }
 };

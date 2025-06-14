@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 
 const analyzedCommentSchema = new mongoose.Schema(
   {
-    videoAnalysisId: {
+    analysisId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "VideoAnalysis",
       required: true,

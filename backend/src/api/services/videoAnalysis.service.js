@@ -107,7 +107,7 @@ const startVideoAnalysis = async (userId, youtubeVideoUrl) => {
         const aiResult = aiResults[i];
 
         const documentToSave = {
-          videoAnalysisId: new mongoose.Types.ObjectId(analysisEntry._id),
+          analysisId: new mongoose.Types.ObjectId(analysisEntry._id),
           userId: new mongoose.Types.ObjectId(userId),
           youtubeVideoId,
           youtubeCommentId: comment.id,
@@ -197,8 +197,8 @@ const getAnalysisResults = async (videoAnalysisId, userId) => {
 
   // Mengambil semua komentar dan balasan yang terkait dengan videoAnalysisId ini
   const analyzedComments = await AnalyzedComment.find({
-    videoAnalysisId: videoAnalysisId,
-  });
+    analysisId: videoAnalysisId, // Pastikan field ini sesuai dengan yang disimpan
+  }).sort({ commentPublishedAt: 1 }); // Tambahkan pengurutan
 
   return analyzedComments;
 };
@@ -207,13 +207,13 @@ const getAnalysisResults = async (videoAnalysisId, userId) => {
  * Memulai proses penghapusan semua komentar yang diklasifikasikan sebagai "judi"
  * untuk sebuah VideoAnalysis tertentu secara paralel.
  * @param {string} userId - ID User Judi Guard yang meminta.
- * @param {string} videoAnalysisId - ID dari VideoAnalysis.
+ * @param {string} analysisId - ID dari VideoAnalysis.
  * @returns {Promise<object>} Objek yang berisi ringkasan hasil operasi.
  */
-const requestBatchDeleteJudiComments = async (userId, videoAnalysisId) => {
+const requestBatchDeleteJudiComments = async (userId, analysisId) => {
   // 1. Verifikasi bahwa VideoAnalysis ada dan milik user yang meminta
   const videoAnalysis = await VideoAnalysis.findOne({
-    _id: videoAnalysisId,
+    _id: AnalysisId,
     userId: userId,
   });
 
@@ -360,76 +360,65 @@ const requestBatchDeleteJudiComments = async (userId, videoAnalysisId) => {
 /**
  * Meminta penghapusan komentar yang sudah dianalisis dari YouTube.
  * @param {string} userId - ID User Judi Guard.
- * @param {string} analyzedCommentAppId - _id dari dokumen AnalyzedComment di database kita.
+ * @param {string} id - youtubeCommentId yang disimpan di database.
  * @returns {Promise<object>} Objek AnalyzedComment yang sudah diupdate.
  */
-const requestDeleteYoutubeComment = async (userId, analyzedCommentAppId) => {
-  // 1. Gunakan 'findOne' untuk mencari berdasarkan ID aplikasi DAN ID pengguna.
-  // Ini secara otomatis memastikan hanya pengguna yang benar yang bisa menemukan (dan menghapus) komentar ini.
+
+const requestDeleteYoutubeComment = async (
+  userId,
+  analyzedCommentId,
+  youtubeCommentId
+) => {
   const commentToDelete = await AnalyzedComment.findOne({
-    _id: analyzedCommentAppId,
+    _id: analyzedCommentId,
     userId: userId,
+    youtubeCommentId: youtubeCommentId,
   });
 
   if (!commentToDelete) {
     throw new NotFoundError(
-      `Komentar dengan ID aplikasi ${analyzedCommentAppId} tidak ditemukan atau Anda tidak memiliki akses.`
+      `Komentar dengan ID ${analyzedCommentId} tidak ditemukan atau bukan milik Anda.`
     );
   }
 
-  // // 2. Verifikasi apakah komentar ini milik analisis yang diminta oleh user ini
-  // if (commentToDelete.userId.toString() !== userId) {
-  //   throw new ForbiddenError(
-  //     "Anda tidak memiliki izin untuk menghapus komentar ini."
-  //   );
-  // }
-
-  // 3. Jika sudah pernah ditandai terhapus, tidak perlu proses lagi (opsional, tergantung logika bisnis)
   if (commentToDelete.isDeletedOnYoutube) {
     console.log(
-      `[VideoAnalysisService] Komentar ${commentToDelete.youtubeCommentId} sudah ditandai terhapus sebelumnya.`
+      `[Service] Komentar ${commentToDelete.youtubeCommentId} sudah ditandai terhapus.`
     );
     return commentToDelete.toObject();
   }
 
-  // 4. Dapatkan YouTube client yang terautentikasi untuk user
   let youtubeClient;
   try {
     youtubeClient = await youtubeService.getAuthenticatedYouTubeClient(userId);
   } catch (authError) {
-    throw authError; // Teruskan error autentikasi
+    throw authError;
   }
 
   commentToDelete.deletionAttemptedAt = Date.now();
 
   try {
-    // 5. Panggil youtubeService untuk menghapus komentar dari YouTube
     await youtubeService.deleteYoutubeComment(
       commentToDelete.youtubeCommentId,
-      { youtubeClient }
+      {
+        youtubeClient,
+      }
     );
 
-    // 6. Update status di database kita
     commentToDelete.isDeletedOnYoutube = true;
-    commentToDelete.deletionError = null; // Hapus error sebelumnya jika ada
+    commentToDelete.deletionError = null;
+    await commentToDelete.save();
+
     console.log(
-      `[VideoAnalysisService] Komentar ${commentToDelete.youtubeCommentId} berhasil dihapus dari YouTube & status di DB diupdate.`
+      `[Service] Komentar ${commentToDelete.youtubeCommentId} berhasil dihapus.`
     );
   } catch (error) {
-    console.error(
-      `[VideoAnalysisService] Gagal menghapus komentar ${commentToDelete.youtubeCommentId} dari YouTube:`,
-      error.message
-    );
     commentToDelete.isDeletedOnYoutube = false;
-    commentToDelete.deletionError = error.message; // Simpan pesan error
-    // Teruskan error agar controller bisa memberi respons yang sesuai
-    // Tidak perlu save di sini jika errornya akan di-throw dan tidak ada perubahan state penting lainnya.
-    // Jika kita ingin menyimpan deletionAttemptedAt dan deletionError, maka save perlu.
-    await commentToDelete.save(); // Simpan usaha penghapusan dan errornya
-    throw error; // Teruskan error asli dari youtubeService (misalnya AppError dengan status code yang sesuai)
+    commentToDelete.deletionError = error.message;
+    await commentToDelete.save();
+    throw error;
   }
 
-  await commentToDelete.save();
   return commentToDelete.toObject();
 };
 

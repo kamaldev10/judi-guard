@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 // src/hooks/useVideoAnalysis.js
 import { useState, useEffect, useCallback } from "react";
 import Swal from "sweetalert2";
@@ -348,6 +349,7 @@ export const useVideoAnalysis = () => {
           text: `Video "${initialAnalysisData.videoTitle || "YouTube"}" telah selesai diproses. Mengambil daftar komentar...`,
         });
         const fetchedComments = await fetchComments(initialAnalysisData._id);
+        // console.log("fetchedComments :", fetchedComments);
         Swal.close();
         Swal.fire(
           "Analisis Selesai!",
@@ -411,7 +413,6 @@ export const useVideoAnalysis = () => {
         setIsLoading(false);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [videoUrl, checkPrerequisites, fetchComments]); // Hapus 'isAnalyzing' dari dependensi useCallback untuk handleSubmitAnalysis agar tidak memicu pendefinisian ulang saat isAnalyzing berubah di dalamnya.
   // Jika ada logika yang bergantung pada isAnalyzing *sebelum* async, ia bisa dimasukkan.
 

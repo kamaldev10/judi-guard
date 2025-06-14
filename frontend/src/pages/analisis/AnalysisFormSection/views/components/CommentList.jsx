@@ -66,7 +66,7 @@ const CommentList = ({
                     {comment.commentTextDisplay}
                   </p>
                 </div>
-                {/* Tombol hapus "hidden" sementara */}
+
                 <button
                   type="button"
                   onClick={() =>
@@ -74,7 +74,7 @@ const CommentList = ({
                   }
                   disabled={isActionInProgress}
                   title="Hapus komentar ini dari YouTube"
-                  className={`hidden p-1.5 rounded-md text-xs whitespace-nowrap ${
+                  className={` p-1.5 rounded-md text-xs whitespace-nowrap ${
                     comment.classification === "JUDI"
                       ? "bg-pink-500 hover:bg-pink-600"
                       : "bg-gray-400 hover:bg-gray-500"

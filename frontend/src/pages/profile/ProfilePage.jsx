@@ -98,7 +98,7 @@ const UserProfilePage = () => {
     isDeleting, // True jika proses hapus akun sedang berjalan
 
     handleEditProfile, // Fungsi untuk navigasi ke halaman edit profil
-    executeDeleteAccount, // Fungsi untuk memulai proses hapus akun (setelah konfirmasi)
+    // executeDeleteAccount, // Fungsi untuk memulai proses hapus akun (setelah konfirmasi)
 
     isYoutubeConnected, // Boolean, true jika akun YouTube terhubung
     youtubeChannelInfo, // Objek info channel YouTube (misal { name, thumbnailUrl }) atau null

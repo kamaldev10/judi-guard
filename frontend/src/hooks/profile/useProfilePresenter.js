@@ -75,7 +75,7 @@ export const useProfilePresenter = () => {
       // state global dan localStorage terupdate dengan data terbaru.
       refreshUser().then(() => {
         if (linked === "true") {
-          toast.success(successMsgParam || "Akun YouTube berhasil terhubung!");
+          // toast.success(successMsgParam || "Akun YouTube berhasil terhubung!");
           setYoutubeStatusMessage(successMsgParam || "Berhasil terhubung!");
         } else if (linked === "false") {
           const decodedErrorMsg = errorMsgParam

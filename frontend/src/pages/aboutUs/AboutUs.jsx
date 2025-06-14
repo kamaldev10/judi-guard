@@ -75,7 +75,7 @@ const AboutUs = () => {
               video yang dipantau.
             </li>
             <li>
-              ⚙️ Penanganan Error: Dirancang dengan sistem penanganan error yang
+              Penanganan Error: Dirancang dengan sistem penanganan error yang
               tangguh untuk memastikan pengalaman pengguna yang mulus.
             </li>
           </ul>

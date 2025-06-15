@@ -311,14 +311,30 @@ export const batchDeleteJudiCommentsApi = async (analysisId) => {
 };
 
 // Meminta penghapusan satu komentar spesifik.
-export const deleteSingleCommentApi = async (commentAppId) => {
+export const deleteSingleCommentApi = async (analyzedCommentId) => {
   try {
     const response = await apiClient.delete(
-      `/analysis/comments/${commentAppId}`
+      `/analysis/comments/${analyzedCommentId}`
     );
     return response.data; // Asumsi backend mengembalikan { success: true, message: "..." }
   } catch (error) {
     throw new Error(error);
+  }
+};
+
+/**
+ * Mengambil link moderasi komentar dari backend.
+ * @param {string} analysisId - ID dari analisis yang sedang dilihat.
+ * @returns {Promise<string>} URL ke YouTube Studio.
+ */
+export const getStudioLinkApi = async (analysisId) => {
+  try {
+    const response = await apiClient.get(`/studio/comments-link/${analysisId}`);
+    return response.data.data.url;
+  } catch (error) {
+    const message =
+      error.response?.data?.message || "Gagal mendapatkan link YouTube Studio.";
+    throw new Error(message);
   }
 };
 

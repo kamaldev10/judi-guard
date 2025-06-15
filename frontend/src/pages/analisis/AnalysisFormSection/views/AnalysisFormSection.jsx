@@ -27,8 +27,7 @@ const AnalysisFormSection = () => {
     stats,
     pollingMessage,
     handleSubmitAnalysis,
-    handleBatchDeleteJudiComments,
-    handleDeleteSingleComment,
+    handleManageComments,
   } = useVideoAnalysis();
 
   const isActionInProgress = isLoading || isAnalyzing || isDeleting;
@@ -73,14 +72,14 @@ const AnalysisFormSection = () => {
                 <AnalysisSummary
                   pieChartData={pieChartData}
                   stats={stats}
-                  onBatchDelete={handleBatchDeleteJudiComments}
+                  onManageComments={handleManageComments}
                   isActionInProgress={isActionInProgress}
                 />
               )}
 
             <CommentList
               comments={analyzedComments}
-              onDeleteSingle={handleDeleteSingleComment}
+              // onDeleteSingle={handleDeleteSingleComment}
               isActionInProgress={isActionInProgress}
               isLoadingInitial={
                 isLoading && analyzedComments.length === 0 && !isAnalyzing

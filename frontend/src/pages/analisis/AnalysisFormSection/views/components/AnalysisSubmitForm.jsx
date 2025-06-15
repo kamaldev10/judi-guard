@@ -132,7 +132,7 @@ const AnalysisSubmitForm = ({
             {isActionInProgress ? (
               // State Loading: Ikon spinner dan teks responsif
               <>
-                <LoadingSpinner className="w-5 h-5" />
+                <LoadingSpinner className="w-5 h-5 animate-spin " />
                 <span className="ml-2">Memproses...</span>
               </>
             ) : (

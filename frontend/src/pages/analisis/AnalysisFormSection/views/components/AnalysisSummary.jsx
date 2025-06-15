@@ -1,14 +1,7 @@
 // src/features/video-analysis/views/components/AnalysisSummary.jsx
 import React from "react";
 import PropTypes from "prop-types";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import StatBox from "./StatBox";
 import AnalysisLegend from "./AnalysisLegend";
 import AnalysisTooltip from "./AnalysisTooltip"; // <-- Impor komponen tooltip baru
@@ -16,14 +9,14 @@ import {
   CATEGORY_DISPLAY_NAMES,
   PIE_CHART_COLORS,
 } from "../../constants/chartConstants"; // <-- Pastikan path ini benar
-
+import { Bolt } from "lucide-react";
 /**
  * Komponen utama yang menampilkan ringkasan analisis visual.
  */
 const AnalysisSummary = ({
   pieChartData,
   stats,
-  onBatchDelete,
+  onManageComments,
   isActionInProgress,
 }) => {
   /**
@@ -155,11 +148,12 @@ const AnalysisSummary = ({
         <div className="mt-5 justify-end flex">
           <button
             type="button"
-            onClick={onBatchDelete}
+            onClick={onManageComments}
             disabled={isActionInProgress}
-            className="bg-teal-700 text-white px-5 py-2.5 rounded-lg hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 focus:ring-offset-sky-100 transition-all duration-300 font-semibold shadow-md text-sm disabled:opacity-60"
+            className="flex bg-teal-700 text-white px-5 py-2.5 rounded-lg hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 focus:ring-offset-sky-100 transition-all duration-300 font-semibold shadow-md text-sm disabled:opacity-60"
           >
-            Delete All Judi Comments
+            <Bolt className="w-5 h-5 mr-1 sm:mr-2 text-white cursor-pointer" />
+            <span>Kelola Komentar</span>
           </button>
         </div>
       )}
@@ -171,7 +165,7 @@ const AnalysisSummary = ({
 AnalysisSummary.propTypes = {
   pieChartData: PropTypes.array.isRequired,
   stats: PropTypes.object.isRequired,
-  onBatchDelete: PropTypes.func.isRequired,
+  onManageComments: PropTypes.func.isRequired,
   isActionInProgress: PropTypes.bool.isRequired,
 };
 

@@ -6,9 +6,10 @@ import {
   submitVideoForAnalysisApi,
   getVideoAnalysisApi,
   getAnalyzedCommentsApi,
-  batchDeleteJudiCommentsApi,
-  deleteSingleCommentApi,
+  // batchDeleteJudiCommentsApi,
+  // deleteSingleCommentApi,
   getCurrentUserApi,
+  getStudioLinkApi,
 } from "../../services/api"; // Pastikan path ini benar
 import { validateYoutubeUrl } from "../../utils/FormValidators"; // Pastikan path dan nama file (FormValidators vs formValidator) konsisten
 
@@ -31,7 +32,7 @@ export const useVideoAnalysis = () => {
   const [videoUrl, setVideoUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false); // Indikator loading umum untuk operasi API yang singkat atau tidak spesifik
   const [isAnalyzing, setIsAnalyzing] = useState(false); // True saat proses analisis & polling utama aktif
-  const [isDeleting, setIsDeleting] = useState(false); // True saat proses penghapusan (batch atau tunggal) aktif
+  // const [isDeleting, setIsDeleting] = useState(false); // True saat proses penghapusan (batch atau tunggal) aktif
 
   // State untuk hasil analisis
   const [analysisId, setAnalysisId] = useState(null); // ID dari VideoAnalysis yang sedang/telah diproses
@@ -417,152 +418,236 @@ export const useVideoAnalysis = () => {
   // Jika ada logika yang bergantung pada isAnalyzing *sebelum* async, ia bisa dimasukkan.
 
   /**
+   *FITUR INI AKAN DIGUNAKAN KETIKA SUDAH DISEDIAKAN OLEH YOUTUBE DATA API
    * Menangani permintaan penghapusan semua komentar "JUDI" untuk analisis saat ini.
    */
-  const handleBatchDeleteJudiComments = useCallback(async () => {
-    if (!checkPrerequisites("menghapus semua komentar 'JUDI'")) return;
+  // const handleBatchDeleteJudiComments = useCallback(async () => {
+  //   if (!checkPrerequisites("menghapus semua komentar 'JUDI'")) return;
 
-    if (!analysisId) {
-      Swal.fire(
-        "Error",
-        "Tidak ada ID analisis aktif untuk operasi ini.",
-        "error"
-      );
-      return;
-    }
+  //   if (!analysisId) {
+  //     Swal.fire(
+  //       "Error",
+  //       "Tidak ada ID analisis aktif untuk operasi ini.",
+  //       "error"
+  //     );
+  //     return;
+  //   }
 
-    if ((stats.JUDI || 0) === 0) {
-      Swal.fire(
-        "Info",
-        "Tidak ada komentar berkategori 'JUDI' yang dapat dihapus.",
-        "info"
-      );
-      return;
-    }
+  //   if ((stats.JUDI || 0) === 0) {
+  //     Swal.fire(
+  //       "Info",
+  //       "Tidak ada komentar berkategori 'JUDI' yang dapat dihapus.",
+  //       "info"
+  //     );
+  //     return;
+  //   }
 
-    const confirmResult = await Swal.fire({
-      title: "Anda yakin?",
-      text: `Semua ${stats.JUDI} komentar yang terdeteksi 'JUDI' akan dihapus dari YouTube. Tindakan ini tidak dapat diurungkan!`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Ya, Hapus Semua!",
-      cancelButtonText: "Batal",
-    });
+  //   const confirmResult = await Swal.fire({
+  //     title: "Anda yakin?",
+  //     text: `Semua ${stats.JUDI} komentar yang terdeteksi 'JUDI' akan dihapus dari YouTube. Tindakan ini tidak dapat diurungkan!`,
+  //     icon: "warning",
+  //     showCancelButton: true,
+  //     confirmButtonColor: "#d33",
+  //     cancelButtonColor: "#3085d6",
+  //     confirmButtonText: "Ya, Hapus Semua!",
+  //     cancelButtonText: "Batal",
+  //   });
 
-    if (confirmResult.isConfirmed) {
-      setIsDeleting(true);
-      setIsLoading(true);
-      setPollingMessage("Memproses penghapusan komentar 'JUDI'...");
-      Swal.fire({
-        title: "Menghapus Komentar...",
-        text: 'Sedang menghapus semua komentar "JUDI"...',
-        icon: "info",
-        allowOutsideClick: false,
-        didOpen: () => Swal.showLoading(),
-      });
+  //   if (confirmResult.isConfirmed) {
+  //     setIsDeleting(true);
+  //     setIsLoading(true);
+  //     setPollingMessage("Memproses penghapusan komentar 'JUDI'...");
+  //     Swal.fire({
+  //       title: "Menghapus Komentar...",
+  //       text: 'Sedang menghapus semua komentar "JUDI"...',
+  //       icon: "info",
+  //       allowOutsideClick: false,
+  //       didOpen: () => Swal.showLoading(),
+  //     });
 
-      try {
-        const response = await batchDeleteJudiCommentsApi(analysisId);
-        Swal.close();
-        Swal.fire(
-          "Proses Selesai!",
-          `${response.message || "Operasi penghapusan selesai."} Berhasil: ${response.successfullyDeleted || 0}. Gagal: ${response.failedToDelete || 0}.`,
-          (response.failedToDelete || 0) > 0 ? "warning" : "success"
-        );
-        await fetchComments(analysisId); // Refresh daftar komentar
-      } catch (err) {
-        Swal.close();
-        handleApiError(err, "penghapusan komentar");
+  //     try {
+  //       const response = await batchDeleteJudiCommentsApi(analysisId);
+  //       Swal.close();
+  //       Swal.fire(
+  //         "Proses Selesai!",
+  //         `${response.message || "Operasi penghapusan selesai."} Berhasil: ${response.successfullyDeleted || 0}. Gagal: ${response.failedToDelete || 0}.`,
+  //         (response.failedToDelete || 0) > 0 ? "warning" : "success"
+  //       );
+  //       await fetchComments(analysisId); // Refresh daftar komentar
+  //     } catch (err) {
+  //       Swal.close();
+  //       handleApiError(err, "penghapusan komentar");
 
-        if (
-          err.message.toLowerCase().includes("otorisasi youtube") ||
-          err.message.toLowerCase().includes("izin tidak cukup")
-        ) {
-          Swal.fire(
-            "Otorisasi YouTube Gagal",
-            "Gagal menghapus komentar. Pastikan akun YouTube Anda terhubung dengan izin yang benar.",
-            "error"
-          );
-        } else {
-          Swal.fire("Error Hapus Massal", err.message, "error");
-        }
-      } finally {
-        setIsDeleting(false);
-        setIsLoading(false);
-        setPollingMessage("");
-      }
-    }
-  }, [analysisId, stats, checkPrerequisites, fetchComments]); // stats menjadi dependensi
+  //       if (
+  //         err.message.toLowerCase().includes("otorisasi youtube") ||
+  //         err.message.toLowerCase().includes("izin tidak cukup")
+  //       ) {
+  //         Swal.fire(
+  //           "Otorisasi YouTube Gagal",
+  //           "Gagal menghapus komentar. Pastikan akun YouTube Anda terhubung dengan izin yang benar.",
+  //           "error"
+  //         );
+  //       } else {
+  //         Swal.fire("Error Hapus Massal", err.message, "error");
+  //       }
+  //     } finally {
+  //       setIsDeleting(false);
+  //       setIsLoading(false);
+  //       setPollingMessage("");
+  //     }
+  //   }
+  // }, [analysisId, stats, checkPrerequisites, fetchComments]); // stats menjadi dependensi
+
+  //FITUR INI AKAN DIGUNAKAN KETIKA SUDAH DISEDIAKAN OLEH YOUTUBE DATA API
+  // const handleDeleteSingleComment = useCallback(
+  //   async (analyzedCommentId, commentText) => {
+  //     if (!checkPrerequisites("menghapus komentar ini")) return;
+
+  //     // Store original comments for rollback
+  //     const originalComments = [...analyzedComments];
+  //     const commentToDelete = originalComments.find(
+  //       (c) => c._id === analyzedCommentId
+  //     );
+
+  //     if (!commentToDelete) {
+  //       Swal.fire("Error", "Komentar tidak ditemukan.", "error");
+  //       return;
+  //     }
+
+  //     // Optimistic update
+  //     setAnalyzedComments((prev) =>
+  //       prev.filter((c) => c._id !== analyzedCommentId)
+  //     );
+
+  //     try {
+  //       const confirmResult = await Swal.fire({
+  //         title: "Konfirmasi Penghapusan",
+  //         html: `Yakin hapus komentar: <i>"${
+  //           commentText.length > 100
+  //             ? `${commentText.substring(0, 100)}...`
+  //             : commentText
+  //         }"</i>?`,
+  //         icon: "warning",
+  //         showCancelButton: true,
+  //         confirmButtonColor: "#d33",
+  //         cancelButtonColor: "#3085d6",
+  //         confirmButtonText: "Ya, Hapus",
+  //         cancelButtonText: "Batal",
+  //       });
+
+  //       if (!confirmResult.isConfirmed) {
+  //         setAnalyzedComments(originalComments);
+  //         return;
+  //       }
+
+  //       setIsDeleting(true);
+
+  //       // API call with enhanced error handling
+  //       const response = await deleteSingleCommentApi(analyzedCommentId);
+
+  //       if (response.error) {
+  //         if (response.error.code === 403) {
+  //           throw new Error(`
+  //         Gagal menghapus: Komentar ini bukan milik akun YouTube yang terhubung.
+  //         Silakan hubungkan akun YouTube yang benar.
+  //       `);
+  //         }
+  //         throw new Error(response.error.message);
+  //       }
+
+  //       Swal.fire(
+  //         "Berhasil!",
+  //         `Komentar "${commentToDelete.youtubeCommentId}" berhasil dihapus dari YouTube.`,
+  //         "success"
+  //       );
+  //     } catch (error) {
+  //       // Rollback UI
+  //       setAnalyzedComments(originalComments);
+
+  //       let errorMessage = "Gagal menghapus komentar";
+  //       let errorDetails = "";
+
+  //       if (error.response?.data?.error) {
+  //         // Handle API structured errors
+  //         errorMessage = error.response.data.error.message;
+  //         errorDetails = error.response.data.error.details;
+  //       } else if (error.message.includes("Kuota")) {
+  //         errorMessage = "Kuota API YouTube habis, coba lagi nanti";
+  //       } else if (error.message.includes("tidak valid")) {
+  //         errorMessage = "Format komentar tidak valid";
+  //       } else if (error.message.includes("NOT_COMMENT_OWNER")) {
+  //         errorMessage = "Anda bukan pemilik komentar ini";
+  //       } else if (error.message.includes("COMMENT_NOT_FOUND")) {
+  //         errorMessage = "Komentar sudah dihapus atau tidak ditemukan";
+  //       }
+
+  //       await Swal.fire({
+  //         title: "Error",
+  //         html: `${errorMessage}${errorDetails ? `<br><small>${errorDetails}</small>` : ""}`,
+  //         icon: "error",
+  //       });
+  //     } finally {
+  //       setIsDeleting(false);
+  //     }
+  //   },
+  //   [analysisId, analyzedComments, checkPrerequisites, deleteSingleCommentApi]
+  // );
 
   /**
-   * Menangani permintaan penghapusan satu komentar spesifik dari YouTube.
-   * @param {string} commentAppId - _id MongoDB dari komentar yang akan dihapus.
-   * @param {string} commentText - Teks komentar (untuk ditampilkan di dialog konfirmasi).
+   * Menangani klik pada tombol "Kelola Komentar", yang akan menampilkan
+   * popup edukatif dan mengarahkan pengguna ke YouTube Studio.
    */
-  const handleDeleteSingleComment = useCallback(
-    async (commentAppId, commentText) => {
-      if (!checkPrerequisites("menghapus komentar ini")) return;
-      if (!analysisId) {
-        Swal.fire("Error", "Konteks analisis video tidak ditemukan.", "error");
-        return;
-      } // Seharusnya tidak terjadi jika tombol muncul
+  const handleManageComments = useCallback(async () => {
+    if (!checkPrerequisites("mengelola komentar")) return;
+    if (!analysisId) return; // Seharusnya tidak terjadi jika tombol muncul
 
-      const confirmResult = await Swal.fire({
-        title: "Hapus komentar ini dari YouTube?",
-        html: `Anda yakin ingin menghapus komentar:<br/><br/>"<i>${commentText.substring(0, 100)}${commentText.length > 100 ? "..." : ""}</i>"`,
-        icon: "warning",
+    setIsLoading(true); // Tampilkan loading sementara mengambil link
+
+    try {
+      // 1. Ambil link YouTube Studio dari backend (langkah ini sudah benar)
+      const studioUrl = await getStudioLinkApi(analysisId);
+
+      // 2. Tampilkan popup SweetAlert yang LEBIH INFORMATIF
+      const result = await Swal.fire({
+        title: "Anda Akan Diarahkan ke YouTube Studio",
+        icon: "info",
+        // <<< PERUBAHAN UTAMA DI SINI >>>
+        // Beri tahu pengguna akun mana yang harus mereka gunakan
+        html: `
+        <div style="text-align: left; padding: 0 1em;">
+          <p>Untuk memoderasi komentar, Anda akan membuka tab baru.</p>
+          <br>
+          <p>Pastikan Anda sudah login di browser Anda dengan akun Google yang terhubung:</p>
+          <p style="background-color: #f0f0f0; border-radius: 5px; padding: 10px; margin-top: 10px; font-weight: bold;">
+            ${currentUser?.email || "Akun Google Anda"}
+          </p>
+        </div>
+      `,
         showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
-        confirmButtonText: "Ya, Hapus!",
+        confirmButtonColor: "#007BFF", // Warna biru untuk aksi utama
+        cancelButtonColor: "#6e7881",
+        confirmButtonText: "Ya, Buka YouTube Studio",
         cancelButtonText: "Batal",
       });
 
-      if (confirmResult.isConfirmed) {
-        setIsDeleting(true);
-        setIsLoading(true); // Set kedua loading state
-        try {
-          await deleteSingleCommentApi(commentAppId);
-          Swal.fire(
-            "Terhapus!",
-            "Komentar telah berhasil dihapus dari YouTube.",
-            "success"
-          );
-          // Update UI secara optimistik dengan menghapus komentar dari state lokal
-          setAnalyzedComments((prevComments) =>
-            prevComments.filter((comment) => comment._id !== commentAppId)
-          );
-        } catch (err) {
-          if (
-            err.message.toLowerCase().includes("otorisasi youtube") ||
-            err.message.toLowerCase().includes("izin tidak cukup")
-          ) {
-            Swal.fire(
-              "Otorisasi YouTube Gagal",
-              "Gagal menghapus komentar. Pastikan akun YouTube Anda terhubung dengan izin yang benar.",
-              "error"
-            );
-          } else {
-            Swal.fire("Error Menghapus Komentar", err.message, "error");
-          }
-        } finally {
-          setIsDeleting(false);
-          setIsLoading(false); // Reset kedua loading state
-        }
+      // 3. Jika pengguna setuju, buka link di tab baru (tidak berubah)
+      if (result.isConfirmed) {
+        window.open(studioUrl, "_blank", "noopener,noreferrer");
       }
-    },
-    [analysisId, checkPrerequisites]
-  ); // fetchComments tidak diperlukan jika update optimistik sudah cukup
+    } catch (err) {
+      // Penanganan error Anda yang sudah ada
+      handleApiError(err, "mengambil link moderasi");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [analysisId, currentUser, checkPrerequisites, handleApiError]);
 
-  // Mengembalikan semua state dan handler yang dibutuhkan oleh View
   return {
     videoUrl,
     setVideoUrl,
     isLoading,
     isAnalyzing,
-    isDeleting,
+    // isDeleting,
     analysisId,
     videoAnalysisData,
     analyzedComments,
@@ -574,7 +659,8 @@ export const useVideoAnalysis = () => {
     authError, // Diekspor untuk View menampilkan error autentikasi user
     isUserLoading, // Diekspor untuk View menampilkan loading data user
     handleSubmitAnalysis,
-    handleBatchDeleteJudiComments,
-    handleDeleteSingleComment,
+    handleManageComments,
+    // handleBatchDeleteJudiComments,
+    // handleDeleteSingleComment,
   };
 };

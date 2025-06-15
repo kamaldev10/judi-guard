@@ -1,6 +1,6 @@
 // src/api/controllers/user.controller.js
 
-const User = require("../../models/User.model");
+const User = require("../models/User.model");
 const { NotFoundError, BadRequestError } = require("../../utils/errors");
 
 /**

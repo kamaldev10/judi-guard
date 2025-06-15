@@ -1,7 +1,7 @@
 // src/api/middlewares/isAuthenticated.js
 const { verifyToken } = require("../../utils/jwt");
 const { UnauthorizedError, ForbiddenError } = require("../../utils/errors");
-const User = require("../../models/User.model"); // Opsional: jika ingin mengambil data user lengkap
+const User = require("../models/User.model"); // Opsional: jika ingin mengambil data user lengkap
 
 const isAuthenticated = async (req, res, next) => {
   try {

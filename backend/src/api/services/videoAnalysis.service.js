@@ -1,7 +1,7 @@
 // src/api/services/videoAnalysis.service.js
-const User = require("../../models/User.model");
-const VideoAnalysis = require("../../models/VideoAnalysis.model");
-const AnalyzedComment = require("../../models/AnalyzedComment.model");
+const User = require("../models/User.model");
+const VideoAnalysis = require("../models/VideoAnalysis.model");
+const AnalyzedComment = require("../models/AnalyzedComment.model");
 const youtubeService = require("./youtube.service");
 const { getYouTubeVideoId } = require("../../utils/youtubeHelper");
 const {
@@ -71,10 +71,27 @@ const startVideoAnalysis = async (userId, youtubeVideoUrl) => {
 
     // --- BAGIAN 3: PROSES DENGAN AI (Dengan Optimasi) ---
     const validComments = commentThreads
-      .map((thread) => thread?.snippet?.topLevelComment)
-      .filter((comment) => comment?.id && comment?.snippet);
+      .map((thread) => {
+        const comment = thread?.snippet?.topLevelComment;
+        // Validasi ketat struktur komentar
+        if (
+          !comment?.id ||
+          !comment.snippet ||
+          !comment.snippet.authorChannelId?.value
+        ) {
+          console.warn("Struktur komentar tidak valid:", comment);
+          return null;
+        }
+        return comment;
+      })
+      .filter(Boolean); // Hapus null/undefined
 
-    const commentIdsFromYouTube = validComments.map((c) => c.id);
+    const commentIdsFromYouTube = validComments.map((c) => {
+      if (!c.id.startsWith("Ug")) {
+        throw new Error(`Format YouTube Comment ID tidak valid: ${c.id}`);
+      }
+      return c.id;
+    });
     const existingCommentIds = new Set(
       (
         await AnalyzedComment.find({
@@ -88,7 +105,7 @@ const startVideoAnalysis = async (userId, youtubeVideoUrl) => {
 
     if (newCommentsToAnalyze.length > 0) {
       console.log(
-        `[VideoAnalysis] Memulai analisis AI untuk ${newCommentsToAnalyze.length} komentar baru...`
+        `Memulai analisis untuk ${newCommentsToAnalyze.length} komentar baru`
       );
 
       const analysisPromises = newCommentsToAnalyze.map((comment) =>
@@ -96,21 +113,24 @@ const startVideoAnalysis = async (userId, youtubeVideoUrl) => {
       );
       const aiResults = await Promise.all(analysisPromises);
 
-      let successfulSaves = 0;
-      console.log(
-        "[DB DEBUG] Mencoba menyimpan dokumen satu per satu untuk menemukan error..."
-      );
+      const saveOperations = [];
 
-      // Loop satu per satu untuk debugging
       for (let i = 0; i < newCommentsToAnalyze.length; i++) {
         const comment = newCommentsToAnalyze[i];
         const aiResult = aiResults[i];
 
+        // Pastikan semua field penting ada
+        if (!comment.snippet.authorChannelId?.value) {
+          console.error("Komentar tidak memiliki authorChannelId:", comment.id);
+          continue;
+        }
+
         const documentToSave = {
-          analysisId: new mongoose.Types.ObjectId(analysisEntry._id),
+          analysisId: analysisEntry._id, // Tidak perlu new mongoose.Types.ObjectId
           userId: new mongoose.Types.ObjectId(userId),
           youtubeVideoId,
           youtubeCommentId: comment.id,
+          authorChannelId: comment.snippet.authorChannelId.value, // << PENAMBAHAN PENTING
           parentYoutubeCommentId: null,
           commentTextOriginal: comment.snippet.textOriginal,
           commentTextDisplay: comment.snippet.textDisplay,
@@ -122,28 +142,33 @@ const startVideoAnalysis = async (userId, youtubeVideoUrl) => {
           classification: aiResult.classification,
           aiConfidenceScore: aiResult.confidenceScore,
           aiModelVersion: aiResult.modelVersion,
+          metadata: {
+            // Simpan data tambahan
+            isReply: false,
+            originalResponse: comment, // Simpan raw data untuk referensi
+          },
         };
 
-        try {
-          // Gunakan .create() untuk menyimpan satu dokumen
-          await AnalyzedComment.create(documentToSave);
-          successfulSaves++;
-        } catch (singleSaveError) {
-          // JIKA ADA ERROR, AKAN TERTANGKAP DI SINI!
-          console.error(
-            `❌ GAGAL MENYIMPAN DOKUMEN DENGAN ID YOUTUBE: ${documentToSave.youtubeCommentId}`
-          );
-          console.error("DETAIL ERROR VALIDASI:", singleSaveError.message);
-          // Kita tidak melempar error agar loop bisa lanjut dan memeriksa dokumen lain
-        }
+        saveOperations.push(
+          AnalyzedComment.create(documentToSave)
+            .then(() => 1)
+            .catch((error) => {
+              console.error(
+                `Gagal menyimpan komentar ${comment.id}:`,
+                error.message
+              );
+              return 0;
+            })
+        );
       }
 
+      const results = await Promise.all(saveOperations);
+      const successfulSaves = results.reduce((sum, val) => sum + val, 0);
+
       console.log(
-        `[DB DEBUG] Selesai. Dokumen yang berhasil disimpan: ${successfulSaves} dari ${newCommentsToAnalyze.length}`
+        `Berhasil menyimpan ${successfulSaves}/${newCommentsToAnalyze.length} komentar`
       );
       analysisEntry.totalCommentsAnalyzed = successfulSaves;
-    } else {
-      console.log(`[VideoAnalysis] Tidak ada komentar baru untuk dianalisis.`);
     }
 
     // --- BAGIAN 4: FINALISASI ---
@@ -357,70 +382,158 @@ const requestBatchDeleteJudiComments = async (userId, analysisId) => {
   };
 };
 
-/**
- * Meminta penghapusan komentar yang sudah dianalisis dari YouTube.
- * @param {string} userId - ID User Judi Guard.
- * @param {string} id - youtubeCommentId yang disimpan di database.
- * @returns {Promise<object>} Objek AnalyzedComment yang sudah diupdate.
- */
-
 const requestDeleteYoutubeComment = async (
   userId,
   analyzedCommentId,
   youtubeCommentId
 ) => {
-  const commentToDelete = await AnalyzedComment.findOne({
+  // Validate IDs
+  if (!mongoose.Types.ObjectId.isValid(analyzedCommentId)) {
+    throw new BadRequestError("Invalid analyzed comment ID");
+  }
+
+  if (!youtubeCommentId?.startsWith("Ug")) {
+    throw new BadRequestError("Invalid YouTube comment ID format");
+  }
+
+  // Find and validate comment
+  const comment = await AnalyzedComment.findOne({
     _id: analyzedCommentId,
-    userId: userId,
-    youtubeCommentId: youtubeCommentId,
+    userId,
+    youtubeCommentId,
   });
 
-  if (!commentToDelete) {
-    throw new NotFoundError(
-      `Komentar dengan ID ${analyzedCommentId} tidak ditemukan atau bukan milik Anda.`
-    );
+  if (!comment) {
+    throw new NotFoundError("Comment not found or not owned by user");
   }
 
-  if (commentToDelete.isDeletedOnYoutube) {
-    console.log(
-      `[Service] Komentar ${commentToDelete.youtubeCommentId} sudah ditandai terhapus.`
-    );
-    return commentToDelete.toObject();
+  if (comment.isDeletedOnYoutube) {
+    return comment.toObject();
   }
-
-  let youtubeClient;
-  try {
-    youtubeClient = await youtubeService.getAuthenticatedYouTubeClient(userId);
-  } catch (authError) {
-    throw authError;
-  }
-
-  commentToDelete.deletionAttemptedAt = Date.now();
 
   try {
-    await youtubeService.deleteYoutubeComment(
-      commentToDelete.youtubeCommentId,
+    const youtubeClient = await youtubeService.getAuthenticatedYouTubeClient(
+      userId
+    );
+    await youtubeService.deleteYoutubeComment(youtubeCommentId, {
+      youtubeClient,
+    });
+
+    // Update comment status
+    const updatedComment = await AnalyzedComment.findByIdAndUpdate(
+      analyzedCommentId,
       {
-        youtubeClient,
-      }
+        isDeletedOnYoutube: true,
+        deletionAttemptedAt: new Date(),
+        deletionError: null,
+      },
+      { new: true }
     );
 
-    commentToDelete.isDeletedOnYoutube = true;
-    commentToDelete.deletionError = null;
-    await commentToDelete.save();
-
-    console.log(
-      `[Service] Komentar ${commentToDelete.youtubeCommentId} berhasil dihapus.`
-    );
+    return updatedComment.toObject();
   } catch (error) {
-    commentToDelete.isDeletedOnYoutube = false;
-    commentToDelete.deletionError = error.message;
-    await commentToDelete.save();
-    throw error;
-  }
+    // Update with error status
+    await AnalyzedComment.findByIdAndUpdate(analyzedCommentId, {
+      isDeletedOnYoutube: false,
+      deletionAttemptedAt: new Date(),
+      deletionError: error.message,
+    });
 
-  return commentToDelete.toObject();
+    // Re-throw with proper mapping
+    if (error.code === 400) {
+      throw new BadRequestError(error.message);
+    }
+    if (error.code === 403 && error.message.includes("NOT_COMMENT_OWNER")) {
+      console.error("Tidak bisa menghapus komentar orang lain!");
+      // Beri opsi alternatif (misal: laporkan komentar)
+      await youtubeService.reportComment(youtubeCommentId, "SPAM");
+    }
+    throw error;
+  } finally {
+    next(error);
+  }
 };
+
+// /**
+//  * Meminta penghapusan komentar yang sudah dianalisis dari YouTube.
+//  * @param {string} userId - ID User Judi Guard.
+//  * @param {string} id - youtubeCommentId yang disimpan di database.
+//  * @returns {Promise<object>} Objek AnalyzedComment yang sudah diupdate.
+//  */
+
+// const requestDeleteYoutubeComment = async (
+//   userId,
+//   analyzedCommentId,
+//   youtubeCommentId
+// ) => {
+//   // Validasi ID
+//   if (!mongoose.Types.ObjectId.isValid(analyzedCommentId)) {
+//     throw new BadRequestError("ID analisis tidak valid");
+//   }
+
+//   if (!youtubeCommentId?.startsWith("Ug")) {
+//     throw new BadRequestError("ID komentar YouTube tidak valid");
+//   }
+
+//   const commentToDelete = await AnalyzedComment.findOne({
+//     _id: analyzedCommentId,
+//     userId: userId,
+//     youtubeCommentId: youtubeCommentId,
+//   });
+
+//   if (!commentToDelete) {
+//     throw new NotFoundError(
+//       `Komentar dengan ID ${analyzedCommentId} tidak ditemukan atau bukan milik Anda.`
+//     );
+//   }
+
+//   if (commentToDelete.isDeletedOnYoutube) {
+//     console.log(
+//       `[Service] Komentar ${commentToDelete.youtubeCommentId} sudah ditandai terhapus.`
+//     );
+//     return commentToDelete.toObject();
+//   }
+
+//   let youtubeClient;
+//   try {
+//     youtubeClient = await youtubeService.getAuthenticatedYouTubeClient(userId);
+//   } catch (authError) {
+//     throw authError;
+//   }
+
+//   commentToDelete.deletionAttemptedAt = Date.now();
+
+//   try {
+//     await youtubeService.deleteYoutubeComment(
+//       commentToDelete.youtubeCommentId,
+//       {
+//         youtubeClient,
+//       }
+//     );
+
+//     commentToDelete.isDeletedOnYoutube = true;
+//     commentToDelete.deletionError = null;
+//     await commentToDelete.save();
+
+//     console.log(
+//       `[Service] Komentar ${commentToDelete.youtubeCommentId} berhasil dihapus.`
+//     );
+//   } catch (error) {
+//     commentToDelete.isDeletedOnYoutube = false;
+//     commentToDelete.deletionError = error.message;
+
+//     await commentToDelete.save();
+
+//     // Transform YouTube API error untuk frontend
+//     if (error.message.includes("tidak valid atau sudah dihapus")) {
+//       throw new BadRequestError(error.message);
+//     }
+
+//     throw error;
+//   }
+
+//   return commentToDelete.toObject();
+// };
 
 module.exports = {
   startVideoAnalysis,

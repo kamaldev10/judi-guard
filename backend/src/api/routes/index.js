@@ -4,6 +4,7 @@ const authRoutes = require("./auth.routes");
 const userRoutes = require("./user.routes");
 const videoAnalysisRoutes = require("./videoAnalysis.routes");
 const textPredictRoutes = require("./textPredict.routes");
+const studioRoutes = require("./studio.routes");
 
 const router = express.Router();
 
@@ -17,6 +18,7 @@ router.get("/health", (req, res) => {
 router.use("/auth", authRoutes);
 router.use("/users", userRoutes);
 router.use("/analysis", videoAnalysisRoutes);
+router.use("/studio", studioRoutes);
 router.use("/text", textPredictRoutes);
 
 module.exports = router;

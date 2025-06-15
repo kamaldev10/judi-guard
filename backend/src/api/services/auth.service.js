@@ -1,5 +1,5 @@
 // src/api/services/auth.service.js
-const User = require("../../models/User.model");
+const User = require("../models/User.model");
 const {
   AppError,
   BadRequestError,
@@ -12,7 +12,7 @@ const sendEmail = require("../../utils/emailSender"); // Impor pengirim email
 const crypto = require("crypto"); // Modul bawaan Node.js untuk generate string acak
 const config = require("../../config/environment");
 const { OAuth2Client } = require("google-auth-library"); // Penting untuk verifikasi ID Token
-const { PasswordReset } = require("../../models/PasswordReset.model");
+const { PasswordReset } = require("../models/PasswordReset.model");
 
 const generateOtp = () => {
   return crypto.randomInt(100000, 999999).toString();

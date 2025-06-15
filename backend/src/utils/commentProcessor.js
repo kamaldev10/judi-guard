@@ -2,7 +2,7 @@
 
 // Impor model dan service yang dibutuhkan oleh helper ini
 // Pastikan path ini benar relatif terhadap lokasi file utils Anda
-const AnalyzedComment = require("../models/AnalyzedComment.model");
+const AnalyzedComment = require("../api/models/AnalyzedComment.model");
 const aiService = require("../api/services/ai.service"); // Asumsi aiService ada di sini
 
 /**

@@ -1,6 +1,6 @@
 // src/api/services/youtube.service.js
 const { google } = require("googleapis");
-const User = require("../../models/User.model"); // Untuk mengambil token user
+const User = require("../models/User.model"); // Untuk mengambil token user
 const { createOAuth2Client } = require("../../utils/googleOAuth2Client"); // Utilitas OAuth2 client kita
 const {
   AppError,
@@ -181,7 +181,10 @@ const getVideoDetails = async (videoId, { youtubeClient, apiKey }) => {
       error.message &&
       error.message.includes("quotaExceeded")
     ) {
-      throw new AppError("Kuota YouTube API telah terlampaui.", 429); // Too Many Requests
+      throw new AppError(
+        "Kuota YouTube API telah terlampaui. Silahkan coba lagi esok hari",
+        429
+      ); // Too Many Requests
     }
 
     if (error.code === 404) {
@@ -365,88 +368,113 @@ const fetchCommentsForVideo = async (
   }
 };
 
-/**
- * Menghapus komentar dari YouTube dengan verifikasi dan retry mechanism.
- * @param {string} youtubeCommentId - ID komentar YouTube yang akan dihapus (contoh: "Ugy2aBi-smOB9BlVXIN4AaABAg").
- * @param {object} options
- * @param {google.youtube_v3.Youtube} options.youtubeClient - Client YouTube yang terautentikasi.
- * @param {string} [options.userChannelId] - Channel ID pengguna untuk verifikasi kepemilikan (opsional).
- * @param {number} [options.maxRetries=2] - Jumlah maksimal retry untuk error sementara.
- * @returns {Promise<void>}
- * @throws {AppError|NotFoundError} Jika gagal menghapus komentar.
- */
-const deleteYoutubeComment = async (
-  youtubeCommentId,
-  { youtubeClient, maxRetries = 2 }
-) => {
-  if (!youtubeClient) {
-    throw new AppError("Diperlukan youtubeClient...", 500);
-  }
-  if (!youtubeCommentId) {
-    throw new AppError("youtubeCommentId tidak boleh kosong.", 400);
-  }
+const deleteYoutubeComment = async (youtubeCommentId, { youtubeClient }) => {
+  try {
+    // 1. Verifikasi komentar ada
+    const commentRes = await youtubeClient.comments.list({
+      id: youtubeCommentId,
+      part: "snippet,id",
+    });
 
-  console.log(`[YouTubeService] Mulai hapus komentar ID: ${youtubeCommentId}`);
-
-  // <<< PERBAIKAN: Seluruh blok 'Verifikasi Kepemilikan' dihapus. >>>
-  // Pengecekan kepemilikan sudah cukup dilakukan di service layer atasnya
-  // dan oleh YouTube API itu sendiri saat mencoba menghapus.
-
-  // ✅ Retry mechanism (Logika ini sudah sangat baik dan tidak perlu diubah)
-  let attempt = 0;
-  let lastError;
-
-  while (attempt <= maxRetries) {
-    try {
-      await youtubeClient.comments.delete({ id: youtubeCommentId });
-
-      console.log(
-        `[YouTubeService] Komentar ${youtubeCommentId} berhasil dihapus.`
-      );
-      return;
-    } catch (error) {
-      attempt++;
-      lastError = error;
-
-      const errorCode = error.code;
-
-      // Not found
-      if (errorCode === 404) {
-        throw new NotFoundError(
-          `Komentar dengan ID ${youtubeCommentId} tidak ditemukan.`
-        );
-      }
-
-      // Rate limited
-      if (errorCode === 429 || errorCode === 403) {
-        const retryAfter = error.response?.headers?.["retry-after"] || 5;
-        console.warn(
-          `[YouTubeService] Rate limit (429/403). Retry setelah ${retryAfter} detik...`
-        );
-        await new Promise((res) => setTimeout(res, retryAfter * 1000));
-        continue;
-      }
-
-      // Retry untuk error 5xx
-      if (errorCode >= 500 && attempt <= maxRetries) {
-        const delay = Math.pow(2, attempt) * 1000;
-        console.warn(
-          `[YouTubeService] Error 5xx di attempt ${attempt}. Retry dalam ${delay} ms...`
-        );
-        await new Promise((res) => setTimeout(res, delay));
-        continue;
-      }
-
-      // Tidak bisa retry
-      throw error;
+    if (commentRes.data.items.length === 0) {
+      throw { code: 404, message: "COMMENT_NOT_FOUND" };
     }
-  }
 
-  throw new AppError(
-    `Gagal menghapus komentar setelah ${maxRetries} percobaan: ${lastError?.message}`,
-    lastError?.code || 500
-  );
+    // 2. Verifikasi kepemilikan
+    const myChannel = await youtubeClient.channels.list({
+      mine: true,
+      part: "id",
+    });
+
+    const comment = commentRes.data.items[0];
+    if (comment.snippet.authorChannelId.value !== myChannel.data.items[0].id) {
+      throw {
+        code: 403,
+        message: "NOT_COMMENT_OWNER",
+        details: {
+          yourChannelId: myChannel.data.items[0].id,
+          commentAuthorId: comment.snippet.authorChannelId.value,
+        },
+      };
+    }
+    console.log(
+      "[YOTUBE_SERVICE]Channel ID yang terautentikasi:",
+      myChannel.data.items[0].id
+    );
+    console.log(
+      "[YOTUBE_SERVICE]Pemilik komentar:",
+      comment.snippet.authorChannelId.value
+    );
+    // 3. Eksekusi penghapusan
+    const deleteRes = await youtubeClient.comments.delete({
+      id: youtubeCommentId,
+    });
+    return deleteRes.data;
+  } catch (error) {
+    console.error("YouTube API Error:", {
+      youtubeCommentId,
+      error: error.message,
+      details: error.details || error.response?.data,
+    });
+    throw error;
+  }
 };
+// /**
+//  * Menghapus komentar dari YouTube dengan verifikasi dan retry mechanism.
+//  * @param {string} youtubeCommentId - ID komentar YouTube yang akan dihapus (contoh: "Ugy2aBi-smOB9BlVXIN4AaABAg").
+//  * @param {object} options
+//  * @param {google.youtube_v3.Youtube} options.youtubeClient - Client YouTube yang terautentikasi.
+//  * @param {string} [options.userChannelId] - Channel ID pengguna untuk verifikasi kepemilikan (opsional).
+//  * @param {number} [options.maxRetries=2] - Jumlah maksimal retry untuk error sementara.
+//  * @returns {Promise<void>}
+//  * @throws {AppError|NotFoundError} Jika gagal menghapus komentar.
+//  */
+// const deleteYoutubeComment = async (commentId) => {
+//   try {
+//     // 1. Verifikasi format ID
+//     if (!commentId.startsWith("Ug")) {
+//       throw new Error("Invalid YouTube comment ID format");
+//     }
+
+//     // 2. Dapatkan data komentar lengkap
+//     const { data } = await youtube.comments.list({
+//       id: commentId,
+//       part: "id,snippet",
+//     });
+
+//     // 3. Verifikasi komentar ada
+//     if (data.items.length === 0) {
+//       throw new Error("Comment not found");
+//     }
+
+//     const comment = data.items[0];
+
+//     // 4. Verifikasi kepemilikan
+//     const myChannel = await youtube.channels.list({
+//       mine: true,
+//       part: "id",
+//     });
+
+//     if (comment.snippet.authorChannelId.value !== myChannel.data.items[0].id) {
+//       throw new Error("You do not own this comment");
+//     }
+
+//     // 5. Eksekusi penghapusan dengan ID yang benar
+//     const res = await youtube.comments.delete({
+//       id: comment.id, // Gunakan id dari level atas, bukan dari snippet
+//     });
+
+//     console.log(`Deleted comment: ${comment.snippet.textOriginal}`);
+//     return res.status === 204;
+//   } catch (error) {
+//     console.error("Delete failed:", {
+//       error: error.message,
+//       commentId,
+//       details: error.response?.data?.error,
+//     });
+//     return false;
+//   }
+// };
 
 module.exports = {
   getAuthenticatedYouTubeClient,

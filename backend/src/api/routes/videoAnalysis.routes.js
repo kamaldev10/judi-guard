@@ -34,7 +34,17 @@ router.get(
 router.delete(
   "/comments/:analyzedCommentId",
   isAuthenticated,
-  videoAnalysisController.deleteAnalyzedCommentController // Controller untuk hapus satu komentar
+  async (req, res, next) => {
+    try {
+      await videoAnalysisController.deleteAnalyzedCommentController(
+        req,
+        res,
+        next
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
 );
 
 // Menargetkan videoAnalysisId untuk menghapus semua komentar "judi" terkait.

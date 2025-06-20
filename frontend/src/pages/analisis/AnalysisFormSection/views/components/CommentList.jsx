@@ -65,7 +65,7 @@ const CommentList = ({
                   }
                   disabled={isActionInProgress}
                   aria-label="Hapus komentar"
-                  className={`sr-only p-2 rounded-md ${
+                  className={`p-2 rounded-md ${
                     comment.classification === "JUDI"
                       ? "text-pink-600 hover:bg-pink-200"
                       : "text-gray-600 hover:bg-gray-200"

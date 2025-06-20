@@ -7,7 +7,7 @@ import {
   getVideoAnalysisApi,
   getAnalyzedCommentsApi,
   // batchDeleteJudiCommentsApi,
-  // deleteSingleCommentApi,
+  deleteSingleCommentApi,
   getCurrentUserApi,
   getStudioLinkApi,
 } from "../../services/api"; // Pastikan path ini benar
@@ -32,7 +32,7 @@ export const useVideoAnalysis = () => {
   const [videoUrl, setVideoUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false); // Indikator loading umum untuk operasi API yang singkat atau tidak spesifik
   const [isAnalyzing, setIsAnalyzing] = useState(false); // True saat proses analisis & polling utama aktif
-  // const [isDeleting, setIsDeleting] = useState(false); // True saat proses penghapusan (batch atau tunggal) aktif
+  const [isDeleting, setIsDeleting] = useState(false); // True saat proses penghapusan (batch atau tunggal) aktif
 
   // State untuk hasil analisis
   const [analysisId, setAnalysisId] = useState(null); // ID dari VideoAnalysis yang sedang/telah diproses
@@ -499,99 +499,99 @@ export const useVideoAnalysis = () => {
   // }, [analysisId, stats, checkPrerequisites, fetchComments]); // stats menjadi dependensi
 
   //FITUR INI AKAN DIGUNAKAN KETIKA SUDAH DISEDIAKAN OLEH YOUTUBE DATA API
-  // const handleDeleteSingleComment = useCallback(
-  //   async (analyzedCommentId, commentText) => {
-  //     if (!checkPrerequisites("menghapus komentar ini")) return;
+  const handleDeleteSingleComment = useCallback(
+    async (analyzedCommentId, commentText) => {
+      if (!checkPrerequisites("menghapus komentar ini")) return;
 
-  //     // Store original comments for rollback
-  //     const originalComments = [...analyzedComments];
-  //     const commentToDelete = originalComments.find(
-  //       (c) => c._id === analyzedCommentId
-  //     );
+      // Store original comments for rollback
+      const originalComments = [...analyzedComments];
+      const commentToDelete = originalComments.find(
+        (c) => c._id === analyzedCommentId
+      );
 
-  //     if (!commentToDelete) {
-  //       Swal.fire("Error", "Komentar tidak ditemukan.", "error");
-  //       return;
-  //     }
+      if (!commentToDelete) {
+        Swal.fire("Error", "Komentar tidak ditemukan.", "error");
+        return;
+      }
 
-  //     // Optimistic update
-  //     setAnalyzedComments((prev) =>
-  //       prev.filter((c) => c._id !== analyzedCommentId)
-  //     );
+      // Optimistic update
+      setAnalyzedComments((prev) =>
+        prev.filter((c) => c._id !== analyzedCommentId)
+      );
 
-  //     try {
-  //       const confirmResult = await Swal.fire({
-  //         title: "Konfirmasi Penghapusan",
-  //         html: `Yakin hapus komentar: <i>"${
-  //           commentText.length > 100
-  //             ? `${commentText.substring(0, 100)}...`
-  //             : commentText
-  //         }"</i>?`,
-  //         icon: "warning",
-  //         showCancelButton: true,
-  //         confirmButtonColor: "#d33",
-  //         cancelButtonColor: "#3085d6",
-  //         confirmButtonText: "Ya, Hapus",
-  //         cancelButtonText: "Batal",
-  //       });
+      try {
+        const confirmResult = await Swal.fire({
+          title: "Konfirmasi Penghapusan",
+          html: `Yakin hapus komentar: <i>"${
+            commentText.length > 100
+              ? `${commentText.substring(0, 100)}...`
+              : commentText
+          }"</i>?`,
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#d33",
+          cancelButtonColor: "#3085d6",
+          confirmButtonText: "Ya, Hapus",
+          cancelButtonText: "Batal",
+        });
 
-  //       if (!confirmResult.isConfirmed) {
-  //         setAnalyzedComments(originalComments);
-  //         return;
-  //       }
+        if (!confirmResult.isConfirmed) {
+          setAnalyzedComments(originalComments);
+          return;
+        }
 
-  //       setIsDeleting(true);
+        setIsDeleting(true);
 
-  //       // API call with enhanced error handling
-  //       const response = await deleteSingleCommentApi(analyzedCommentId);
+        // API call with enhanced error handling
+        const response = await deleteSingleCommentApi(analyzedCommentId);
 
-  //       if (response.error) {
-  //         if (response.error.code === 403) {
-  //           throw new Error(`
-  //         Gagal menghapus: Komentar ini bukan milik akun YouTube yang terhubung.
-  //         Silakan hubungkan akun YouTube yang benar.
-  //       `);
-  //         }
-  //         throw new Error(response.error.message);
-  //       }
+        if (response.error) {
+          if (response.error.code === 403) {
+            throw new Error(`
+          Gagal menghapus: Komentar ini bukan milik akun YouTube yang terhubung.
+          Silakan hubungkan akun YouTube yang benar.
+        `);
+          }
+          throw new Error(response.error.message);
+        }
 
-  //       Swal.fire(
-  //         "Berhasil!",
-  //         `Komentar "${commentToDelete.youtubeCommentId}" berhasil dihapus dari YouTube.`,
-  //         "success"
-  //       );
-  //     } catch (error) {
-  //       // Rollback UI
-  //       setAnalyzedComments(originalComments);
+        Swal.fire(
+          "Berhasil!",
+          `Komentar "${commentToDelete.youtubeCommentId}" berhasil dihapus dari YouTube.`,
+          "success"
+        );
+      } catch (error) {
+        // Rollback UI
+        setAnalyzedComments(originalComments);
 
-  //       let errorMessage = "Gagal menghapus komentar";
-  //       let errorDetails = "";
+        let errorMessage = "Gagal menghapus komentar";
+        let errorDetails = "";
 
-  //       if (error.response?.data?.error) {
-  //         // Handle API structured errors
-  //         errorMessage = error.response.data.error.message;
-  //         errorDetails = error.response.data.error.details;
-  //       } else if (error.message.includes("Kuota")) {
-  //         errorMessage = "Kuota API YouTube habis, coba lagi nanti";
-  //       } else if (error.message.includes("tidak valid")) {
-  //         errorMessage = "Format komentar tidak valid";
-  //       } else if (error.message.includes("NOT_COMMENT_OWNER")) {
-  //         errorMessage = "Anda bukan pemilik komentar ini";
-  //       } else if (error.message.includes("COMMENT_NOT_FOUND")) {
-  //         errorMessage = "Komentar sudah dihapus atau tidak ditemukan";
-  //       }
+        if (error.response?.data?.error) {
+          // Handle API structured errors
+          errorMessage = error.response.data.error.message;
+          errorDetails = error.response.data.error.details;
+        } else if (error.message.includes("Kuota")) {
+          errorMessage = "Kuota API YouTube habis, coba lagi nanti";
+        } else if (error.message.includes("tidak valid")) {
+          errorMessage = "Format komentar tidak valid";
+        } else if (error.message.includes("NOT_COMMENT_OWNER")) {
+          errorMessage = "Anda bukan pemilik komentar ini";
+        } else if (error.message.includes("COMMENT_NOT_FOUND")) {
+          errorMessage = "Komentar sudah dihapus atau tidak ditemukan";
+        }
 
-  //       await Swal.fire({
-  //         title: "Error",
-  //         html: `${errorMessage}${errorDetails ? `<br><small>${errorDetails}</small>` : ""}`,
-  //         icon: "error",
-  //       });
-  //     } finally {
-  //       setIsDeleting(false);
-  //     }
-  //   },
-  //   [analysisId, analyzedComments, checkPrerequisites, deleteSingleCommentApi]
-  // );
+        await Swal.fire({
+          title: "Error",
+          html: `${errorMessage}${errorDetails ? `<br><small>${errorDetails}</small>` : ""}`,
+          icon: "error",
+        });
+      } finally {
+        setIsDeleting(false);
+      }
+    },
+    [analysisId, analyzedComments, checkPrerequisites, deleteSingleCommentApi]
+  );
 
   /**
    * Menangani klik pada tombol "Kelola Komentar", yang akan menampilkan
@@ -647,7 +647,7 @@ export const useVideoAnalysis = () => {
     setVideoUrl,
     isLoading,
     isAnalyzing,
-    // isDeleting,
+    isDeleting,
     analysisId,
     videoAnalysisData,
     analyzedComments,
@@ -661,6 +661,6 @@ export const useVideoAnalysis = () => {
     handleSubmitAnalysis,
     handleManageComments,
     // handleBatchDeleteJudiComments,
-    // handleDeleteSingleComment,
+    handleDeleteSingleComment,
   };
 };

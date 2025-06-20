@@ -16,4 +16,5 @@ export default defineConfig({
       "@icons": path.resolve(__dirname, "./src/assets/icons"),
     },
   },
+  // base: "judi-guard-app",
 });

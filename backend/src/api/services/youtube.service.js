@@ -368,50 +368,117 @@ const fetchCommentsForVideo = async (
   }
 };
 
+// const deleteYoutubeComment = async (youtubeCommentId, { youtubeClient }) => {
+//   try {
+//     // 1. Verifikasi komentar ada
+//     const commentRes = await youtubeClient.comments.list({
+//       id: youtubeCommentId,
+//       part: "snippet,id",
+//     });
+
+//     if (commentRes.data.items.length === 0) {
+//       throw { code: 404, message: "COMMENT_NOT_FOUND" };
+//     }
+
+//     // 2. Verifikasi kepemilikan
+//     const myChannel = await youtubeClient.channels.list({
+//       mine: true,
+//       part: "id",
+//     });
+
+//     const comment = commentRes.data.items[0];
+//     if (comment.snippet.authorChannelId.value !== myChannel.data.items[0].id) {
+//       throw {
+//         code: 403,
+//         message: "NOT_COMMENT_OWNER",
+//         details: {
+//           yourChannelId: myChannel.data.items[0].id,
+//           commentAuthorId: comment.snippet.authorChannelId.value,
+//         },
+//       };
+//     }
+//     console.log(
+//       "[YOTUBE_SERVICE]Channel ID yang terautentikasi:",
+//       myChannel.data.items[0].id
+//     );
+//     console.log(
+//       "[YOTUBE_SERVICE]Pemilik komentar:",
+//       comment.snippet.authorChannelId.value
+//     );
+//     // 3. Eksekusi penghapusan
+//     const deleteRes = await youtubeClient.comments.delete({
+//       id: youtubeCommentId,
+//     });
+//     return deleteRes.data;
+//   } catch (error) {
+//     console.error("YouTube API Error:", {
+//       youtubeCommentId,
+//       error: error.message,
+//       details: error.details || error.response?.data,
+//     });
+//     throw error;
+//   }
+// };
+
+/**
+ * Menghapus komentar YouTube secara permanen.
+ * HANYA BISA MENGHAPUS KOMENTAR YANG DIPOSTING OLEH PENGGUNA YANG DIAUTENTIKASI.
+ * Untuk komentar orang lain di video Anda, gunakan `moderateYoutubeComment`.
+ * @param {string} youtubeCommentId ID komentar YouTube yang akan dihapus.
+ * @param {object} options Opsi yang berisi klien YouTube yang diautentikasi.
+ * @param {object} options.youtubeClient Klien YouTube yang diautentikasi.
+ * @returns {object} Data respons dari API YouTube (biasanya kosong untuk delete).
+ * @throws {object} Error jika komentar tidak ditemukan, bukan milik pengguna, atau ada masalah API.
+ */
 const deleteYoutubeComment = async (youtubeCommentId, { youtubeClient }) => {
   try {
-    // 1. Verifikasi komentar ada
+    // 1. Verifikasi komentar ada dan ambil detailnya
     const commentRes = await youtubeClient.comments.list({
       id: youtubeCommentId,
-      part: "snippet,id",
+      part: "snippet", // 'snippet' cukup untuk mendapatkan authorChannelId
     });
 
     if (commentRes.data.items.length === 0) {
-      throw { code: 404, message: "COMMENT_NOT_FOUND" };
+      throw { code: 404, message: "COMMENT_NOT_FOUND_ON_YOUTUBE" };
     }
 
-    // 2. Verifikasi kepemilikan
+    const comment = commentRes.data.items[0];
+    const commentAuthorChannelId = comment.snippet.authorChannelId?.value;
+
+    // 2. Dapatkan ID saluran pengguna yang diautentikasi
     const myChannel = await youtubeClient.channels.list({
       mine: true,
       part: "id",
     });
 
-    const comment = commentRes.data.items[0];
-    if (comment.snippet.authorChannelId.value !== myChannel.data.items[0].id) {
+    const authenticatedUserChannelId = myChannel.data.items[0]?.id;
+
+    // 3. Verifikasi kepemilikan - HANYA PEMILIK KOMENTAR YANG BISA MENGHAPUS PERMANEN
+    if (
+      !authenticatedUserChannelId ||
+      commentAuthorChannelId !== authenticatedUserChannelId
+    ) {
+      // Melempar error spesifik agar layer service bisa memutuskan untuk memoderasi
       throw {
         code: 403,
-        message: "NOT_COMMENT_OWNER",
+        message: "NOT_COMMENT_OWNER_CANNOT_DELETE_PERMANENTLY",
         details: {
-          yourChannelId: myChannel.data.items[0].id,
-          commentAuthorId: comment.snippet.authorChannelId.value,
+          yourChannelId: authenticatedUserChannelId,
+          commentAuthorId: commentAuthorChannelId,
         },
       };
     }
-    console.log(
-      "[YOTUBE_SERVICE]Channel ID yang terautentikasi:",
-      myChannel.data.items[0].id
-    );
-    console.log(
-      "[YOTUBE_SERVICE]Pemilik komentar:",
-      comment.snippet.authorChannelId.value
-    );
-    // 3. Eksekusi penghapusan
+
+    // 4. Jika komentar ini memang milik pengguna yang diautentikasi, lanjutkan penghapusan permanen.
     const deleteRes = await youtubeClient.comments.delete({
       id: youtubeCommentId,
     });
-    return deleteRes.data;
+    console.log(
+      `[YOUTUBE_SERVICE] Komentar ${youtubeCommentId} berhasil dihapus permanen oleh pemilik.`
+    );
+    return deleteRes.data; // Biasanya kosong untuk delete yang berhasil
   } catch (error) {
-    console.error("YouTube API Error:", {
+    console.error("YouTube API Error (deleteYoutubeComment):", {
       youtubeCommentId,
       error: error.message,
       details: error.details || error.response?.data,
@@ -419,66 +486,100 @@ const deleteYoutubeComment = async (youtubeCommentId, { youtubeClient }) => {
     throw error;
   }
 };
-// /**
-//  * Menghapus komentar dari YouTube dengan verifikasi dan retry mechanism.
-//  * @param {string} youtubeCommentId - ID komentar YouTube yang akan dihapus (contoh: "Ugy2aBi-smOB9BlVXIN4AaABAg").
-//  * @param {object} options
-//  * @param {google.youtube_v3.Youtube} options.youtubeClient - Client YouTube yang terautentikasi.
-//  * @param {string} [options.userChannelId] - Channel ID pengguna untuk verifikasi kepemilikan (opsional).
-//  * @param {number} [options.maxRetries=2] - Jumlah maksimal retry untuk error sementara.
-//  * @returns {Promise<void>}
-//  * @throws {AppError|NotFoundError} Jika gagal menghapus komentar.
-//  */
-// const deleteYoutubeComment = async (commentId) => {
-//   try {
-//     // 1. Verifikasi format ID
-//     if (!commentId.startsWith("Ug")) {
-//       throw new Error("Invalid YouTube comment ID format");
-//     }
 
-//     // 2. Dapatkan data komentar lengkap
-//     const { data } = await youtube.comments.list({
-//       id: commentId,
-//       part: "id,snippet",
-//     });
+/**
+ * Memoderasi (menyembunyikan/menandai) komentar YouTube.
+ * Digunakan oleh pemilik saluran untuk mengelola komentar di video mereka yang diposting orang lain.
+ * @param {string} youtubeCommentId ID komentar YouTube (ID thread komentar tingkat atas).
+ * @param {string} moderationStatus Status moderasi yang diinginkan ('heldForReview', 'likelySpam', 'published').
+ * @param {object} options Opsi yang berisi klien YouTube yang diautentikasi.
+ * @param {object} options.youtubeClient Klien YouTube yang diautentikasi.
+ * @returns {object} Data respons dari API YouTube setelah update.
+ * @throws {object} Error jika komentar tidak ditemukan atau ada masalah API.
+ */
+const moderateYoutubeComment = async (
+  youtubeCommentId,
+  moderationStatus,
+  { youtubeClient }
+) => {
+  try {
+    // Untuk memoderasi komentar, kita perlu mengambil 'commentThread'
+    // karena 'moderationStatus' adalah bagian dari thread, bukan komentar tunggal.
+    // Kita juga perlu 'snippet.topLevelComment.snippet.textOriginal' untuk update.
+    const commentThreadRes = await youtubeClient.commentThreads.list({
+      id: youtubeCommentId, // Untuk komentar tingkat atas, ini adalah ID CommentThread
+      part: "snippet", // Perlu snippet untuk mendapatkan detail komentar
+    });
 
-//     // 3. Verifikasi komentar ada
-//     if (data.items.length === 0) {
-//       throw new Error("Comment not found");
-//     }
+    if (commentThreadRes.data.items.length === 0) {
+      throw { code: 404, message: "COMMENT_THREAD_NOT_FOUND" };
+    }
 
-//     const comment = data.items[0];
+    const commentThread = commentThreadRes.data.items[0];
+    const topLevelComment = commentThread.snippet.topLevelComment;
 
-//     // 4. Verifikasi kepemilikan
-//     const myChannel = await youtube.channels.list({
-//       mine: true,
-//       part: "id",
-//     });
+    // Pastikan ini adalah komentar di video milik channel yang diautentikasi.
+    // Jika tidak, API akan menolak karena izin.
+    const myChannel = await youtubeClient.channels.list({
+      mine: true,
+      part: "id",
+    });
+    const authenticatedUserChannelId = myChannel.data.items[0]?.id;
 
-//     if (comment.snippet.authorChannelId.value !== myChannel.data.items[0].id) {
-//       throw new Error("You do not own this comment");
-//     }
+    // Asumsi commentThread.snippet.channelId adalah ID channel pemilik video.
+    // YouTube API `commentThreads.update` hanya bisa memoderasi komentar
+    // di video yang dimiliki oleh channel yang diautentikasi.
+    if (
+      !authenticatedUserChannelId ||
+      commentThread.snippet.channelId !== authenticatedUserChannelId
+    ) {
+      throw {
+        code: 403,
+        message: "NOT_CHANNEL_OWNER_OF_VIDEO_FOR_MODERATION",
+        details: {
+          yourChannelId: authenticatedUserChannelId,
+          videoOwnerChannelId: commentThread.snippet.channelId,
+        },
+      };
+    }
 
-//     // 5. Eksekusi penghapusan dengan ID yang benar
-//     const res = await youtube.comments.delete({
-//       id: comment.id, // Gunakan id dari level atas, bukan dari snippet
-//     });
+    // Buat snippet baru dengan status moderasi yang diinginkan
+    // Penting: Anda harus menyertakan semua bagian snippet yang diperlukan API,
+    // termasuk `textOriginal`.
+    const updatedSnippet = {
+      ...topLevelComment.snippet, // Salin snippet yang sudah ada
+      moderationStatus: moderationStatus, // Atur status moderasi
+    };
 
-//     console.log(`Deleted comment: ${comment.snippet.textOriginal}`);
-//     return res.status === 204;
-//   } catch (error) {
-//     console.error("Delete failed:", {
-//       error: error.message,
-//       commentId,
-//       details: error.response?.data?.error,
-//     });
-//     return false;
-//   }
-// };
+    const updateRes = await youtubeClient.commentThreads.update({
+      part: "snippet",
+      resource: {
+        id: youtubeCommentId, // ID thread komentar yang akan diupdate
+        snippet: {
+          videoId: commentThread.snippet.videoId, // ID video yang terkait
+          topLevelComment: updatedSnippet,
+        },
+      },
+    });
+    console.log(
+      `[YOUTUBE_SERVICE] Komentar ${youtubeCommentId} dimoderasi ke status: ${moderationStatus}`
+    );
+    return updateRes.data;
+  } catch (error) {
+    console.error("YouTube API Error (moderateYoutubeComment):", {
+      youtubeCommentId,
+      moderationStatus,
+      error: error.message,
+      details: error.details || error.response?.data,
+    });
+    throw error;
+  }
+};
 
 module.exports = {
   getAuthenticatedYouTubeClient,
   getVideoDetails,
   fetchCommentsForVideo,
   deleteYoutubeComment,
+  moderateYoutubeComment,
 };

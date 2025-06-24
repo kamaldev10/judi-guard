@@ -72,13 +72,12 @@ const Register = () => {
     try {
       // formValues sudah memiliki userName, email, password
       await registerUserApi(formValues);
-      toast.success(
-        "Anda berhasil mendaftar! Silahkan Verivikasi OTP anda...",
-        {
-          position: "bottom-right",
-        }
-      );
-      navigate("/otp", { state: { email: formValues.email } });
+      toast.success("Anda berhasil mendaftar! Silahkan Login", {
+        position: "bottom-right",
+      });
+      // UNTUK OTP DI TANGGUHKAN DULU
+      // navigate("/otp", { state: { email: formValues.email } });
+      navigate("/login");
     } catch (error) {
       toast.error(error.message || "Registrasi gagal. Silakan coba lagi.", {
         position: "bottom-right",

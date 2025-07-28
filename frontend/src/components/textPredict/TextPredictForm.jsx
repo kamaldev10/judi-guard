@@ -3,9 +3,8 @@ import { useTextPredict } from "../../hooks/textPredict/useTextPredict"; // Sesu
 import { motion, AnimatePresence } from "framer-motion";
 
 // Ikon untuk tombol submit (magnifying glass)
-const SearchIcon = ({ className }) => (
+const SearchIcon = () => (
   <svg
-    className={className}
     xmlns="http://www.w3.org/2000/svg"
     fill="none"
     viewBox="0 0 24 24"
@@ -57,12 +56,12 @@ const TextPredictForm = () => {
   return (
     // Section ini sekarang menjadi card mandiri
     <motion.section
-      className="min-h-[50vh] w-full p-8 bg-slate-50 rounded-none sm:rounded-2xl shadow-none sm:shadow-lg border-0 sm:border-1  border-gray-200"
+      className="min-h-[50vh] w-full p-8 bg-[#B9E6FD] sm:bg-teal-50 rounded-none sm:rounded-2xl shadow-none sm:shadow-lg border-0 sm:border-1 border-gray-200"
       initial={{ opacity: 0, x: 50 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.7, delay: 0.2 }}
     >
-      <div className="text-center">
+      <div className="sr-only sm:not-sr-only text-center">
         <h2 className="text-xl font-bold text-teal-700 sm:text-2xl">
           Analisis Kalimat Otomatis
         </h2>

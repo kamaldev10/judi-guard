@@ -14,6 +14,12 @@ const HomePage = () => {
   const sections = useMemo(
     () => [
       {
+        id: "text-predict-section",
+        component: TextPredictSection,
+        title: "Text Predict",
+        ref: React.createRef(),
+      },
+      {
         id: "hero-section",
         component: HeroSection,
         title: "Hero",
@@ -23,12 +29,6 @@ const HomePage = () => {
         id: "connect-section",
         component: ConnectSection,
         title: "Analisis",
-        ref: React.createRef(),
-      },
-      {
-        id: "text-predict-section",
-        component: TextPredictSection,
-        title: "Text Predict",
         ref: React.createRef(),
       },
       {
@@ -49,7 +49,9 @@ const HomePage = () => {
 
   useEffect(() => {
     if (location.pathname === "/") {
-      const heroSectionDetail = sections.find((s) => s.id === "hero-section");
+      const heroSectionDetail = sections.find(
+        (s) => s.id === "text-predict-section"
+      );
       if (heroSectionDetail && heroSectionDetail.ref.current) {
         setTimeout(() => {
           heroSectionDetail.ref.current.scrollIntoView({ behavior: "smooth" });

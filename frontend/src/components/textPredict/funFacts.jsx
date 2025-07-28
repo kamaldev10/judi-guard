@@ -27,7 +27,7 @@ const facts = [
 const FunFacts = () => {
   return (
     <motion.div
-      className="w-full  p-8 bg-[#B9E6FD] sm:bg-teal-50 rounded-none sm:rounded-2xl border-0 sm:border-1 border-teal-200"
+      className="w-full  p-8 bg-slate-50 rounded-none sm:rounded-2xl border-0 sm:border-1 border-teal-200"
       initial={{ opacity: 0, x: -50 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.7, delay: 0.2 }}

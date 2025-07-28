@@ -57,13 +57,13 @@ const ContactSection = () => {
   const contactInfo = [
     {
       icon: <Mail className="w-5 h-5 text-teal-600" />,
-      text: "support@judiguard.com",
-      href: "mailto:support@judiguard.com",
+      text: "alimusthafakamal@gmail.com",
+      href: "mailto:alimusthafakamal@gmail.com",
     },
     {
       icon: <Phone className="w-5 h-5 text-teal-600" />,
-      text: "+628 1372 4664 72",
-      href: "tel:+6281372466472",
+      text: "+628 5161 7890 60",
+      href: "tel:+6285161789060",
     },
     {
       icon: <MapPin className="w-5 h-5 text-teal-600" />,

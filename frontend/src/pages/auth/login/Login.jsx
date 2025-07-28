@@ -191,6 +191,15 @@ const Login = () => {
                 Daftar di sini
               </Link>
             </p>
+            <p className="text-center text-sm mt-1">
+              Masuk sebagai
+              <Link
+                to="/"
+                className="text-[var(--primary-color)] ms-1 font-medium hover:underline"
+              >
+                tamu di sini
+              </Link>
+            </p>
           </form>
 
           <div className="flex items-center my-10">

@@ -204,11 +204,11 @@ const UserProfilePage = () => {
         style={{ minHeight: "calc(100vh - 4.5rem)" }}
       >
         <p className="text-slate-600 text-lg">
-          Data pengguna tidak tersedia. Silakan{" "}
-          <a href="/" className="text-sky-600 hover:underline">
+          Data pengguna tidak tersedia. Silakan
+          <a href="/" className="text-sky-600 hover:underline mx-1 md:mx-2">
             login
           </a>
-          kembali.
+          menggunakan akun Google anda{" "}
         </p>
       </div>
     );

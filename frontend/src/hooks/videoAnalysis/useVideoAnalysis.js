@@ -252,7 +252,7 @@ export const useVideoAnalysis = () => {
       if (authError) {
         Swal.fire(
           "Gagal Memuat Data Pengguna",
-          `Tidak dapat melanjutkan ${actionNameForMessage}. ${authError} Silakan muat ulang halaman atau login kembali.`,
+          `Tidak dapat melanjutkan ${actionNameForMessage}. ${authError} Silakan login menggunakan akun google/youtube anda.`,
           "error"
         );
         return false;

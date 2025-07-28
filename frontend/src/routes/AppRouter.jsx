@@ -79,7 +79,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 
 // Impor komponen Layout dan utilitas
 import MainLayout from "../components/layout/MainLayout";
-import ProtectedRoute from "./ProtectedRoute"; // Komponen untuk memproteksi rute
+// import ProtectedRoute from "./ProtectedRoute"; // Komponen untuk memproteksi rute
 import Loader from "../components/loader/Loader"; // Komponen fallback untuk Suspense
 
 // Lazy loading untuk semua komponen halaman
@@ -103,40 +103,29 @@ const NotFoundPage = lazy(() => import("../pages/status/NotFound"));
 //  */
 const AppRouter = () => {
   return (
-    //     // Suspense sebagai fallback saat komponen lazy-loaded sedang dimuat
     <Suspense fallback={<Loader />}>
       <Routes>
-        {/* Grup 1: Rute yang menggunakan MainLayout */}
         <Route path="/" element={<MainLayout />}>
-          {/* Rute Publik di dalam MainLayout */}
           <Route index element={<HomePage />} />
           <Route path="about-us" element={<AboutUs />} />
 
-          {/* --- PERBAIKAN: Grup Rute Terproteksi --- */}
           {/* Semua rute yang ada di dalam sini akan dicek oleh ProtectedRoute */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="analisis" element={<AnalysisPage />} />
-            <Route path="profile" element={<ProfilePage />} />
-            {/* PERBAIKAN: Path dibuat relatif terhadap induknya, tanpa '/' di depan */}
-            <Route path="profile/edit" element={<EditProfilePage />} />
-            {/* Anda bisa menambahkan rute terproteksi lainnya di sini */}
-            {/* Contoh: <Route path="dashboard" element={<DashboardPage />} /> */}
-          </Route>
+          {/* <Route element={<ProtectedRoute />}> */}
+          <Route path="analisis" element={<AnalysisPage />} />
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="profile/edit" element={<EditProfilePage />} />
+          {/* </Route> */}
 
           {/* Rute untuk halaman not-found di dalam MainLayout */}
           <Route path="not-found" element={<NotFoundPage />} />
         </Route>
 
-        {/* Grup 2: Rute yang tidak menggunakan MainLayout (misal, halaman fullscreen) */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/otp" element={<OtpPage />} />
-        {/* PERBAIKAN: Rute /forgot-password diaktifkan */}
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 
-        {/* Rute Catch-all: Jika tidak ada rute yang cocok, arahkan ke halaman not-found */}
-        {/* Ini akan menangkap URL yang tidak valid di level paling atas */}
         <Route path="*" element={<Navigate to="/not-found" replace />} />
       </Routes>
     </Suspense>

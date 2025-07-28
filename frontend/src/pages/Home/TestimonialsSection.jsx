@@ -1,18 +1,11 @@
-"use client";
-
+/* eslint-disable react/prop-types */
 import { motion } from "framer-motion";
-import Image from "next/image";
 import { useRef, useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Dialog } from "@headlessui/react";
 
-interface GallerySliderProps {
-  images: string[];
-  type: "mobile" | "desktop";
-}
-
-export default function GallerySlider({ images, type }: GallerySliderProps) {
-  const sliderRef = useRef<HTMLDivElement>(null);
+export default function GallerySlider({ images, type }) {
+  const sliderRef = useRef(null);
   const [maxWidth, setMaxWidth] = useState(0);
   const [modalOpen, setModalOpen] = useState(false);
   const [activeImage, setActiveImage] = useState("");
@@ -31,18 +24,20 @@ export default function GallerySlider({ images, type }: GallerySliderProps) {
   }, [images]);
 
   const scrollBy = 300;
+
   const scrollLeft = () => {
     if (sliderRef.current) {
       sliderRef.current.scrollBy({ left: -scrollBy, behavior: "smooth" });
     }
   };
+
   const scrollRight = () => {
     if (sliderRef.current) {
       sliderRef.current.scrollBy({ left: scrollBy, behavior: "smooth" });
     }
   };
 
-  const openModal = (src: string) => {
+  const openModal = (src) => {
     setActiveImage(src);
     setModalOpen(true);
   };
@@ -88,11 +83,10 @@ export default function GallerySlider({ images, type }: GallerySliderProps) {
                     : "w-60 sm:w-72 md:w-96 aspect-[16/9]"
                 }`}
               >
-                <Image
+                <img
                   src={src}
                   alt={`Gambar ${i + 1}`}
-                  fill
-                  className="object-cover"
+                  className="w-full h-full object-cover"
                 />
               </div>
             ))}
@@ -108,15 +102,18 @@ export default function GallerySlider({ images, type }: GallerySliderProps) {
       </div>
 
       {/* Modal View */}
-      <Dialog open={modalOpen} onClose={closeModal} className="fixed inset-0 z-50">
+      <Dialog
+        open={modalOpen}
+        onClose={closeModal}
+        className="fixed inset-0 z-50"
+      >
         <div className="fixed inset-0 bg-black/70" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <div className="relative max-w-4xl w-full aspect-[16/9] sm:aspect-[9/16]">
-            <Image
+            <img
               src={activeImage}
               alt="Zoomed"
-              fill
-              className="object-contain rounded-lg"
+              className="object-contain w-full h-full rounded-lg"
               onClick={closeModal}
             />
             <button

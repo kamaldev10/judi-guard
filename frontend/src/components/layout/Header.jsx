@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import {
@@ -46,9 +46,7 @@ const Header = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-  const shouldShowLoginButton =
-    !isAuthenticated &&
-    (location.pathname === "/" || location.pathname === "/about-us");
+  const shouldShowLoginButton = !isAuthenticated;
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
@@ -151,23 +149,19 @@ const Header = () => {
               </Link>
             </div>
 
-            <nav className="hidden md:flex items-center md:space-x-1 lg:space-x-10">
+            <nav className="hidden md:flex items-center md:space-x-1 lg:space-x-5">
               <Link to="/" className={navLinkClasses("/#hero-section")}>
                 {getNavIcon("/")} Beranda
               </Link>
               <Link to="/about-us" className={navLinkClasses("/about-us")}>
                 {getNavIcon("/about-us")} Tentang Kami
               </Link>
-              {isAuthenticated && (
-                <Link to="/analisis" className={navLinkClasses("/analisis")}>
-                  {getNavIcon("/analisis")} Analisis
-                </Link>
-              )}
-              {isAuthenticated && (
-                <Link to="/profile" className={navLinkClasses("/profile")}>
-                  {getNavIcon("/profile")} Profil
-                </Link>
-              )}
+              <Link to="/analisis" className={navLinkClasses("/analisis")}>
+                {getNavIcon("/analisis")} Analisis
+              </Link>
+              <Link to="/profile" className={navLinkClasses("/profile")}>
+                {getNavIcon("/profile")} Profil
+              </Link>
               {isAuthenticated && currentUser && (
                 <span className="text-sm text-[#06786F] ml-4 pl-4 border-l-cyan-600 border-l-2 font-semibold border-gray-200 inline-flex items-center">
                   <HandMetal size={18} className="mr-1 text-amber-700" /> Halo,{" "}
@@ -226,24 +220,20 @@ const Header = () => {
               >
                 {getNavIcon("/about-us")} About Us
               </Link>
-              {isAuthenticated && (
-                <Link
-                  to="/analisis"
-                  className={navLinkClasses("/analisis", true)}
-                  onClick={toggleMobileMenu}
-                >
-                  {getNavIcon("/analisis")} Analisis
-                </Link>
-              )}
-              {isAuthenticated && (
-                <Link
-                  to="/profile"
-                  className={navLinkClasses("/profile", true)}
-                  onClick={toggleMobileMenu}
-                >
-                  {getNavIcon("/profile")} Profil
-                </Link>
-              )}
+              <Link
+                to="/analisis"
+                className={navLinkClasses("/analisis", true)}
+                onClick={toggleMobileMenu}
+              >
+                {getNavIcon("/analisis")} Analisis
+              </Link>
+              <Link
+                to="/profile"
+                className={navLinkClasses("/profile", true)}
+                onClick={toggleMobileMenu}
+              >
+                {getNavIcon("/profile")} Profil
+              </Link>
               <div className="px-1 pt-3 pb-2  border-t border-gray-100 mt-2">
                 {renderAuthButtons(true)}
               </div>

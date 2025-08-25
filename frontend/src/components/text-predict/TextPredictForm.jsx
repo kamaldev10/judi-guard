@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useTextPredict } from "../../hooks/textPredict/useTextPredict"; // Sesuaikan path
+import { useTextPredict } from "../../hooks/text-predict/useTextPredict"; // Sesuaikan path
 import { motion, AnimatePresence } from "framer-motion";
 
 // Ikon untuk tombol submit (magnifying glass)

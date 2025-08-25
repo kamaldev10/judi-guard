@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useTextPredict } from "../../hooks/text-predict/useTextPredict"; // Sesuaikan path
+import { useTextPredict } from "../../hooks/text-predict/useTextPredict";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Ikon untuk tombol submit (magnifying glass)
@@ -10,6 +10,7 @@ const SearchIcon = () => (
     viewBox="0 0 24 24"
     stroke="currentColor"
     strokeWidth={2}
+    className="w-5 h-5"
   >
     <path
       strokeLinecap="round"
@@ -45,7 +46,9 @@ const LoadingSpinner = () => (
 
 const TextPredictForm = () => {
   const [inputText, setInputText] = useState("");
-  const { prediction, isLoading, error, analyze } = useTextPredict();
+
+  // ✅ konsumsi store via hook Zustand
+  const { prediction, isLoading, error, analyze, clear } = useTextPredict();
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -54,7 +57,6 @@ const TextPredictForm = () => {
   };
 
   return (
-    // Section ini sekarang menjadi card mandiri
     <motion.section
       className="min-h-[50vh] w-full p-8 bg-[#B9E6FD] sm:bg-teal-50 rounded-none sm:rounded-2xl shadow-none sm:shadow-lg border-0 sm:border-1 border-gray-200"
       initial={{ opacity: 0, x: 50 }}
@@ -70,6 +72,7 @@ const TextPredictForm = () => {
         </p>
       </div>
 
+      {/* Form Input */}
       <motion.form
         onSubmit={handleSubmit}
         className="relative mt-6"
@@ -77,7 +80,6 @@ const TextPredictForm = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
       >
-        {/* Padding kanan (pr) dibuat responsif agar sesuai dengan ukuran tombol */}
         <input
           type="text"
           id="text-input"
@@ -88,9 +90,8 @@ const TextPredictForm = () => {
           required
           disabled={isLoading}
         />
-        {/* Padding div tombol disesuaikan */}
+
         <div className="absolute inset-y-0 right-0 flex py-1.5 pr-1.5">
-          {/* Ukuran dan padding tombol dibuat responsif */}
           <button
             type="submit"
             disabled={isLoading}
@@ -101,9 +102,7 @@ const TextPredictForm = () => {
               <LoadingSpinner />
             ) : (
               <>
-                {/* Ikon selalu tampil */}
-                <SearchIcon className="w-5 h-5" />
-                {/* Teks "Analisis" hanya tampil di layar sm ke atas */}
+                <SearchIcon />
                 <span className="hidden sm:inline sm:ml-2">Analisis</span>
               </>
             )}
@@ -112,9 +111,9 @@ const TextPredictForm = () => {
       </motion.form>
 
       {/* Area Hasil */}
-      <div className="mt-3 sm:mt-6  ">
+      <div className="mt-3 sm:mt-6">
         <AnimatePresence>
-          {!prediction && !isLoading && (
+          {!prediction && !isLoading && !error && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -122,7 +121,7 @@ const TextPredictForm = () => {
               className="justify-center align-middle mt-3 sm:mt-20 max-h-[150px]"
             >
               <p className="text-xs text-center text-gray-700 sm:text-base py-0 sm:py-10">
-                Tidak ada kalimat yang di prediksi
+                Tidak ada kalimat yang diprediksi
               </p>
             </motion.div>
           )}
@@ -150,7 +149,6 @@ const TextPredictForm = () => {
             </motion.div>
           )}
 
-          {/* Kartu Hasil dengan layout kolom yang responsif */}
           {prediction && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -163,7 +161,6 @@ const TextPredictForm = () => {
               </h3>
 
               <div className="flex flex-col w-full gap-3 mt-4 sm:flex-row">
-                {/* Kolom Klasifikasi */}
                 <div className="flex-1 p-3 text-center bg-white rounded-lg shadow-sm ">
                   <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Klasifikasi
@@ -179,7 +176,6 @@ const TextPredictForm = () => {
                   </p>
                 </div>
 
-                {/* Kolom Skor Kepercayaan */}
                 <div className="flex-1 p-3 text-center bg-white rounded-lg shadow-sm">
                   <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Kepercayaan
@@ -189,7 +185,6 @@ const TextPredictForm = () => {
                   </p>
                 </div>
 
-                {/* Kolom Versi Model */}
                 <div className="flex-2 p-3 text-center bg-white rounded-lg shadow-sm">
                   <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Model
@@ -199,6 +194,14 @@ const TextPredictForm = () => {
                   </p>
                 </div>
               </div>
+
+              {/* Tombol reset hasil */}
+              <button
+                onClick={clear}
+                className="mt-6 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-sm rounded-full"
+              >
+                Reset Hasil
+              </button>
             </motion.div>
           )}
         </AnimatePresence>

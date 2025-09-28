@@ -22,7 +22,7 @@ const AboutUs = () => {
       id="about"
       className=" bg-[#cdeeff] min-h-screen px-6 md:px-20 py-4 md:py-12 "
     >
-      <Title>Tentang Kami | Judi Guard</Title>x
+      <Title>Tentang Kami | Judi Guard</Title>
       <motion.div
         id="intro-section"
         ref={introSectionRef}

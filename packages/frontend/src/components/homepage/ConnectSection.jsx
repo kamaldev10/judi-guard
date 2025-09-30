@@ -102,7 +102,7 @@ const ConnectSection = () => {
 
           {/* Gambar Ilustrasi (Mobile: Bawah, Desktop: Kanan) */}
           <motion.div
-            className="flex-1 w-full sm:w-3/4 md:w-2/3 lg:w-1/2 mt-5 lg:mt-0 flex justify-center lg:justify-end"
+            className="flex-1 w-full sm:w-3/4 md:w-2/3 lg:w-1/2 mt-5 lg:mt-0 lg:pe-10 flex justify-center lg:justify-end"
             variants={itemVariantsRight}
           >
             <img

@@ -8,6 +8,11 @@ import NotFound from "./notFound.jpg";
 import NotLogin from "./notLogin.svg";
 import AboutFeatures from "./about-features.png";
 
+import FunFact1 from "./fun-fact-1.svg";
+import FunFact2 from "./fun-fact-2.svg";
+import FunFact3 from "./fun-fact-3.svg";
+import FunFact4 from "./fun-fact-4.svg";
+
 // Team Images
 import AliImage from "./team-images/ali.jpg";
 import FerdianImage from "./team-images/ferdian.jpg";
@@ -29,6 +34,10 @@ export {
   NotFound,
   NotLogin,
   AboutFeatures,
+  FunFact1,
+  FunFact2,
+  FunFact3,
+  FunFact4,
 
   // Teams
   AliImage,

@@ -4,7 +4,6 @@ import {
   Menu,
   X,
   LogIn,
-  LogOut,
   Home,
   Info,
   BarChart3,
@@ -17,6 +16,8 @@ import { Logo } from "@images";
 import Swal from "sweetalert2";
 import ThemeToggle from "../ThemeToggle";
 import { useAuthStore } from "@/stores/auth/authStore";
+import LogoutButton from "../ui/LogoutButton";
+import LoginButton from "../ui/LoginButton";
 
 const Header = () => {
   const { isAuthenticated, currentUser, logout } = useAuthStore();
@@ -81,27 +82,18 @@ const Header = () => {
   };
 
   const renderAuthButtons = (isMobile = false) => {
-    const buttonBaseClasses = `px-4 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-opacity-50 flex items-center justify-center`;
-
     if (isAuthenticated) {
       // User is logged in - show logout button
-      return (
-        <button
-          onClick={handleLogout}
-          className={`text-white bg-red-700 hover:bg-red-900 focus:ring-red-400 ${buttonBaseClasses} ${isMobile ? "w-full mt-2" : ""}`}
-        >
-          <LogOut size={18} className="mr-2" /> Keluar
-        </button>
-      );
+      return <LogoutButton onClick={handleLogout} />;
     } else {
       // User is not logged in - show login button
       return (
         <Link
           to="/login"
           onClick={() => isMobile && setIsMobileMenuOpen(false)}
-          className={`text-white bg-teal-500 hover:bg-teal-700 focus:ring-teal-400 ${buttonBaseClasses} ${isMobile ? "w-full mt-2 block" : ""}`}
+          // className={`text-white bg-teal-500 hover:bg-teal-700 focus:ring-teal-400 ${buttonBaseClasses} ${isMobile ? "w-full mt-2 block" : ""}`}
         >
-          <LogIn size={18} className="mr-2" /> Masuk
+          <LoginButton />
         </Link>
       );
     }

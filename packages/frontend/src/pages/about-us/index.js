@@ -5,7 +5,7 @@ import {
   RinaImage,
   SalwaImage,
   SolihunImage,
-} from "../../assets/images";
+} from "@/assets/images";
 
 export const members = [
   {

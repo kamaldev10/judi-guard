@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo } from "react";
-import { Title } from "react-head";
 import { useLocation } from "react-router-dom";
 
 import HeroSection from "@/components/homepage/HeroSection";
@@ -7,6 +6,7 @@ import TestimonialsSection from "@/components/homepage/TestimonialsSection";
 import ContactSection from "@/components/homepage/ContactSection";
 import ConnectSection from "@/components/homepage/ConnectSection";
 import TextPredictSection from "@/components/homepage/TextPredictSection";
+import FunFactsSection from "@/components/fun-fact/FunFactsSection";
 
 const HomePage = () => {
   const location = useLocation();
@@ -23,6 +23,12 @@ const HomePage = () => {
         id: "text-predict-section",
         component: TextPredictSection,
         title: "Text Predict",
+        ref: React.createRef(),
+      },
+      {
+        id: "fun-facts",
+        component: FunFactsSection,
+        title: "Fun Facts",
         ref: React.createRef(),
       },
       {
@@ -60,8 +66,6 @@ const HomePage = () => {
 
   return (
     <>
-      <Title>Beranda | Judi Guard</Title>
-
       <div>
         {sections.map((section) => {
           const SectionComponent = section.component;

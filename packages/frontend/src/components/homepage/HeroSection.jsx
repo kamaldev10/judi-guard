@@ -3,6 +3,7 @@ import heroImage from "../../assets/images/HeroImage.png";
 import Tagline from "../tagline/Tagline";
 import { motion } from "motion/react";
 import { Link as ScrollLink } from "react-scroll";
+import AnimateButton from "../ui/AnimateButton";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -45,12 +46,12 @@ const HeroSection = () => {
   return (
     <motion.section
       id="hero-section"
-      className="bg-[#B9E6FD] sm:bg-gradient-to-r from-white via-blue-50 to-[#E1F2FF] min-h-[70vh]   flex flex-col justify-center items-center pt-4 lg:pt-12 pb-0 lg:pb-6 px-4 sm:px-6 lg:px-8 overflow-hidden scroll-mt-18 " // pt lebih besar untuk memberi ruang Header
+      className="bg-gradient-to-r from-white via-blue-50 to-[#b9e1ff] min-h-[70vh]   flex flex-col justify-center items-center pt-4 lg:pt-12 pb-0 lg:pb-6 px-4 sm:px-6 lg:px-8 overflow-hidden scroll-mt-18 " // pt lebih besar untuk memberi ruang Header
     >
       <div className="container mx-auto">
         <div className="flex flex-col-reverse lg:flex-row items-center justify-between gap-8 lg:gap-16 w-full">
           <motion.div
-            className="text-center lg:text-left max-w-md lg:max-w-md xl:max-w-md flex-1 md:ms-10" // max-w dan flex-1
+            className="text-center lg:text-left max-w-md  flex-1 md:ms-20" // max-w dan flex-1
             variants={containerVariants}
             initial="hidden"
             animate="visible"
@@ -80,9 +81,10 @@ const HeroSection = () => {
                 smooth={true}
                 offset={-70}
                 duration={500}
-                className="inline-block bg-teal-600 text-white px-8 py-3 rounded-lg text-sm sm:text-base font-semibold hover:bg-teal-700 transition-colors shadow-md hover:shadow-lg cursor-pointer"
               >
-                Deteksi Sekarang
+                <div className="flex justify-center sm:justify-start">
+                  <AnimateButton text="Deteksi Sekarang" />
+                </div>
               </ScrollLink>
             </motion.div>
           </motion.div>

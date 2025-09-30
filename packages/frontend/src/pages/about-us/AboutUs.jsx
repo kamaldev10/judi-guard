@@ -1,5 +1,5 @@
 import { motion, useScroll, useTransform } from "framer-motion";
-import AboutFeatures from "../../assets/images/about-features.png";
+import { AboutFeatures } from "@/assets/images";
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { members } from ".";

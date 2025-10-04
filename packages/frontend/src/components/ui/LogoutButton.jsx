@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import PropTypes from "prop-types";
 
 const LogoutButton = ({ onClick = () => {} }) => {
   return (
@@ -14,6 +15,9 @@ const LogoutButton = ({ onClick = () => {} }) => {
       </button>
     </StyledWrapper>
   );
+};
+LogoutButton.propTypes = {
+  onClick: PropTypes.func,
 };
 
 const StyledWrapper = styled.div`
@@ -30,7 +34,7 @@ const StyledWrapper = styled.div`
     overflow: hidden;
     transition-duration: 0.3s;
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.199);
-    background-color: rgb(255, 65, 65);
+    background-color: rgb(185, 28, 28);
   }
 
   /* plus sign */

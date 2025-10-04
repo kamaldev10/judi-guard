@@ -9,14 +9,14 @@
       }
     },
     {
-      "src": "/packages/backend/src/app.js",
+      "src": "/packages/backend/src/server.js",
       "use": "@vercel/node"
     }
   ],
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "/packages/backend/src/app.js"
+      "source": "/api/v1/(.*)",
+      "destination": "/packages/backend/src/server.js"
     },
     {
       "source": "/(.*)",

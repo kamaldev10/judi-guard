@@ -4,7 +4,7 @@ import { HeadProvider } from "react-head";
 import { Slide, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-import ErrorBoundary from "./pages/status/error";
+import ErrorBoundary from "./pages/status/Error";
 import AppRouter from "./routes/AppRouter";
 
 function App() {

@@ -1,8 +1,8 @@
 // src/pages/auth/ResetPasswordPage.jsx
+import { resetPasswordApi } from "@/lib/services";
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
-import { resetPasswordApi } from "../../lib/services/auth/authApi";
 
 const ResetPasswordPage = () => {
   const { token } = useParams(); // Ambil token dari URL

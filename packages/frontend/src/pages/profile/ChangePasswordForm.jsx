@@ -2,11 +2,12 @@
 import React, { useState } from "react";
 import { changePasswordApi } from "../../lib/services/analysis/videoAnalysisApi";
 import { toast } from "react-toastify";
-import { useAuth } from "../../contexts/AuthContext"; // Asumsi Anda punya AuthContext
+
 import { useNavigate } from "react-router-dom"; // Untuk navigasi setelah logout opsional
+import { useAuthStore } from "@/stores";
 
 const ChangePasswordForm = () => {
-  const { logout } = useAuth(); // Ambil fungsi logout dari AuthContext
+  const { logout } = useAuthStore(); // Ambil fungsi logout dari useAuthStore
   const navigate = useNavigate();
 
   const [currentPassword, setCurrentPassword] = useState("");
@@ -44,7 +45,7 @@ const ChangePasswordForm = () => {
       // Ini memaksa user untuk login ulang dengan password baru
       if (logout) {
         setTimeout(() => {
-          logout(); // Panggil fungsi logout dari AuthContext
+          logout(); // Panggil fungsi logout dari useAuthStore
           toast.info("Silakan login kembali dengan kata sandi baru Anda.", {
             position: "bottom-right",
           });

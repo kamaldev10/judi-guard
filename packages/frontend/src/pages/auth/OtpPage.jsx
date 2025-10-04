@@ -1,11 +1,11 @@
 // src/pages/OtpPage/OtpPage.jsx (atau path Anda)
 import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import LogoWithSlogan from "../../assets/images/LogoWithSlogan.png";
 import { toast } from "react-toastify";
 import { verifyOtpApi, resendOtpApi } from "@/lib/services/auth/authApi";
-import { useAuth } from "../../contexts/AuthContext";
 import { Title } from "react-head";
+import { useAuthStore } from "@/stores";
+import { LogoWithSlogan } from "@/assets/images";
 
 const OtpPage = () => {
   const [otp, setOtp] = useState(Array(6).fill(""));
@@ -16,7 +16,7 @@ const OtpPage = () => {
   const inputsRef = useRef([]);
   const location = useLocation();
   const navigate = useNavigate();
-  const { login } = useAuth(); // Dapatkan fungsi login dari AuthContext
+  const { login } = useAuthStore();
 
   // Ambil email dari state navigasi, atau redirect jika tidak ada
   const email = location.state?.email;

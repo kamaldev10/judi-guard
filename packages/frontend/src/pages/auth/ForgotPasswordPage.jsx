@@ -1,6 +1,6 @@
 // src/pages/auth/ForgotPasswordPage.jsx (Contoh Komponen)
+import { forgotPasswordApi } from "@/lib/services";
 import React, { useState } from "react";
-import { forgotPasswordApi } from "../../lib/services/auth/authApi"; // Impor fungsi API Anda
 import Swal from "sweetalert2"; // Impor SweetAlert2
 // import { useNavigate } from 'react-router-dom';
 

@@ -2,8 +2,8 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { AboutFeatures } from "@/assets/images";
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
-import { members } from ".";
 import { Title } from "react-head";
+import { membersData } from "@/constants";
 
 const AboutUs = () => {
   const location = useLocation();
@@ -228,7 +228,7 @@ const AboutUs = () => {
         </motion.div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 lg:gap-10">
-          {members.map((member, index) => (
+          {membersData.map((member, index) => (
             <motion.div
               key={index}
               variants={itemVariants}

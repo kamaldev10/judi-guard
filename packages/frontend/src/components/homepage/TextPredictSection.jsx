@@ -4,7 +4,7 @@ import TextPredictForm from "@/components/text-predict/TextPredictForm";
 const TextPredictSection = () => {
   return (
     // Container utama dengan background putih dan padding
-    <div className="w-full h-dvh bg-[#B9E6FD] sm:bg-linear-90 sm:from-[#B9E6FD] sm:to-slate-100 py-4 sm:py-8">
+    <div className="w-full h-dvh bg-linear-to-b from-[#B9E6FD] via-[#caedff] to-slate-100 py-4 sm:py-8">
       <div className="max-w-7xl mx-auto px-0 sm:px-6">
         {/* Judul Utama Section */}
         <div className="text-center ">

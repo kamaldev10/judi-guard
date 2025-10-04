@@ -13,7 +13,7 @@ const app = express();
 // Daftar origin yang diizinkan
 const allowedOrigins = [
   "http://localhost:5173", // Untuk development frontend React/Vite Anda
-  "https://judi-guard-app.vercel.app", // Untuk produksi frontend Anda (pertahankan jika sudah ada)
+  "https://judiguard.vercel.app", // Untuk produksi frontend Anda (pertahankan jika sudah ada)
   "http://judiguard.id",
   // Tambahkan origin lain jika perlu
 ];

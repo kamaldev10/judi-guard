@@ -1,15 +1,16 @@
-/* eslint-disable react/prop-types */
+import React, { useRef, useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { useRef, useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Dialog } from "@headlessui/react";
+import { X } from "lucide-react";
+import { testimonialsData } from "@/constants";
 
-export default function GallerySlider({ images, type }) {
+export default function TestimonialsSection() {
   const sliderRef = useRef(null);
   const [maxWidth, setMaxWidth] = useState(0);
   const [modalOpen, setModalOpen] = useState(false);
-  const [activeImage, setActiveImage] = useState("");
+  const [activeTestimonial, setActiveTestimonial] = useState(null);
 
+  // update maxWidth on resize
   useEffect(() => {
     const updateWidth = () => {
       if (sliderRef.current) {
@@ -18,113 +19,113 @@ export default function GallerySlider({ images, type }) {
         setMaxWidth(scrollWidth - clientWidth);
       }
     };
+
     updateWidth();
     window.addEventListener("resize", updateWidth);
     return () => window.removeEventListener("resize", updateWidth);
-  }, [images]);
+  }, []);
 
-  const scrollBy = 300;
-
-  const scrollLeft = () => {
-    if (sliderRef.current) {
-      sliderRef.current.scrollBy({ left: -scrollBy, behavior: "smooth" });
-    }
-  };
-
-  const scrollRight = () => {
-    if (sliderRef.current) {
-      sliderRef.current.scrollBy({ left: scrollBy, behavior: "smooth" });
-    }
-  };
-
-  const openModal = (src) => {
-    setActiveImage(src);
+  const openModal = (testimonial) => {
+    setActiveTestimonial(testimonial);
     setModalOpen(true);
   };
 
   const closeModal = () => {
+    setActiveTestimonial(null);
     setModalOpen(false);
-    setActiveImage("");
   };
 
-  if (!images || images.length === 0) return null;
-
   return (
-    <div className="mt-6 space-y-3">
-      <h3 className="text-xl font-semibold text-gray-800 dark:text-white">
-        Galeri {type === "mobile" ? "Mobile" : "Desktop"}
-      </h3>
+    <section className=" w-full py-4 sm:py-8 px-2 sm:px-20 overflow-hidden bg-gradient-to-br from-cyan-50 to-blue-200 dark:from-gray-900 dark:to-slate-800">
+      <h2 className="text-4xl sm:text-5xl font-extrabold text-center text-teal-700 mb-12">
+        Testimoni Pengguna
+      </h2>
 
-      <div className="flex items-center gap-2">
-        <button
-          onClick={scrollLeft}
-          className="p-2 rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition"
-        >
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-
+      <div>
         <motion.div
           ref={sliderRef}
-          className="overflow-x-auto flex-1"
+          className="flex overflow-x-auto scrollbar-hide gap-6 px-4 py-10"
           whileTap={{ cursor: "grabbing" }}
         >
           <motion.div
             drag="x"
             dragConstraints={{ left: -maxWidth, right: 0 }}
-            className="flex space-x-4"
+            className="flex gap-6"
           >
-            {images.map((src, i) => (
-              <div
-                key={i}
-                onClick={() => openModal(src)}
-                className={`relative flex-shrink-0 cursor-zoom-in rounded-lg overflow-hidden shadow-md ${
-                  type === "mobile"
-                    ? "w-40 sm:w-52 md:w-60 aspect-[9/16]"
-                    : "w-60 sm:w-72 md:w-96 aspect-[16/9]"
-                }`}
+            {testimonialsData.map((t) => (
+              <motion.div
+                key={t.id}
+                onClick={() => openModal(t)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex-shrink-0 w-72 sm:w-80 p-6 rounded-xl shadow-lg bg-white cursor-pointer hover:shadow-2xl transition-shadow"
               >
-                <img
-                  src={src}
-                  alt={`Gambar ${i + 1}`}
-                  className="w-full h-full object-cover"
-                />
-              </div>
+                <p className="text-gray-700 text-sm mb-4 line-clamp-4">
+                  {t.quote}
+                </p>
+                <div className="flex items-center gap-3">
+                  <img
+                    src={t.avatarUrl}
+                    alt={t.author}
+                    className="w-12 h-12 rounded-full object-cover"
+                  />
+                  <div>
+                    <p className="font-semibold text-teal-700">{t.author}</p>
+                    <p className="text-gray-500 text-sm">{t.title}</p>
+                  </div>
+                </div>
+              </motion.div>
             ))}
           </motion.div>
         </motion.div>
-
-        <button
-          onClick={scrollRight}
-          className="p-2 rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition"
-        >
-          <ChevronRight className="w-5 h-5" />
-        </button>
       </div>
 
-      {/* Modal View */}
+      {/* Modal */}
       <Dialog
         open={modalOpen}
         onClose={closeModal}
-        className="fixed inset-0 z-50"
+        className="fixed inset-0 z-50 flex items-center justify-center p-4"
       >
-        <div className="fixed inset-0 bg-black/70" aria-hidden="true" />
-        <div className="fixed inset-0 flex items-center justify-center p-4">
-          <div className="relative max-w-4xl w-full aspect-[16/9] sm:aspect-[9/16]">
-            <img
-              src={activeImage}
-              alt="Zoomed"
-              className="object-contain w-full h-full rounded-lg"
-              onClick={closeModal}
-            />
+        <div
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm"
+          aria-hidden="true"
+        />
+        {activeTestimonial && (
+          <Dialog.Panel className="relative bg-white rounded-xl max-w-lg w-full p-6 shadow-2xl">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+            >
+              <p className="text-gray-800 text-base mb-4">
+                {activeTestimonial.quote}
+              </p>
+              <div className="flex items-center gap-3">
+                <img
+                  src={activeTestimonial.avatarUrl}
+                  alt={activeTestimonial.author}
+                  className="w-14 h-14 rounded-full object-cover"
+                />
+                <div>
+                  <p className="font-semibold text-teal-700">
+                    {activeTestimonial.author}
+                  </p>
+                  <p className="text-gray-500 text-sm">
+                    {activeTestimonial.title}
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+
             <button
               onClick={closeModal}
-              className="absolute top-2 right-2 z-10 p-1 bg-white dark:bg-gray-800 rounded-full shadow"
+              className="absolute top-4 right-4 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 transition"
             >
-              <X className="w-5 h-5" />
+              <X className="w-6 h-6" />
             </button>
-          </div>
-        </div>
+          </Dialog.Panel>
+        )}
       </Dialog>
-    </div>
+    </section>
   );
 }

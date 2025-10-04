@@ -20,7 +20,7 @@
     },
     {
       "source": "/(.*)",
-      "destination": "/packages/frontend/package.json"
+      "destination": "/packages/frontend/index.html"
     }
   ]
 }

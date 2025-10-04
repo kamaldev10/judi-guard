@@ -72,7 +72,10 @@ const ContactSection = () => {
   ];
 
   return (
-    <section id="contact-section" className="py-16 sm:py-24 bg-slate-100">
+    <section
+      id="contact-section"
+      className="py-4 sm:py-8 bg-linear-to-b to-[#B9E6FD] via-[#caedff] from-slate-100"
+    >
       <motion.div
         className=" container mx-auto px-10 sm:px-6 lg:px-70"
         variants={sectionVariants}
@@ -84,7 +87,7 @@ const ContactSection = () => {
           variants={itemVariants}
           className="text-center mb-12 sm:mb-16 w-full "
         >
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-teal-700 mb-3">
+          <h2 className="text-4xl sm:text-5xl font-extrabold text-teal-700 mb-3">
             Hubungi Kami
           </h2>
           <p className="text-gray-600 text-xs sm:text-sm md:text-lg max-w-full mx-auto">
@@ -105,7 +108,7 @@ const ContactSection = () => {
             {contactInfo.map((info, index) => (
               <motion.div
                 key={index}
-                className="flex items-start gap-4 p-3 bg-teal-50/50 rounded-lg hover:bg-teal-100/70 transition-colors"
+                className="flex items-start gap-4 p-3 bg-slate-100 rounded-lg hover:bg-teal-100/70 transition-colors"
                 custom={index} // Untuk delay stagger jika itemVariants adalah fungsi
                 variants={itemVariants} // Bisa juga varian baru yang lebih spesifik
               >

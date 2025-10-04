@@ -48,10 +48,10 @@ const ConnectSection = () => {
   return (
     <section
       id="analisis-section" // ID untuk ScrollLink dari HeroSection
-      className="flex py-6 sm:py-24 items-center lg:ps-24 min-h-[70vh] bg-slate-50 sm:bg-linear-90 from-[#B9E6FD] to-slate-100 shadow-2xl shadow-[#B9E6FD] " // Background sedikit berbeda untuk memisahkan section
+      className="flex py-4 min-h-dvh  items-center lg:ps-24 bg-linear-to-r bg-[#B9E6FD] via-[#caedff] to-slate-100"
     >
       <motion.div
-        className="container mx-auto px-4 sm:px-6 lg:px-8  "
+        className="container mx-auto px-4 sm:px-6 lg:px-8 "
         variants={sectionVariants}
         initial="hidden"
         whileInView="visible" // Animasi terpicu saat section masuk viewport

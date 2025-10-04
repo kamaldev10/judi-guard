@@ -98,7 +98,7 @@ const FunFactsSection = () => {
   return (
     <section
       ref={targetRef}
-      className="relative w-full py-20 px-2 sm:px-6 overflow-hidden bg-gradient-to-br from-cyan-50 to-blue-200 dark:from-gray-900 dark:to-slate-800"
+      className=" w-full min-h-dvh py-4 sm:py-8 px-2 sm:px-6 overflow-hidden bg-gradient-to-b from-slate-100 via-[#caedff] to-[#B9E6FD] dark:from-gray-900 dark:to-slate-800"
     >
       <div className="text-center mb-16 px-2">
         <motion.h2

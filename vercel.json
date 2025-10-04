@@ -15,7 +15,7 @@
   ],
   "rewrites": [
     {
-      "source": "/api/(.*)",
+      "source": "/api/v1/(.*)",
       "destination": "/packages/backend/src/app.js"
     },
     {

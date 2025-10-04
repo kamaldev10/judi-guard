@@ -13,7 +13,7 @@ import { useAuthStore } from "@/stores/auth/authStore";
 /**
  * Presenter (sebagai custom hook) untuk mengelola semua logika dan state
  * yang terkait dengan halaman profil pengguna.
- * Menggunakan AuthContext sebagai "single source of truth" untuk data pengguna.
+ * Menggunakan useAuthStore sebagai "single source of truth" untuk data pengguna.
  */
 export const useProfilePresenter = () => {
   // 1. Dapatkan semua state dan fungsi yang dibutuhkan dari AuthContext.

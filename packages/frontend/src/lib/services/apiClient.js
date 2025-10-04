@@ -45,7 +45,7 @@ apiClient.interceptors.response.use(
     // );
 
     // bisa menambahkan logika global di sini, misalnya jika error.response.status === 401,
-    // panggil fungsi logout dari AuthContext atau redirect.
+    // panggil fungsi logout dari useAuthStore atau redirect.
     // Namun, pastikan tidak tumpang tindih dengan penanganan error di komponen/hook.
     return Promise.reject(error);
   }

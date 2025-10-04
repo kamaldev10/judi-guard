@@ -14,12 +14,11 @@ export default defineConfig({
       "@assets": path.resolve(__dirname, "./src/assets"),
       "@images": path.resolve(__dirname, "./src/assets/images"),
       "@icons": path.resolve(__dirname, "./src/assets/icons"),
-
       "@": path.resolve(__dirname, "./src"),
     },
-    root: ".",
-    build: {
-      outDir: "dist",
-    },
+  },
+  root: ".",
+  build: {
+    outDir: "dist",
   },
 });

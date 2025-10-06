@@ -19,7 +19,7 @@
       "destination": "/packages/backend/src/app.js"
     },
     {
-      "source": "/(.*)",
+      "source": "/:path((?!api/|.*\\..*).*)",
       "destination": "/packages/frontend/index.html"
     }
   ]

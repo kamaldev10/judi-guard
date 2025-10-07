@@ -70,75 +70,142 @@ Menjalankan test runner (jika pengujian telah dikonfigurasi).
 Berikut adalah gambaran umum struktur folder di dalam `src/`:
 
 ```
-public/ logo.png
-src/
-    ├── assets/         # File statis seperti gambar, ikon, dll.
-        ├── icons /
-        └── images /
-    ├── components/     # Komponen React yang dapat digunakan kembali (Loader, Layout, Tagline)
-        ├── auth / GoogleSignInButton.jsx
-        ├── layout / Footer.jsx, Header.jsx, MainLayout.jsx
-        ├── loader / Loader.jsx
-        ├── tagline / Tagline.jsx
-        └── text-predict / TextPredictForm.jsx
-    ├── constants/      # data statis
-    ├── context/        # Konteks React untuk state management global (e.g., AuthContext)
-        └── AuthContext.jsx
-    ├── hooks/          # Custom hooks (e.g., usePofile, useVideoAnalysis)
-        ├── profile / useEditProfilePresenter.js , useProfilePresenter.js
-        ├── text-predict / useTextPredict.js
-        └── video-analysis / useVideoAnalysis.js
-    ├── pages/          # Komponen yang mewakili halaman (Login, Register, HomePage, Analysis)
-        ├── about-us / AboutUs.jsx, index.js
-        ├── analisis /
-            └── AnalysisFormSection /
-                ├── constants/ chartConstants.js
-                └── views /
-                    ├── components /
-                    |   ├── AnalysisLegend.jsx
-                    |   ├── AnalysisResultHeader.jsx
-                    |   ├── AnalysisSubmitForm.jsx
-                    |   ├── AnalysisSUmmary.jsx
-                    |   ├── AnalysisTooltip.jsx
-                    |   ├── CommentList.jsx
-                    |   └── StatBox.jsx
-                    └── AnalysisFormSection.jsx
-            ├── WorkGuideSection / WorkGuideSection.jsx
-            └── AnalysisPage.jsx
-        ├── auth
-            ├── login / Login.jsx
-            ├── register / Register.jsx
-            ├── ForgotPasswordPage.jsx
-            └── ResetPasswordPage.jsx
-        ├── home
-            ├── ConnectSection.jsx
-            ├── ContactSection.jsx
-            ├── HeroSection.jsx
-            ├── HomePage.jsx
-            ├── TestimonialsSection.jsx
-            └── TextPredictSection.jsx
-        ├── otp / OtpPage.jsx
-        ├── profile / ChangePasswordForm.jsx, EditProfilePage.jsx, ProfilePage.jsx
-        └── status / Error.jsx, NotFound.jsx, NotLogin.jsx
-    ├── routes/         # router untuk navigasi halaman aplikasi
-        ├── AppRouter.jsx
-        └── ProtectedRoute.jsx
-    ├── services/       # Fungsi untuk berinteraksi dengan API backend (api.js)
-        └── api.js
-    ├── utils/          # Fungsi utilitas umum
-        ├── formatters.jsx
-        └── FormValidator.js
-    ├── App.jsx         # Komponen root aplikasi
-    ├── main.jsx        # Titik masuk aplikasi
-    └── style.css       # styling global aplikasi
-.env.example
-.gitignore
-index.html
-package-lock.json
-package.json
-README.md
-tailwind.config.js
-vite.config.js
+frontend/
+│
+├── public/
+│   └── logo.png                    # Aset publik yang diakses langsung (favicon, logo, dsb)
+│
+├── src/
+│   ├── assets/                     # File statis yang dibundel oleh Vite
+│   │   ├── icons/                  # Kumpulan ikon
+│   │   ├── images/                 # Kumpulan gambar umum
+│   │   │   └── team-images/        # Gambar khusus untuk halaman tim
+│   │   └── ...                     # Aset tambahan
+│   │
+│   ├── components/                 # Komponen UI reusable & modular
+│   │   ├── auth/                   # Komponen otentikasi
+│   │   │   └── GoogleSignInButton.jsx
+│   │   ├── fun-fact/
+│   │   │   └── FunFactsSection.jsx
+│   │   ├── homepage/               # Komponen khusus halaman Home
+│   │   │   ├── ConnectSection.jsx
+│   │   │   ├── ContactSection.jsx
+│   │   │   ├── HeroSection.jsx
+│   │   │   ├── TextPredictSection.jsx
+│   │   │   └── TestimonialsSection.jsx
+│   │   ├── layout/                 # Layout umum untuk seluruh aplikasi
+│   │   │   ├── Footer.jsx
+│   │   │   ├── Header.jsx
+│   │   │   └── MainLayout.jsx
+│   │   ├── tagline/
+│   │   │   └── Tagline.jsx
+│   │   ├── text-predict/
+│   │   │   ├── PredictResult.jsx
+│   │   │   └── TextPredictForm.jsx
+│   │   ├── ui/                     # Komponen UI kustom berbasis shadcn/ui
+│   │   ├── PageLoader.jsx
+│   │   ├── ThemeProvider.jsx
+│   │   └── ThemeToggle.jsx
+│   │
+│   ├── constants/                  # Data dan konstanta statis
+│   │   └── index.js
+│   │
+│   ├── hooks/                      # Custom hooks berbasis fitur (mengikuti arsitektur MVP)
+│   │   ├── profile/
+│   │   │   ├── useProfilePresenter.js
+│   │   │   └── useEditProfilePresenter.js
+│   │   ├── text-predict/
+│   │   │   └── useTextPredict.js
+│   │   ├── video-analysis/
+│   │   │   └── useVideoAnalysis.js
+│   │   └── ...                     # Hook tambahan (mis. useAuth)
+│   │
+│   ├── lib/                        # Logika utilitas dan API service
+│   │   ├── services/               # Abstraksi komunikasi API
+│   │   │   ├── analysis/
+│   │   │   │   └── videoAnalysisApi.js
+│   │   │   ├── auth/
+│   │   │   │   └── authApi.js
+│   │   │   ├── predict/
+│   │   │   │   └── predictApi.js
+│   │   │   ├── user/
+│   │   │   │   └── userApi.js
+│   │   │   ├── apiClient.js        # Konfigurasi instance Axios
+│   │   │   └── index.js            # Export API service secara terpusat
+│   │   └── utils/                  # Fungsi bantu (formatter, validator, helper)
+│   │       ├── form-validators.js
+│   │       ├── formatters.jsx
+│   │       └── index.js
+│   │
+│   ├── pages/                      # Halaman utama (berbasis route)
+│   │   ├── about-us/
+│   │   │   └── AboutUs.jsx
+│   │   ├── analisis/
+│   │   │   ├── AnalysisPage.jsx
+│   │   │   ├── WorkGuideSection/
+│   │   │   │   └── WorkGuideSection.jsx
+│   │   │   └── AnalysisFormSection/
+│   │   │       ├── constants/
+│   │   │       │   └── chartConstants.js
+│   │   │       ├── views/
+│   │   │       │   ├── components/
+│   │   │       │   ├── AnalysisLegend.jsx
+│   │   │       │   ├── AnalysisResultHeader.jsx
+│   │   │       │   ├── AnalysisSubmitForm.jsx
+│   │   │       │   ├── AnalysisSummary.jsx
+│   │   │       │   ├── AnalysisTooltip.jsx
+│   │   │       │   ├── CommentList.jsx
+│   │   │       │   └── StatBox.jsx
+│   │   │       └── AnalysisFormSection.jsx
+│   │   ├── auth/                   # Halaman otentikasi
+│   │   │   ├── Login.jsx
+│   │   │   ├── Register.jsx
+│   │   │   ├── OtpPage.jsx
+│   │   │   ├── ForgotPasswordPage.jsx
+│   │   │   └── ResetPasswordPage.jsx
+│   │   ├── home/
+│   │   │   └── HomePage.jsx
+│   │   ├── profile/                # Halaman & form profil user
+│   │   │   ├── ChangePasswordForm.jsx
+│   │   │   ├── EditProfilePage.jsx
+│   │   │   └── ProfilePage.jsx
+│   │   ├── status/                 # Halaman status/error
+│   │   │   ├── Error.jsx
+│   │   │   ├── NotFound.jsx
+│   │   │   └── NotLogin.jsx
+│   │   └── otp/                    # (opsional, jika halaman OTP terpisah)
+│   │       └── OtpPage.jsx
+│   │
+│   ├── routes/                     # Routing aplikasi
+│   │   ├── AppRouter.jsx           # Daftar rute utama aplikasi
+│   │   └── ProtectedRoute.jsx      # Proteksi rute (autentikasi)
+│   │
+│   ├── store/                      # State management (Zustand)
+│   │   ├── analysis/
+│   │   │   └── videoAnalysisStore.js
+│   │   ├── auth/
+│   │   │   └── authStore.js
+│   │   ├── predict/
+│   │   │   └── textPredictStore.js
+│   │   ├── user/
+│   │   │   └── userStore.js
+│   │   └── index.js
+│   │
+│   ├── App.jsx                     # Komponen root aplikasi
+│   ├── main.jsx                    # Titik masuk utama aplikasi (ReactDOM.render)
+│   └── style.css                   # Styling global aplikasi
+│
+├── .env                            # Variabel lingkungan
+├── .env.example                    # Contoh konfigurasi env
+├── .gitignore
+├── components.json                 # Konfigurasi shadcn/ui
+├── eslint.config.json              # Konfigurasi ESLint
+├── jsconfig.json                   # Path alias dan konfigurasi JS/TS
+├── index.html                      # Template HTML utama (Vite)
+├── package.json                    # Daftar dependensi & script NPM
+├── README.md                       # Dokumentasi proyek
+├── tailwind.config.js              # Konfigurasi TailwindCSS
+└── vite.config.js                  # Konfigurasi Vite bundler
 ```
 
 Struktur ini dirancang untuk menjaga kode tetap terorganisir dan mudah untuk dikelola seiring dengan pertumbuhan aplikasi.

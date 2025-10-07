@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useTextPredict } from "@/hooks/text-predict/useTextPredict";
 import { SearchIcon } from "@/assets/icons/SearchIcon";
 import { LoadingSpinner } from "@/assets/icons/LoadingSpinner";
-import PredictResults from "./predictResult";
+import PredictResults from "./PredictResult";
 
 const TextPredictForm = () => {
   const [inputText, setInputText] = useState("");

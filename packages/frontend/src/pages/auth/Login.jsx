@@ -16,7 +16,7 @@ import Swal from "sweetalert2";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login, isLoadingAuth } = useAuthStore();
+  const { login, isLoadingAuth, setUser } = useAuthStore();
 
   const [showPassword, setShowPassword] = useState(false);
   const [formValues, setFormValues] = useState({ email: "", password: "" });
@@ -53,23 +53,28 @@ const Login = () => {
     // setErrorServer("");
 
     try {
-      await login(formValues);
+      const res = await login(formValues);
+      if (res?.data?.user) {
+        setUser({ ...res.data.user, password: "" });
+      }
 
-      toast.success("Anda berhasil login!", { position: "bottom-right" });
+      toast.success("Anda berhasil login!", {
+        position: "bottom-right",
+        duration: 2000,
+        toastId: "toast-login-success",
+      });
       navigate("/");
     } catch (error) {
       console.error("Login error:", error);
-      const errorMessage =
-        "Login gagal.Anda Mendaftarkan akun ini dengan Google.";
-
-      toast.error(errorMessage, { position: "bottom-right" });
+      const errorMessage = error.toString();
+      toast.error(errorMessage, {
+        position: "bottom-right",
+        toastId: "toast-login-error",
+      });
       // setErrorServer(errorMessage);
     }
   };
 
-  const handleComingSoon = () => {
-    Swal.fire("Coming Soon!");
-  };
   return (
     <>
       <Title>Login | Judi Guard</Title>
@@ -112,6 +117,7 @@ const Login = () => {
                 type="email"
                 id="email"
                 name="email"
+                data-cy="email-input"
                 autoComplete="email"
                 value={formValues.email}
                 onChange={handleChange}
@@ -137,8 +143,7 @@ const Login = () => {
                   Password
                 </label>
                 <Link
-                  onClick={handleComingSoon}
-                  // to="/forgot-password"
+                  to="/forgot-password"
                   className="text-sm text-[var(--primary-color)] hover:underline"
                 >
                   Lupa kata sandi
@@ -148,6 +153,7 @@ const Login = () => {
                 <input
                   name="password"
                   id="password"
+                  data-cy="password-input"
                   value={formValues.password}
                   onChange={handleChange}
                   type={showPassword ? "text" : "password"}
@@ -182,6 +188,7 @@ const Login = () => {
 
             <button
               type="submit"
+              data-cy="login-button"
               disabled={isLoadingAuth}
               className="w-full py-1 mt-2 bg-[#25c0d4] text-white font-semibold border rounded-xl hover:bg-[#089db1] transition disabled:opacity-50"
             >
@@ -194,14 +201,14 @@ const Login = () => {
                   to="/register"
                   className="text-[var(--primary-color)] ms-1 font-medium hover:underline"
                 >
-                  Daftar di sini
-                </Link>
-                , atau masuk sebagai
+                  Daftar disini
+                </Link>{" "}
+                atau masuk
                 <Link
                   to="/"
                   className="text-[var(--primary-color)] ms-1 font-medium hover:underline"
                 >
-                  tamu
+                  sebagai Tamu
                 </Link>
               </p>
             </div>
@@ -214,14 +221,10 @@ const Login = () => {
           </div>
 
           {/* <GoogleSignInButton /> */}
-          <div className="flex w-full justify-center">
-            {/* ✅ GoogleSignInButton akan handle loading state sendiri */}
-            <GoogleSignInButton
-              buttonText="Daftar dengan google"
-              // Google button bisa disabled jika regular register sedang loading
-              disabled={isLoadingAuth}
-            />
-          </div>
+          <GoogleSignInButton
+            buttonText="Masuk dengan Google"
+            disabled={isLoadingAuth}
+          />
         </div>
       </div>
     </>

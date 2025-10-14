@@ -11,7 +11,9 @@ const HomePage = lazy(() => import("@/pages/home/HomePage"));
 const AboutUs = lazy(() => import("@/pages/about-us/AboutUs"));
 const AnalysisPage = lazy(() => import("@/pages/analisis/AnalysisPage"));
 const ProfilePage = lazy(() => import("@/pages/profile/ProfilePage"));
-const EditProfilePage = lazy(() => import("@/pages/profile/EditProfilePage"));
+const EditProfilePage = lazy(
+  () => import("@/components/profile/EditProfilePage")
+);
 const LoginPage = lazy(() => import("@/pages/auth/Login"));
 const RegisterPage = lazy(() => import("@/pages/auth/Register"));
 const OtpPage = lazy(() => import("@/pages/auth/OtpPage"));
@@ -19,6 +21,9 @@ const ForgotPasswordPage = lazy(
   () => import("@/pages/auth/ForgotPasswordPage")
 );
 const ResetPasswordPage = lazy(() => import("@/pages/auth/ResetPasswordPage"));
+const ChangePasswordPage = lazy(
+  () => import("@/pages/auth/ChangePasswordForm")
+);
 const NotFoundPage = lazy(() => import("@/pages/status/NotFound"));
 
 // /**
@@ -32,7 +37,7 @@ const AppRouter = () => {
         <Route path="/" element={<MainLayout />}>
           <Route index element={<HomePage />} />
           <Route path="about-us" element={<AboutUs />} />
-          <Route path="analisis" element={<AnalysisPage />} />
+          <Route path="analysis" element={<AnalysisPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="profile/edit" element={<EditProfilePage />} />
 
@@ -44,6 +49,7 @@ const AppRouter = () => {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/otp" element={<OtpPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/change-password" element={<ChangePasswordPage />} />
         <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 
         <Route path="*" element={<Navigate to="/not-found" replace />} />

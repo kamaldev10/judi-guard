@@ -1,13 +1,15 @@
 import js from "@eslint/js";
 import globals from "globals";
-import eslintPluginReact from "eslint-plugin-react"; // <-- 1. IMPORT PLUGIN REACT
+import eslintPluginReact from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
+import eslintPluginCypress from "eslint-plugin-cypress";
 
 export default [
   { ignores: ["dist"] },
+
   {
-    files: ["**/*.{js,jsx}"],
+    files: ["src/**/*.{js,jsx}"],
     languageOptions: {
       sourceType: "module",
       ecmaVersion: "latest",
@@ -49,5 +51,14 @@ export default [
       "react/react-in-jsx-scope": "off",
       "react/jsx-uses-react": "off",
     },
+  },
+  {
+    env: {
+      "cypress/globals": true,
+    },
+  },
+  {
+    files: ["tests/**/*.js", "cypress/support/**/*.js"],
+    ...eslintPluginCypress.configs.recommended,
   },
 ];

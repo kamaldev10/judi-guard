@@ -15,6 +15,7 @@ export const useAuthStore = create((set, get) => ({
   token: localStorage.getItem("judiGuardToken") || null,
   isLoadingAuth: false,
   error: null,
+  setUser: (user) => set({ currentUser: user, isAuthenticated: !!user }),
   currentUser: JSON.parse(localStorage.getItem("judiGuardUser") || "null"),
 
   // Computed property untuk authentication status

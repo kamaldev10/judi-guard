@@ -4,8 +4,9 @@
     "paths": {
       "@/*": ["src/*"]
     },
+    "types": ["cypress", "node"],
     "ignoreDeprecations": "6.0"
   },
   "exclude": ["node_modules", "dist"],
-  "include": ["src"]
+  "include": ["src", "tests/**/*.js"]
 }

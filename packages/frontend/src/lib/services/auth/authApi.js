@@ -86,7 +86,7 @@ export const forgotPasswordApi = async (email) => {
 
 export const resetPasswordApi = async (token, newPassword) => {
   try {
-    const response = await apiClient.post(`/auth/reset-password/${token}`, {
+    const response = await apiClient.put(`/auth/reset-password/${token}`, {
       password: newPassword,
     });
     return response.data;
@@ -98,11 +98,16 @@ export const resetPasswordApi = async (token, newPassword) => {
   }
 };
 
-export const changePasswordApi = async (currentPassword, newPassword) => {
+export const changePasswordApi = async (
+  currentPassword,
+  newPassword,
+  confirmPassword
+) => {
   try {
-    const response = await apiClient.post("/auth/change-password", {
+    const response = await apiClient.patch("/auth/change-password", {
       currentPassword,
       newPassword,
+      confirmPassword,
     });
     return response.data;
   } catch (error) {

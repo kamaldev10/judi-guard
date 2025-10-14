@@ -72,7 +72,7 @@ router.put(
   authController.handleResetPassword
 );
 
-router.put(
+router.patch(
   "/change-password",
   isAuthenticated, // 2. Pastikan pengguna sudah login
   // Jika changePasswordSchema Anda memvalidasi req.body (currentPassword, newPassword, confirmPassword),

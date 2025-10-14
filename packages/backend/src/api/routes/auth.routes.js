@@ -10,6 +10,7 @@ const {
   forgotPasswordSchema,
   resetPasswordSchema,
   changePasswordSchema,
+  googleLoginSchema,
 } = require("../validators/auth.validator");
 const isAuthenticated = require("../middlewares/isAuthenticated");
 
@@ -39,7 +40,11 @@ router.post(
   authController.handleLogin
 );
 
-router.post("/google/signin", authController.handleGoogleAuth);
+router.post(
+  "/google/signin",
+  validateRequest(googleLoginSchema, "body"),
+  authController.handleGoogleAuth
+);
 
 router.get(
   "/youtube/connect",

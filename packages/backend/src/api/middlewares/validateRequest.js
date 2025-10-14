@@ -12,7 +12,7 @@ const validateRequest = (schema, property = "body") => {
       const errorMessage = error.details
         .map((detail) => detail.message)
         .join(", ");
-      return next(new BadRequestError(`Validation failed: ${errorMessage}`));
+      return next(new BadRequestError(errorMessage));
     }
 
     // Ganti req[property] dengan data yang sudah divalidasi (dan mungkin di-strip)

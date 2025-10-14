@@ -22,7 +22,7 @@ const ForgotPasswordPage = lazy(
 );
 const ResetPasswordPage = lazy(() => import("@/pages/auth/ResetPasswordPage"));
 const ChangePasswordPage = lazy(
-  () => import("@/pages/auth/ChangePasswordForm")
+  () => import("@/pages/auth/ChangePasswordPage")
 );
 const NotFoundPage = lazy(() => import("@/pages/status/NotFound"));
 

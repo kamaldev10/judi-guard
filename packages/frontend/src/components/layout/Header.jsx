@@ -3,12 +3,11 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Menu,
   X,
-  LogIn,
   Home,
   Info,
   BarChart3,
-  UserCircle,
-  HandMetal,
+  UserRound,
+  IdCard,
 } from "lucide-react";
 
 import { toast } from "react-toastify";
@@ -109,7 +108,7 @@ const Header = () => {
       case "/analisis":
         return <BarChart3 size={18} className="mr-2" />;
       case "/profile":
-        return <UserCircle size={18} className="mr-2" />;
+        return <IdCard size={18} className="mr-2" />;
       default:
         return null;
     }
@@ -153,9 +152,12 @@ const Header = () => {
                 {getNavIcon("/profile")} Profil
               </Link>
               {isAuthenticated && currentUser && (
-                <span className="text-sm text-[#06786F] ml-4 pl-4 border-l-cyan-600 border-l-2 font-semibold border-gray-200 inline-flex items-center">
-                  <HandMetal size={18} className="mr-1 text-amber-700" />
-                  Halo, {currentUser.username || currentUser.name || "Pengguna"}
+                <span
+                  data-cy="user-profile-name"
+                  className="text-sm text-[#06786F] ml-4 pl-4  font-semibold border-gray-200 inline-flex items-center"
+                >
+                  <UserRound size={18} className="mr-2 text-amber-700" />
+                  {currentUser.username || currentUser.name || "Pengguna"}
                 </span>
               )}
               <div className="ml-4 hidden md:block">{renderAuthButtons()}</div>
@@ -189,9 +191,9 @@ const Header = () => {
           >
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-[#B9E6FD] border-t border-gray-200 shadow-xl rounded-b-lg">
               {isAuthenticated && currentUser && (
-                <span className="text-sm text-[#06786F] ml-4 pl-4 border-l-cyan-600 border-l-2 font-semibold border-gray-200 inline-flex items-center">
-                  <HandMetal size={18} className="mr-1 text-amber-700" />
-                  Halo, {currentUser.username || currentUser.name || "Pengguna"}
+                <span className="text-sm text-[#06786F] ml-4 pl-4  font-semibold border-gray-200 inline-flex items-center">
+                  <UserRound size={18} className="mr-1 text-amber-700" />
+                  {currentUser.username || currentUser.name || "Pengguna"}
                 </span>
               )}
               <Link

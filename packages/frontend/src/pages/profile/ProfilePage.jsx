@@ -20,6 +20,7 @@ import PropTypes from "prop-types";
 
 import { useProfilePresenter } from "../../hooks/profile/useProfilePresenter"; // Pastikan path ini benar
 import { useLocation } from "react-router-dom";
+import { NotLogin } from "@/assets/images";
 
 // Komponen InfoItem untuk menampilkan item informasi profil
 const InfoItem = ({
@@ -203,13 +204,16 @@ const UserProfilePage = () => {
         className="bg-[#d8f6ff] flex items-center justify-center"
         style={{ minHeight: "calc(100vh - 4.5rem)" }}
       >
-        <p className="text-slate-600 text-lg">
-          Data pengguna tidak tersedia. Silakan
-          <a href="/" className="text-sky-600 hover:underline mx-1 md:mx-2">
-            login
-          </a>
-          menggunakan akun Google anda{" "}
-        </p>
+        <div className="container mx-auto p-4 text-center space-y-6">
+          <img
+            src={NotLogin}
+            alt="Not Logged In Image"
+            className="h-80 items-center mx-auto mb-4"
+          />
+          <p className="text-slate-600 text-lg">
+            Data pengguna tidak tersedia. Silahkan Login terlebih dahulu.
+          </p>
+        </div>
       </div>
     );
   }

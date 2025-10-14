@@ -1,12 +1,14 @@
 // src/pages/auth/ForgotPasswordPage.jsx (Contoh Komponen)
-import { forgotPasswordApi } from "@/lib/services";
+import { useAuthStore } from "@/stores";
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import Swal from "sweetalert2"; // Impor SweetAlert2
 // import { useNavigate } from 'react-router-dom';
 
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { forgotPassword } = useAuthStore();
   // const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -18,7 +20,6 @@ const ForgotPasswordPage = () => {
         icon: "warning",
         confirmButtonText: "OK",
         customClass: {
-          // Styling kustom jika diperlukan
           confirmButton:
             "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded",
         },
@@ -28,14 +29,13 @@ const ForgotPasswordPage = () => {
     setIsLoading(true);
 
     try {
-      // Panggil forgotPasswordApi. Ia akan mengembalikan { success: true, message: "..." }
-      const backendResponse = await forgotPasswordApi(email);
+      await forgotPassword();
 
       // Tampilkan SweetAlert sukses dengan pesan dari backend
       // (pesan ini sekarang akan selalu generik untuk semua kasus sukses)
       Swal.fire({
         title: "Permintaan Terkirim!",
-        text: backendResponse.message, // Menggunakan pesan dari backend
+        text: "Kami Akan mengirim email berisi instruksi untuk mereset kata sandi Anda. Silakan periksa folder inbox dan spam Anda.",
         icon: "success",
         confirmButtonText: "Mengerti",
         customClass: {
@@ -44,14 +44,13 @@ const ForgotPasswordPage = () => {
         },
       });
 
-      setEmail(""); // Kosongkan field email setelah berhasil
-      // Opsional: navigasi ke halaman login atau halaman informasi
-      // setTimeout(() => navigate('/login'), 3000);
+      setEmail("");
+
+      setTimeout(() => navigate("/login"), 3000);
     } catch (error) {
-      // Menangkap error yang dilempar oleh forgotPasswordApi (error HTTP)
       Swal.fire({
         title: "Oops... Terjadi Kesalahan",
-        text: error.message, // error.message sudah diformat oleh forgotPasswordApi
+        text: error.message,
         icon: "error",
         confirmButtonText: "Coba Lagi",
         customClass: {
@@ -101,6 +100,17 @@ const ForgotPasswordPage = () => {
             {isLoading ? "Mengirim Permintaan..." : "Kirim Instruksi Reset"}
           </button>
         </form>
+        <div className="flex justify-center mt-2">
+          <p className="text-center text-sm ">
+            kembali ke halaman{" "}
+            <Link
+              to="/login"
+              className="text-[var(--primary-color)] ms-1 font-medium hover:underline"
+            >
+              Login
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

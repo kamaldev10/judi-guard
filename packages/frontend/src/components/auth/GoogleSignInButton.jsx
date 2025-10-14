@@ -1,7 +1,5 @@
-// src/components/auth/GoogleSignInButton.jsx
 import React from "react";
 import { GoogleLogin } from "@react-oauth/google";
-import { signInWithGoogleApi } from "@/lib/services/auth/authApi";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Icon } from "@iconify/react";
@@ -9,115 +7,110 @@ import PropTypes from "prop-types";
 import { useAuthStore } from "@/stores/auth/authStore";
 
 const GoogleSignInButton = ({
+  buttonText = "Masuk dengan Google",
+  disabled = false,
   onSuccessCustom,
   onErrorCustom,
-  buttonText = "Masuk dengan Google",
 }) => {
-  const { login } = useAuthStore();
+  const { signInWithGoogle } = useAuthStore();
   const navigate = useNavigate();
+  const [loading, setLoading] = React.useState(false);
 
   const handleGoogleSuccess = async (credentialResponse) => {
     const idToken = credentialResponse?.credential;
 
     if (!idToken) {
-      const errorMsg = "Google ID Token tidak diterima dari Google.";
-      console.error(errorMsg);
-      toast.error(errorMsg, { position: "bottom-right" });
-      onErrorCustom?.(new Error(errorMsg));
+      toast.error("Google ID Token tidak diterima", {
+        position: "bottom-right",
+      });
+      onErrorCustom?.(new Error("Google ID Token tidak diterima"));
       return;
     }
 
     try {
-      const backendResponse = await signInWithGoogleApi(idToken);
-      const { token: judiGuardToken, user } = backendResponse.data;
+      setLoading(true);
 
-      // Update auth state
-      login(user, judiGuardToken);
+      // Panggil store action, store yang akan panggil API & set session
+      await signInWithGoogle(idToken);
 
-      // Show success message
-      toast.success(
-        backendResponse.message || "Login dengan Google berhasil!",
-        { position: "bottom-right" }
-      );
+      toast.success("Login dengan Google berhasil!", {
+        position: "bottom-right",
+      });
 
-      // Handle success callback or navigation
       if (onSuccessCustom) {
+        const user = JSON.parse(localStorage.getItem("judiGuardUser"));
         onSuccessCustom(user);
       } else {
         navigate("/");
       }
     } catch (error) {
-      console.error("Error during backend Google sign-in:", error);
-
-      const errorMessage = getErrorMessage(error);
-      toast.error(errorMessage, { position: "bottom-right" });
-
+      toast.error(error.message || "Gagal login Google", {
+        position: "bottom-right",
+      });
       onErrorCustom?.(error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleGoogleFailure = (errorResponse) => {
-    console.error("Google Sign-In Failed (Frontend):", errorResponse);
-
-    const message = getGoogleErrorMessage(errorResponse);
+    const message =
+      errorResponse?.error === "popup_closed_by_user"
+        ? "Proses login Google dibatalkan."
+        : "Login dengan Google gagal. Silakan coba lagi.";
     toast.error(message, { position: "bottom-right" });
-
     onErrorCustom?.(errorResponse || new Error(message));
   };
 
-  const getErrorMessage = (error) => {
-    return (
-      error.response?.data?.message ||
-      error.message ||
-      "Gagal memproses login Google di server kami."
-    );
-  };
-
-  const getGoogleErrorMessage = (errorResponse) => {
-    if (errorResponse?.error === "popup_closed_by_user") {
-      return "Proses login Google dibatalkan.";
-    }
-    return "Login dengan Google gagal. Silakan coba lagi.";
-  };
-
   return (
-    <GoogleLogin
-      onSuccess={handleGoogleSuccess}
-      onError={handleGoogleFailure}
-      useOneTap={false} // Optional: disable one-tap if needed
-    >
-      {({ onClick, disabled }) => (
-        <button
-          onClick={onClick}
-          disabled={disabled}
-          className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-3 px-4 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          type="button"
-        >
-          <Icon
-            icon="logos:google-icon"
-            width="20"
-            height="20"
-            className="flex-shrink-0"
-          />
-          <span className="text-sm font-medium text-gray-700">
-            {buttonText}
-          </span>
-        </button>
-      )}
-    </GoogleLogin>
+    <div className="w-full">
+      <GoogleLogin
+        onSuccess={handleGoogleSuccess}
+        onError={handleGoogleFailure}
+        useOneTap={false}
+        render={({ onClick, disabled: googleDisabled }) => (
+          <button
+            onClick={onClick}
+            disabled={disabled || googleDisabled || loading}
+            type="button"
+            className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-3 px-4 text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          >
+            <Icon icon="logos:google-icon" width={20} height={20} />
+            <span className="text-sm font-medium">{buttonText}</span>
+            {loading && (
+              <svg
+                className="animate-spin h-5 w-5 text-gray-600"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                ></path>
+              </svg>
+            )}
+          </button>
+        )}
+      />
+    </div>
   );
 };
 
 GoogleSignInButton.propTypes = {
+  buttonText: PropTypes.string,
+  disabled: PropTypes.bool,
   onSuccessCustom: PropTypes.func,
   onErrorCustom: PropTypes.func,
-  buttonText: PropTypes.string,
-};
-
-GoogleSignInButton.defaultProps = {
-  onSuccessCustom: null,
-  onErrorCustom: null,
-  buttonText: "Masuk dengan Google",
 };
 
 export default GoogleSignInButton;

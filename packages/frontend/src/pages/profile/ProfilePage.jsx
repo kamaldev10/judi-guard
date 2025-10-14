@@ -14,12 +14,15 @@ import {
   Link as LinkIcon, // Menggunakan alias untuk menghindari konflik nama jika ada
   Unlink,
   RefreshCw, // Ikon untuk "Perbarui Izin" atau "Sinkronkan Ulang"
+  ChevronRight,
+  KeyRound,
+  Settings,
 } from "lucide-react";
 import Swal from "sweetalert2"; // Digunakan untuk konfirmasi hapus akun
 import PropTypes from "prop-types";
 
 import { useProfilePresenter } from "../../hooks/profile/useProfilePresenter"; // Pastikan path ini benar
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { NotLogin } from "@/assets/images";
 
 // Komponen InfoItem untuk menampilkan item informasi profil
@@ -99,7 +102,7 @@ const UserProfilePage = () => {
     isDeleting, // True jika proses hapus akun sedang berjalan
 
     handleEditProfile, // Fungsi untuk navigasi ke halaman edit profil
-    // executeDeleteAccount, // Fungsi untuk memulai proses hapus akun (setelah konfirmasi)
+    executeDeleteAccount, // Fungsi untuk memulai proses hapus akun (setelah konfirmasi)
 
     isYoutubeConnected, // Boolean, true jika akun YouTube terhubung
     youtubeChannelInfo, // Objek info channel YouTube (misal { name, thumbnailUrl }) atau null
@@ -131,25 +134,22 @@ const UserProfilePage = () => {
   // Handler konfirmasi hapus akun di View (memanggil executeDeleteAccount dari presenter)
   const confirmDeleteAccountHandlerInView = () => {
     if (isDeleting) return; // Mencegah klik ganda
-    Swal.fire("Coming Soon!");
 
-    // sementara coming soon
-
-    //   Swal.fire({
-    //     title: "Konfirmasi Hapus Akun",
-    //     text: "Apakah Anda yakin ingin menghapus akun Anda secara permanen? Tindakan ini tidak dapat diurungkan.",
-    //     icon: "warning",
-    //     showCancelButton: true,
-    //     confirmButtonColor: "#e53e3e", // Merah untuk delete
-    //     cancelButtonColor: "#718096", // Abu-abu
-    //     confirmButtonText: "Ya, Hapus Akun Saya!",
-    //     cancelButtonText: "Batal",
-    //     customClass: { popup: "rounded-xl shadow-lg text-sm" },
-    //   }).then((result) => {
-    //     if (result.isConfirmed) {
-    //       executeDeleteAccount(); // Panggil fungsi dari presenter
-    //     }
-    //   });
+    Swal.fire({
+      title: "Konfirmasi Hapus Akun",
+      text: "Apakah Anda yakin ingin menghapus akun Anda secara permanen? Tindakan ini tidak dapat diurungkan.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#e53e3e", // Merah untuk delete
+      cancelButtonColor: "#718096", // Abu-abu
+      confirmButtonText: "Ya, Hapus Akun Saya!",
+      cancelButtonText: "Batal",
+      customClass: { popup: "rounded-xl shadow-lg text-sm" },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        executeDeleteAccount(); // Panggil fungsi dari presenter
+      }
+    });
   };
 
   // Tampilan saat data profil sedang dimuat
@@ -327,7 +327,7 @@ const UserProfilePage = () => {
         >
           <h2
             id="connections-heading"
-            className="text-xl md:text-2xl font-semibold text-slate-700 mb-5 flex items-center"
+            className="text-xl md:text-2xl font-bold text-slate-800 mb-5 flex items-center"
           >
             <LinkIcon size={24} className="mr-3 text-cyan-600" />
             Koneksi Akun
@@ -451,32 +451,65 @@ const UserProfilePage = () => {
           </div>
         </motion.section>
 
-        {/* BAGIAN 3: PENGATURAN AKUN & ZONA BERBAHAYA */}
+        {/* BAGIAN 3: PENGATURAN AKUN & ZONA BERBAHAYA - DESAIN BARU */}
         <motion.section
           variants={sectionItemVariants}
-          className="bg-white shadow-xl rounded-xl p-6 md:p-8"
+          className="bg-white shadow-xl rounded-xl overflow-hidden"
           aria-labelledby="account-settings-heading"
         >
-          <h2
-            id="account-settings-heading"
-            className="text-xl md:text-2xl font-semibold text-slate-700 mb-5"
-          >
-            Pengaturan Akun
-          </h2>
-          {/* Anda bisa menambahkan link ke ganti password di sini jika mau */}
-          {/* <Link to="/profile/change-password" className="...">Ganti Password</Link> */}
-          <div className="mt-6 border-t border-rose-300 pt-6">
-            <h3 className="text-lg font-medium text-rose-600 mb-2">
-              Zona Berbahaya
-            </h3>
-            <p className="text-sm text-slate-600 mb-4">
-              Tindakan menghapus akun bersifat permanen dan tidak dapat
-              diurungkan.
+          <div className="p-6 md:p-8">
+            <h2
+              id="account-settings-heading"
+              className="flex items-center text-xl md:text-2xl font-bold text-slate-800 mb-5"
+            >
+              <Settings size={24} className="mr-3 text-rose-600" />
+              Pengaturan Akun
+            </h2>
+
+            {/* Daftar Aksi Pengaturan */}
+            <div className="border border-slate-200 rounded-lg">
+              <Link
+                to="/change-password"
+                className="group flex items-center justify-between p-4  bg-slate-50 hover:bg-slate-100 transition-colors duration-200 cursor-pointer"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="bg-slate-100 p-2 rounded-lg">
+                    <KeyRound className="text-slate-600" size={20} />
+                  </div>
+                  <div>
+                    <span className="font-semibold text-slate-700">
+                      Ganti Kata Sandi
+                    </span>
+                    <p className="text-sm text-slate-500">
+                      Ubah kata sandi Anda secara berkala untuk keamanan.
+                    </p>
+                  </div>
+                </div>
+                <ChevronRight
+                  className="text-slate-400 group-hover:text-slate-600 transition-transform duration-200 group-hover:translate-x-1"
+                  size={20}
+                />
+              </Link>
+              {/* Tambahkan item pengaturan lain di sini jika ada */}
+            </div>
+          </div>
+
+          {/* Zona Berbahaya - Dipisahkan secara visual */}
+          <div className="bg-rose-50/50 border-t border-rose-200 px-6 md:px-8 py-6">
+            <div className="flex items-center gap-3 mb-2">
+              <AlertTriangle className="text-rose-500" size={20} />
+              <h3 className="text-lg font-bold text-rose-800">
+                Zona Berbahaya
+              </h3>
+            </div>
+            <p className="text-sm text-rose-700 mb-5 w-full">
+              Tindakan di bawah ini bersifat permanen dan akan menghapus semua
+              data Anda secara permanen. Harap berhati-hati.
             </p>
             <motion.button
-              onClick={confirmDeleteAccountHandlerInView} // Handler konfirmasi di View
+              onClick={confirmDeleteAccountHandlerInView}
               disabled={isDeleting}
-              className="w-full md:w-auto bg-rose-600 hover:bg-rose-700 text-white font-semibold py-2.5 px-6 rounded-md shadow-md flex items-center justify-center text-sm disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-rose-400 focus:ring-offset-2"
+              className="w-full sm:w-auto bg-rose-600 text-white font-semibold py-2.5 px-5 rounded-lg shadow-sm flex items-center justify-center text-sm transition-all duration-200 hover:bg-rose-700 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 focus:ring-offset-rose-50"
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -485,7 +518,7 @@ const UserProfilePage = () => {
               ) : (
                 <Trash2 size={16} className="mr-2" />
               )}
-              {isDeleting ? "Memproses Penghapusan..." : "Hapus Akun Saya"}
+              {isDeleting ? "Menghapus Akun..." : "Hapus Akun Saya"}
             </motion.button>
           </div>
         </motion.section>

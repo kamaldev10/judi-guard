@@ -32,7 +32,9 @@ const sendEmailWithEthereal = async (options) => {
   });
 
   const message = {
-    from: process.env.EMAIL_FROM || '"Judi Guard Test" <noreply@example.com>',
+    from:
+      process.env.EMAIL_FROM ||
+      '"[Ethereal] Judi Guard " <noreply@judiguard.id>',
     to: options.email,
     subject: options.subject,
     text: options.text,
@@ -154,8 +156,6 @@ const sendEmailWithMailgun = async (options) => {
   }
 };
 
-// --- Logika Pemilihan Metode Pengiriman Email ---
-
 let emailSendingFunction;
 
 // Prioritas untuk Production
@@ -180,20 +180,13 @@ if (process.env.NODE_ENV === "production") {
   }
 } else {
   // Prioritas untuk Development (dan environment lainnya)
-  if (
-    config.mailgun.apiKey &&
-    config.mailgun.domain &&
-    config.mailgun.senderEmail
-  ) {
-    emailSendingFunction = sendEmailWithMailgun;
-    console.info("Email Service: Using Mailgun for development.");
-  } else if (config.email.host && config.email.user && config.email.pass) {
+  if (config.email.host && config.email.user && config.email.pass) {
     emailSendingFunction = sendEmailWithSmtp;
     console.info(
-      "Email Service: Mailgun not fully configured, using SMTP (Gmail/Custom) for development."
+      "Email Service: Mailgun not fully configured, using SMTP Postmark for development."
     );
   } else {
-    emailSendingFunction = sendEmailWithEthereal; // Default ke Ethereal
+    emailSendingFunction = sendEmailWithEthereal;
     console.info(
       "Email Service: No Mailgun/SMTP fully configured, using Ethereal for development."
     );

@@ -19,14 +19,20 @@ const registerSchema = Joi.object({
   }),
 });
 
-// TAMBAHKAN INI
 const loginSchema = Joi.object({
   email: Joi.string().email().required().messages({
-    "string.email": `"email" harus berupa alamat email yang valid`,
-    "any.required": `"email" tidak boleh kosong`,
+    "string.email": "Alamat email harus valid",
+    "any.required": "email tidak boleh kosong",
   }),
   password: Joi.string().required().messages({
-    "any.required": `"password" tidak boleh kosong`,
+    "any.required": "password tidak boleh kosong",
+  }),
+});
+
+const googleLoginSchema = Joi.object({
+  idToken: Joi.string().required().messages({
+    "any.required": "ID token harus ada",
+    "string.empty": "ID token harus ada",
   }),
 });
 
@@ -89,6 +95,7 @@ const changePasswordSchema = Joi.object({
 module.exports = {
   registerSchema,
   loginSchema,
+  googleLoginSchema,
   otpSchema,
   emailSchema,
   forgotPasswordSchema,

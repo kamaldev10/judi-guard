@@ -40,6 +40,14 @@ const config = {
         process.env.MAILGUN_DOMAIN
       }>`,
   },
+
+  postmark: {
+    apiToken: process.env.POSTMARK_API_TOKEN,
+    senderEmail:
+      process.env.POSTMARK_SENDER_EMAIL ||
+      `"${process.env.POSTMARK_SENDER_NAME || process.env.APP_NAME || "Judi Guard"}" <no-reply@yourdomain.com>`,
+  },
+
   //maksimal top level comment dan replies per comment
   MAX_TOP_LEVEL_COMMENTS: 50,
   MAX_REPLIES_PER_COMMENT: 20,

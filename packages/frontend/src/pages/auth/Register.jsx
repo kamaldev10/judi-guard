@@ -77,13 +77,7 @@ const Register = () => {
     try {
       await register(formValues);
 
-      toast.success("Anda berhasil mendaftar! Silahkan Login", {
-        position: "bottom-right",
-      });
-
-      // UNTUK OTP DI TANGGUHKAN DULU
-      // navigate("/otp", { state: { email: formValues.email } });
-      navigate("/login");
+      navigate("/otp", { state: { email: formValues.email } });
     } catch (error) {
       toast.error(error.message || "Registrasi gagal. Silakan coba lagi.", {
         position: "bottom-right",
@@ -237,14 +231,10 @@ const Register = () => {
             <hr className="flex-grow border-gray-400" />
           </div>
 
-          <div className="flex w-full justify-center">
-            {/* ✅ GoogleSignInButton akan handle loading state sendiri */}
-            <GoogleSignInButton
-              buttonText="Daftar dengan google"
-              // Google button bisa disabled jika regular register sedang loading
-              disabled={isLoadingAuth}
-            />
-          </div>
+          <GoogleSignInButton
+            buttonText="Daftar dengan Google"
+            disabled={isLoadingAuth}
+          />
         </div>
       </div>
     </>

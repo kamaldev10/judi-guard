@@ -2,7 +2,6 @@
 const { createOAuth2Client } = require("../../utils/googleOAuth2Client"); // Utilitas untuk OAuth2 client Google
 const authService = require("../services/auth.service"); // Service untuk logika bisnis autentikasi
 const { BadRequestError, UnauthorizedError } = require("../../utils/errors"); // Custom error classes
-// const config = require("../../config/environment"); // Tidak terpakai di sini, bisa dihapus jika tidak untuk cookie
 
 /**
  * Menangani registrasi pengguna baru.
@@ -15,7 +14,7 @@ const handleRegister = async (req, res, next) => {
     res.status(201).json({
       status: "success",
       message:
-        "Pengguna berhasil didaftarkan! Silakan login atau verifikasi OTP jika diperlukan.", // Sedikit penyesuaian pesan
+        "Pengguna berhasil didaftarkan! Silahkan verifikasi OTP terlebih dahulu.",
       data: {
         user: newUser, // Mengembalikan data pengguna baru (tanpa field sensitif)
       },
@@ -107,9 +106,8 @@ const handleGoogleAuth = async (req, res, next) => {
     }
 
     // Memanggil service untuk memproses otentikasi/registrasi Google
-    const { token, user, isNewUser } = await authService.signInWithGoogle(
-      idToken
-    );
+    const { token, user, isNewUser } =
+      await authService.signInWithGoogle(idToken);
 
     const statusCode = isNewUser ? 201 : 200; // 201 jika user baru, 200 jika user lama
     const message = isNewUser
@@ -272,7 +270,8 @@ const handleForgotPassword = async (req, res, next) => {
     if (!email || typeof email !== "string" || !email.trim()) {
       return res.status(400).json({
         success: false,
-        message: "Email wajib diisi dan harus berupa format yang valid.",
+        message:
+          "Email wajib diisi dan harus terdaftar serta dengan format yang valid.",
       });
     }
     const result = await authService.requestPasswordReset(email.trim());

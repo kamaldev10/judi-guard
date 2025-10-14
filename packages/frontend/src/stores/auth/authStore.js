@@ -145,6 +145,34 @@ export const useAuthStore = create((set, get) => ({
   resendOtp: (email) => resendOtpApi(email),
   forgotPassword: (email) => forgotPasswordApi(email),
   resetPassword: (token, newPassword) => resetPasswordApi(token, newPassword),
-  changePassword: (currentPassword, newPassword) =>
-    changePasswordApi(currentPassword, newPassword),
+
+  changePassword: async (currentPassword, newPassword, confirmPassword) => {
+    // Menambahkan loading & error state untuk konsistensi
+    set({ isLoadingAuth: true, error: null });
+    try {
+      // 1. Mengambil data pengguna saat ini dari state
+      const { currentUser } = get();
+
+      // 2. Pemeriksaan keamanan: pastikan pengguna ada dan memiliki ID
+      if (!currentUser?.id) {
+        throw new Error("Pengguna tidak ditemukan. Silakan login kembali.");
+      }
+
+      // 3. Panggil API dengan ID yang sudah didapat dari state
+      const response = await changePasswordApi(
+        currentUser.id, // Menggunakan ID dari state
+        currentPassword,
+        newPassword,
+        confirmPassword
+      );
+
+      // Mengembalikan response jika berhasil
+      return response;
+    } catch (error) {
+      set({ error: error.message });
+      throw error; // Melemparkan error agar bisa ditangkap di komponen
+    } finally {
+      set({ isLoadingAuth: false });
+    }
+  },
 }));

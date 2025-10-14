@@ -13,6 +13,13 @@
 .env.development
 .env.production
 
+# Testing coverage
+/coverage
+
+# Cypress output 
+cypress/videos/
+cypress/screenshots
+
 # Log files
 npm-debug.log*
 yarn-debug.log*

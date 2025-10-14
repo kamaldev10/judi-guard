@@ -66,9 +66,9 @@ const ForgotPasswordPage = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-2">
+        <h1 className="text-2xl font-bold text-center text-gray-800 mb-2">
           Lupa Kata Sandi?
-        </h2>
+        </h1>
         <p className="text-center text-gray-600 mb-6 text-sm">
           Jangan khawatir! Masukkan alamat email Anda yang terdaftar dan kami
           akan mengirimkan instruksi untuk mereset kata sandi Anda.

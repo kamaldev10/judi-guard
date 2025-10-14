@@ -125,37 +125,6 @@ const EditProfilePage = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5 md:space-y-6">
-          {/* Input Username */}
-          <motion.div variants={formItemVariants}>
-            <label
-              htmlFor="username"
-              className="block text-sm font-semibold text-slate-700 mb-1.5"
-            >
-              Username
-            </label>
-            <div className="relative group">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none transition-colors group-focus-within:text-sky-600">
-                <User
-                  size={18}
-                  className="text-slate-400 group-focus-within:text-sky-500"
-                />
-              </div>
-              <input
-                type="text"
-                name="username"
-                id="username"
-                value={formData.username || ""}
-                onChange={handleInputChange}
-                className="block w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-lg shadow-sm placeholder-slate-400 
-                           focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 
-                           transition-shadow sm:text-sm hover:border-slate-400"
-                placeholder="Masukkan username baru"
-                required
-                disabled={isSaving}
-              />
-            </div>
-          </motion.div>
-
           {/* Input Email */}
           <motion.div variants={formItemVariants}>
             <label
@@ -181,6 +150,37 @@ const EditProfilePage = () => {
                            focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 
                            transition-shadow sm:text-sm hover:border-slate-400"
                 placeholder="Masukkan email baru"
+                required
+                disabled
+              />
+            </div>
+          </motion.div>
+
+          {/* Input Username */}
+          <motion.div variants={formItemVariants}>
+            <label
+              htmlFor="username"
+              className="block text-sm font-semibold text-slate-700 mb-1.5"
+            >
+              Username
+            </label>
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none transition-colors group-focus-within:text-sky-600">
+                <User
+                  size={18}
+                  className="text-slate-400 group-focus-within:text-sky-500"
+                />
+              </div>
+              <input
+                type="text"
+                name="username"
+                id="username"
+                value={formData.username || ""}
+                onChange={handleInputChange}
+                className="block w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-lg shadow-sm placeholder-slate-400 
+                           focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 
+                           transition-shadow sm:text-sm hover:border-slate-400"
+                placeholder="Masukkan username baru"
                 required
                 disabled={isSaving}
               />

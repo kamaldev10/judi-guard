@@ -23,13 +23,9 @@ const registerUser = async (userData) => {
 
   let existingUser = await User.findOne({ email }); // Hanya cek email untuk OTP flow
   if (existingUser && existingUser.isVerified) {
-    throw new BadRequestError(
-      "Email sudah terdaftar dan terverifikasi. Silakan login."
-    );
+    throw new BadRequestError("Email sudah terdaftar. Silakan login.");
   }
   if (existingUser && !existingUser.isVerified) {
-    // User sudah ada tapi belum verifikasi, kita bisa kirim ulang OTP atau minta mereka verifikasi
-    // Untuk V1, kita akan update OTP dan kirim ulang.
     console.log(
       `Email ${email} sudah terdaftar tapi belum diverifikasi. Mengupdate OTP.`
     );
@@ -52,7 +48,7 @@ const registerUser = async (userData) => {
     const existingUsername = await User.findOne({ username });
     if (existingUsername) {
       throw new BadRequestError(
-        "Username sudah digunakan. Silakan pilih username lain."
+        "Username sudah digunakan. Silakan gunakan username lain."
       );
     }
     userToSave = new User({

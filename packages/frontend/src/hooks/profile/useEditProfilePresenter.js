@@ -3,10 +3,13 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { getCurrentUserApi, updateMyProfileApi } from "@/lib/services";
+import { useUserStore } from "@/stores/user/userStore"; // ✅ Ganti ke userStore
 
 export const useEditProfilePresenter = () => {
+  const { getCurrentUser, updateProfile, isLoadingUser, error } =
+    useUserStore();
   const navigate = useNavigate();
+
   const [initialData, setInitialData] = useState({}); // Data awal untuk perbandingan
   const [formData, setFormData] = useState({
     username: "",
@@ -18,15 +21,16 @@ export const useEditProfilePresenter = () => {
   const [isSaving, setIsSaving] = useState(false); // Loading saat proses simpan
   const [fetchError, setFetchError] = useState(null);
 
+  // 🔹 Fetch user saat komponen pertama kali di-mount
   useEffect(() => {
     const fetchUserData = async () => {
       setIsLoading(true);
       setFetchError(null);
       try {
-        const response = await getCurrentUserApi();
+        const response = await getCurrentUser();
         if (response.status === "success" && response.data.user) {
-          const { username, email } = response.data.user; // Ambil field yang relevan
-          const relevantData = { username, email }; // Hanya field yang akan diedit
+          const { username, email } = response.data.user; // Ambil field relevan
+          const relevantData = { username, email };
           setFormData(relevantData);
           setInitialData(relevantData);
         } else {
@@ -44,19 +48,23 @@ export const useEditProfilePresenter = () => {
         setIsLoading(false);
       }
     };
-    fetchUserData();
-  }, []);
 
+    fetchUserData();
+  }, [getCurrentUser]);
+
+  // 🔹 Handle perubahan input
   const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   }, []);
 
+  // 🔹 Handle submit
   const handleSubmit = useCallback(
     async (event) => {
       event.preventDefault();
       setIsSaving(true);
 
+      // Cari data yang berubah
       const changedData = {};
       let hasChanges = false;
       for (const key in formData) {
@@ -89,7 +97,7 @@ export const useEditProfilePresenter = () => {
       });
 
       try {
-        const response = await updateMyProfileApi(changedData);
+        const response = await updateProfile(changedData);
         setIsSaving(false);
         Swal.close();
 
@@ -101,10 +109,9 @@ export const useEditProfilePresenter = () => {
             confirmButtonText: "OK",
             customClass: { popup: "rounded-xl shadow-lg text-sm" },
           });
-          setInitialData(formData); // Update initialData dengan data baru yang sukses disimpan
+          setInitialData(formData);
           navigate("/profile");
         } else {
-          // Seharusnya ditangkap oleh blok catch jika API mengembalikan error HTTP
           Swal.fire(
             "Gagal!",
             response.message || "Gagal memperbarui profil.",
@@ -124,18 +131,19 @@ export const useEditProfilePresenter = () => {
         });
       }
     },
-    [formData, initialData, navigate]
+    [formData, initialData, navigate, updateProfile]
   );
 
+  // 🔹 Handle cancel
   const handleCancel = useCallback(() => {
     navigate("/profile");
   }, [navigate]);
 
   return {
     formData,
-    isLoading,
+    isLoading: isLoading || isLoadingUser,
     isSaving,
-    fetchError,
+    fetchError: fetchError || error,
     handleInputChange,
     handleSubmit,
     handleCancel,

@@ -6,9 +6,9 @@ import { toast } from "react-toastify";
 import {
   disconnectYoutubeAccountApi,
   initiateYoutubeOAuthRedirectApi,
-  deleteMyAccountApi,
 } from "@/lib/services";
 import { useAuthStore } from "@/stores/auth/authStore";
+import { useUserStore } from "@/stores";
 
 /**
  * Presenter (sebagai custom hook) untuk mengelola semua logika dan state
@@ -16,16 +16,8 @@ import { useAuthStore } from "@/stores/auth/authStore";
  * Menggunakan useAuthStore sebagai "single source of truth" untuk data pengguna.
  */
 export const useProfilePresenter = () => {
-  // 1. Dapatkan semua state dan fungsi yang dibutuhkan dari AuthContext.
-  // Ini menjadi sumber data utama.
-  const {
-    currentUser,
-    isLoadingAuth, // Status loading dari context
-    logout,
-    refreshUser,
-  } = useAuthStore();
+  const { currentUser, isLoadingAuth, logout, refreshUser } = useAuthStore();
 
-  // 2. State lokal HANYA untuk aksi spesifik di halaman ini
   const [isActionLoading, setIsActionLoading] = useState(false); // Satu state loading untuk semua aksi di halaman ini
   const [actionError, setActionError] = useState(null); // Error spesifik dari aksi di halaman ini
 
@@ -34,13 +26,8 @@ export const useProfilePresenter = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // PERBAIKAN: Hilangkan state `user` dan `fetchError` lokal.
-  // Kita akan menggunakan `contextUser` dan `contextError` langsung dari context.
-  // const [user, setUser] = useState(contextUser);
-  // const [isLoading, setIsLoading] = useState(!contextUser);
-  // const [fetchError, setFetchError] = useState(null);
+  const { deleteAccount } = useUserStore();
 
-  // Efek untuk menangani pesan status sementara dari operasi YouTube
   useEffect(() => {
     const transientKeywords = [
       "berhasil",
@@ -85,20 +72,14 @@ export const useProfilePresenter = () => {
         }
       });
 
-      // Hapus query params dari URL setelah diproses
       navigate(location.pathname, { replace: true });
     }
-    // PERBAIKAN: Dependensi yang benar dan stabil
   }, [location.search, location.pathname, navigate, refreshUser]);
 
   // Handler untuk navigasi ke halaman edit profil
-  const handleEditProfile = () => {
-    Swal.fire("Coming Soon!");
-  };
-  // const handleEditProfile = useCallback(() => {
-
-  //   navigate("/profile/edit");
-  // }, [navigate]);
+  const handleEditProfile = useCallback(() => {
+    navigate("/profile/edit");
+  }, [navigate]);
 
   /**
    * Mengeksekusi proses penghapusan akun setelah konfirmasi.
@@ -118,21 +99,20 @@ export const useProfilePresenter = () => {
     if (!confirmResult.isConfirmed) return;
 
     setIsActionLoading(true); // Gunakan state loading aksi
-    const toastId = toast.loading("Menghapus Akun...");
+    const toastMsg = toast.loading("Menghapus Akun...");
 
     try {
-      await deleteMyAccountApi();
-      toast.update(toastId, {
+      await deleteAccount;
+      toast.update(toastMsg, {
         render: "Akun Anda telah berhasil dihapus.",
         type: "success",
         isLoading: false,
         autoClose: 3000,
       });
-      logout(); // Panggil fungsi logout dari context
-      // Navigasi sudah ditangani oleh fungsi logout di context
+      navigate("/");
     } catch (err) {
       const errorMessage = err.message || "Gagal menghapus akun.";
-      toast.update(toastId, {
+      toast.update(toastMsg, {
         render: errorMessage,
         type: "error",
         isLoading: false,
@@ -142,7 +122,7 @@ export const useProfilePresenter = () => {
     } finally {
       setIsActionLoading(false);
     }
-  }, [logout]); // Dependensi hanya logout
+  });
 
   /**
    * Memulai alur otorisasi YouTube.

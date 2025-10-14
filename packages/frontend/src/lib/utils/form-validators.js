@@ -4,10 +4,10 @@ export const validateUserName = (userName) => {
   if (!userName.trim()) return "Username tidak boleh kosong.";
   if (userName.trim().length < 3) return "Username minimal 3 karakter.";
   if (userName.trim().length > 30) return "Username maksimal 30 karakter.";
-  const userNameRegex = /^[a-zA-Z0-9_-]+$/;
-  if (!userNameRegex.test(userName)) {
-    return "Username hanya boleh berisi huruf, angka, underscore (_), atau strip (-).";
-  }
+  // const userNameRegex = /^[a-zA-Z0-9_-]+$/;
+  // if (!userNameRegex.test(userName)) {
+  //   return "Username hanya boleh berisi huruf, angka, underscore (_), atau strip (-).";
+  // }
   return "";
 };
 

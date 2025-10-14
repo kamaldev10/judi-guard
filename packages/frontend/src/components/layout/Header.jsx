@@ -105,7 +105,7 @@ const Header = () => {
         return <Home size={18} className="mr-2" />;
       case "/about-us":
         return <Info size={18} className="mr-2" />;
-      case "/analisis":
+      case "/analysis":
         return <BarChart3 size={18} className="mr-2" />;
       case "/profile":
         return <IdCard size={18} className="mr-2" />;
@@ -145,8 +145,8 @@ const Header = () => {
               <Link to="/about-us" className={navLinkClasses("/about-us")}>
                 {getNavIcon("/about-us")} Tentang Kami
               </Link>
-              <Link to="/analisis" className={navLinkClasses("/analisis")}>
-                {getNavIcon("/analisis")} Analisis
+              <Link to="/analysis" className={navLinkClasses("/analysis")}>
+                {getNavIcon("/analysis")} Analisis
               </Link>
               <Link to="/profile" className={navLinkClasses("/profile")}>
                 {getNavIcon("/profile")} Profil
@@ -189,33 +189,36 @@ const Header = () => {
             ref={mobileMenuRef}
             className="md:hidden absolute top-18 inset-x-0 z-40" // Removed transform classes for simplicity, rely on conditional rendering
           >
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-[#B9E6FD] border-t border-gray-200 shadow-xl rounded-b-lg">
+            <div className="flex justify-between py-2 px-5 border-t border-gray-200 bg-[#B9E6FD]">
               {isAuthenticated && currentUser && (
-                <span className="text-sm text-[#06786F] ml-4 pl-4  font-semibold border-gray-200 inline-flex items-center">
-                  <UserRound size={18} className="mr-1 text-amber-700" />
+                <span className="text-sm text-[#06786F] font-bold  inline-flex items-center p-1">
+                  <UserRound size={18} className="mr-2 text-amber-700" />
                   {currentUser.username || currentUser.name || "Pengguna"}
                 </span>
               )}
+              <div className=" ">{renderAuthButtons(true)}</div>
+            </div>
+            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-[#B9E6FD] border-t border-gray-200">
               <Link
                 to="/"
                 className={navLinkClasses("/", true)}
                 onClick={toggleMobileMenu}
               >
-                {getNavIcon("/")} Home
+                {getNavIcon("/")} Beranda
               </Link>
               <Link
                 to="/about-us"
                 className={navLinkClasses("/about-us", true)}
                 onClick={toggleMobileMenu}
               >
-                {getNavIcon("/about-us")} About Us
+                {getNavIcon("/about-us")} Tentang Kami
               </Link>
               <Link
-                to="/analisis"
-                className={navLinkClasses("/analisis", true)}
+                to="/analysis"
+                className={navLinkClasses("/analysis", true)}
                 onClick={toggleMobileMenu}
               >
-                {getNavIcon("/analisis")} Analisis
+                {getNavIcon("/analysis")} Analisis
               </Link>
               <Link
                 to="/profile"
@@ -224,9 +227,6 @@ const Header = () => {
               >
                 {getNavIcon("/profile")} Profil
               </Link>
-              <div className="px-1 pt-3 pb-2 border-t border-gray-100 mt-2">
-                {renderAuthButtons(true)}
-              </div>
             </div>
           </div>
         )}

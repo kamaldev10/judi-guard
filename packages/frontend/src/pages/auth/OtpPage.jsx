@@ -87,12 +87,9 @@ const OtpPage = () => {
       // response.data berisi { token, user }
       login(response.data.user, response.data.token); // Panggil fungsi login dari context
 
-      toast.success(
-        response.message || "Verifikasi OTP berhasil! Silahkan login.",
-        {
-          position: "bottom-right",
-        }
-      );
+      toast.success("Verifikasi OTP berhasil! Silahkan login.", {
+        position: "bottom-right",
+      });
       navigate("/login");
     } catch (error) {
       toast.error(error.message || "Verifikasi OTP gagal.", {

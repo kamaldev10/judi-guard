@@ -5,7 +5,7 @@ import { createEsbuildPlugin } from "@badeball/cypress-cucumber-preprocessor/esb
 
 export default defineConfig({
   e2e: {
-    specPattern: "**/*.feature",
+    specPattern: "tests/e2e/behaviours/*.feature",
     baseUrl: "http://localhost:5173",
     async setupNodeEvents(on, config) {
       // Aktifkan cucumber preprocessor

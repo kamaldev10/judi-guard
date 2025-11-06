@@ -4,8 +4,8 @@ import LogoWithSlogan from "./LogoWithSlogan.png";
 import ErrorImage from "./error.jpg";
 import HeroImage from "./HeroImage.png";
 import IlustrasiAnalisis from "./IlustrasiAnalisis.jpg";
-import NotFound from "./notFound.jpg";
-import NotLogin from "./notLogin.svg";
+import NotFoundImage from "./notFound.jpg";
+import NotLoginImage from "./notLogin.svg";
 import AboutFeatures from "./about-features.png";
 
 import FunFact1 from "./fun-fact-1.svg";
@@ -31,8 +31,8 @@ export {
   ErrorImage,
   HeroImage,
   IlustrasiAnalisis,
-  NotFound,
-  NotLogin,
+  NotFoundImage,
+  NotLoginImage,
   AboutFeatures,
   FunFact1,
   FunFact2,

@@ -21,4 +21,20 @@ export default defineConfig({
   build: {
     outDir: "dist",
   },
+  test: {
+    globals: true,
+    environment: "jsdom",
+    setupFiles: "./src/setupTests.js",
+    include: [
+      "src/**/__tests__/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}",
+      "src/**/__tests__/*.integration.spec.{js,mjs,cjs,ts,mts,cts,jsx,tsx}",
+    ],
+    exclude: ["**/node_modules/**", "**/dist/**", "tests/e2e/**"],
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "html"],
+      include: ["src/"],
+      exclude: ["src/main.tsx", "src/setupTests.ts", "src/**/__tests__/**"],
+    },
+  },
 });

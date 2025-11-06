@@ -1,10 +1,9 @@
-// App.js (atau src/App.jsx)
 import React from "react";
 import { HeadProvider } from "react-head";
 import { Slide, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-import ErrorBoundary from "@/pages/status/Error.jsx";
+import AppErrorBoundary from "@/components/error-boundary/AppErrorBoundary";
 import AppRouter from "./routes/AppRouter";
 
 function App() {
@@ -23,9 +22,9 @@ function App() {
         theme="colored"
         transition={Slide}
       />
-      <ErrorBoundary>
+      <AppErrorBoundary>
         <AppRouter />
-      </ErrorBoundary>
+      </AppErrorBoundary>
     </HeadProvider>
   );
 }

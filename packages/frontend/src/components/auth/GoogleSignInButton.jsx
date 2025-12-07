@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Icon } from "@iconify/react";
 import PropTypes from "prop-types";
-import { useAuthStore } from "@/stores/auth/authStore";
+import { useAuthStore } from "@/stores/authStore";
 
 const GoogleSignInButton = ({
   buttonText = "Masuk dengan Google",
@@ -32,17 +32,20 @@ const GoogleSignInButton = ({
 
       // Panggil store action, store yang akan panggil API & set session
       await signInWithGoogle(idToken);
-
       toast.success("Login dengan Google berhasil!", {
         position: "bottom-right",
+        duration: 2000,
+        toastId: "toast-login-success",
       });
 
       if (onSuccessCustom) {
         const user = JSON.parse(localStorage.getItem("judiGuardUser"));
         onSuccessCustom(user);
-      } else {
-        navigate("/");
       }
+
+      setTimeout(() => {
+        navigate("/");
+      });
     } catch (error) {
       toast.error(error.message || "Gagal login Google", {
         position: "bottom-right",
@@ -63,7 +66,18 @@ const GoogleSignInButton = ({
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full" data-cy="log-in-with-google-button">
+      {window.Cypress && (
+        <button
+          data-cy="google-login-mock-btn"
+          onClick={() =>
+            handleGoogleSuccess({ credential: "mock-google-token-123" })
+          }
+          style={{ position: "absolute", opacity: 0, height: 0, width: 0 }} // Tidak terlihat user
+        >
+          Test Google Login
+        </button>
+      )}
       <GoogleLogin
         onSuccess={handleGoogleSuccess}
         onError={handleGoogleFailure}

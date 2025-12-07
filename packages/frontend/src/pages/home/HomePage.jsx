@@ -54,19 +54,38 @@ const HomePage = () => {
   );
 
   useEffect(() => {
-    if (location.pathname === "/") {
+    let timerId;
+
+    if (location.hash) {
+      const id = location.hash.substring(1);
+      const element = document.getElementById(id);
+      if (element) {
+        timerId = setTimeout(() => {
+          element.scrollIntoView({ behavior: "smooth" });
+        }, 100);
+        return;
+      }
+    }
+
+    if (location.pathname === "/" && !location.hash) {
       const heroSectionDetail = sections.find((s) => s.id === "hero-section");
       if (heroSectionDetail && heroSectionDetail.ref.current) {
-        setTimeout(() => {
+        timerId = setTimeout(() => {
           heroSectionDetail.ref.current.scrollIntoView({ behavior: "smooth" });
         }, 100);
       }
     }
-  }, [location.pathname, sections]);
+
+    return () => {
+      if (timerId) {
+        clearTimeout(timerId);
+      }
+    };
+  }, [location, location.pathname, sections]);
 
   return (
     <>
-      <div>
+      <div id="beranda">
         {sections.map((section) => {
           const SectionComponent = section.component;
           return (

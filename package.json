@@ -13,5 +13,10 @@
   },
   "devDependencies": {
     "concurrently": "^9.2.1"
+  },
+  "dependencies": {
+    "react-error-boundary": "^6.0.0",
+    "react-router-hash-link": "^2.4.3",
+    "vitest": "^4.0.1"
   }
 }

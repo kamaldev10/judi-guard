@@ -29,7 +29,7 @@ yarn-error.log*
 # Temporary files
 *.temp
 *.tmp
-.tmp.driveupload  
+.tmp.*
 
 # OS-specific files
 .DS_Store

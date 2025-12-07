@@ -10,7 +10,7 @@ const config = {
   frontendUrl: process.env.FRONTEND_URL,
   jwt: {
     secret: process.env.JWT_SECRET,
-    expiresIn: process.env.JWT_EXPIRES_IN || "1h",
+    expiresIn: process.env.JWT_EXPIRES_IN || "24h",
   },
   googleSignIn: {
     clientId: process.env.GOOGLE_SIGN_IN_CLIENT_ID,

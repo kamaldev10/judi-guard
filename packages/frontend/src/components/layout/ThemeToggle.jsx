@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sun, Moon } from "lucide-react";
-import Button from "../ui/Button.jsx";
+import { Button } from "../ui/Button";
 
 export default function ThemeToggle() {
   const [mounted, setMounted] = useState(false);

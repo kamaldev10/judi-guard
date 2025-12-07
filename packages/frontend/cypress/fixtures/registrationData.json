@@ -1,0 +1,38 @@
+{
+  "validUser": {
+    "username": "new_user",
+    "email": "new_user@example.com",
+    "password": "ValidPassword123"
+  },
+  "existingEmailUser": {
+    "email": "admin@gmail.com"
+  },
+  "existingUsernameUser": {
+    "username": "admin2"
+  },
+  "otp": {
+    "validCode": "123456",
+    "invalidCode": "654321"
+  },
+  "responses": {
+    "registerSuccess": {
+      "message": "Registrasi berhasil, silakan cek OTP."
+    },
+    "emailConflict": {
+      "message": "Email sudah terdaftar, Silahkan login"
+    },
+    "usernameConflict": {
+      "message": "Username sudah digunakan. Silakah gunakan username lain."
+    },
+    "otpSuccess": {
+      "message": "Verifikasi OTP berhasil! Anda sekarang login.",
+      "token": "mock-jwt-token"
+    },
+    "otpFailure": {
+      "message": "Kode OTP salah."
+    },
+    "resendSuccess": {
+      "message": "Kode OTP baru telah dikirim ke email Anda."
+    }
+  }
+}

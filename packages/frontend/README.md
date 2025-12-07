@@ -19,13 +19,14 @@ Selamat datang di direktori frontend untuk proyek Judi Guard. Bagian ini dibangu
 
 ### 1. Prasyarat
 
-- Pastikan Anda sudah berada di dalam direktori `frontend`. Jika belum, navigasi dari root proyek: `cd frontend`.
-- Node.js dan npm sudah terinstal.
+- Pastikan Node.js dan npm sudah terinstal (lebih baik versi terbaru).
+
+---
 
 ### 2. Instalasi Dependensi
 
 ```sh
-npm install
+npm install atau yarn install atau pnpm install
 ```
 
 ### 3. Konfigurasi Environment Variables
@@ -67,14 +68,12 @@ Menjalankan test runner (jika pengujian telah dikonfigurasi).
 
 ## 📂 Struktur Folder
 
-Berikut adalah gambaran umum struktur folder di dalam `src/`:
+Berikut adalah gambaran umum struktur folder di dalam :
 
-```
+```bash
 frontend/
 │
-├── public/
-│   └── logo.png                    # Aset publik yang diakses langsung (favicon, logo, dsb)
-│
+├── public/                          # Aset publik yang diakses langsung (favicon, logo, dsb)
 ├── src/
 │   ├── assets/                     # File statis yang dibundel oleh Vite
 │   │   ├── icons/                  # Kumpulan ikon
@@ -84,97 +83,49 @@ frontend/
 │   │
 │   ├── components/                 # Komponen UI reusable & modular
 │   │   ├── auth/                   # Komponen otentikasi
-│   │   │   └── GoogleSignInButton.jsx
 │   │   ├── fun-fact/
-│   │   │   └── FunFactsSection.jsx
 │   │   ├── homepage/               # Komponen khusus halaman Home
-│   │   │   ├── ConnectSection.jsx
-│   │   │   ├── ContactSection.jsx
-│   │   │   ├── HeroSection.jsx
-│   │   │   ├── TextPredictSection.jsx
-│   │   │   └── TestimonialsSection.jsx
 │   │   ├── layout/                 # Layout umum untuk seluruh aplikasi
-│   │   │   ├── Footer.jsx
-│   │   │   ├── Header.jsx
-│   │   │   └── MainLayout.jsx
 │   │   ├── tagline/
-│   │   │   └── Tagline.jsx
 │   │   ├── text-predict/
-│   │   │   ├── PredictResult.jsx
-│   │   │   └── TextPredictForm.jsx
 │   │   ├── ui/                     # Komponen UI kustom berbasis shadcn/ui
 │   │   ├── PageLoader.jsx
 │   │   ├── ThemeProvider.jsx
 │   │   └── ThemeToggle.jsx
 │   │
 │   ├── constants/                  # Data dan konstanta statis
-│   │   └── index.js
 │   │
 │   ├── hooks/                      # Custom hooks berbasis fitur (mengikuti arsitektur MVP)
 │   │   ├── profile/
-│   │   │   ├── useProfilePresenter.js
-│   │   │   └── useEditProfilePresenter.js
 │   │   ├── text-predict/
-│   │   │   └── useTextPredict.js
 │   │   ├── video-analysis/
-│   │   │   └── useVideoAnalysis.js
 │   │   └── ...                     # Hook tambahan (mis. useAuth)
 │   │
 │   ├── lib/                        # Logika utilitas dan API service
 │   │   ├── services/               # Abstraksi komunikasi API
 │   │   │   ├── analysis/
-│   │   │   │   └── videoAnalysisApi.js
 │   │   │   ├── auth/
-│   │   │   │   └── authApi.js
 │   │   │   ├── predict/
-│   │   │   │   └── predictApi.js
 │   │   │   ├── user/
-│   │   │   │   └── userApi.js
 │   │   │   ├── apiClient.js        # Konfigurasi instance Axios
 │   │   │   └── index.js            # Export API service secara terpusat
 │   │   └── utils/                  # Fungsi bantu (formatter, validator, helper)
-│   │       ├── form-validators.js
-│   │       ├── formatters.jsx
-│   │       └── index.js
 │   │
 │   ├── pages/                      # Halaman utama (berbasis route)
 │   │   ├── about-us/
-│   │   │   └── AboutUs.jsx
 │   │   ├── analisis/
 │   │   │   ├── AnalysisPage.jsx
 │   │   │   ├── WorkGuideSection/
-│   │   │   │   └── WorkGuideSection.jsx
 │   │   │   └── AnalysisFormSection/
 │   │   │       ├── constants/
-│   │   │       │   └── chartConstants.js
 │   │   │       ├── views/
 │   │   │       │   ├── components/
-│   │   │       │   ├── AnalysisLegend.jsx
-│   │   │       │   ├── AnalysisResultHeader.jsx
-│   │   │       │   ├── AnalysisSubmitForm.jsx
-│   │   │       │   ├── AnalysisSummary.jsx
-│   │   │       │   ├── AnalysisTooltip.jsx
-│   │   │       │   ├── CommentList.jsx
-│   │   │       │   └── StatBox.jsx
 │   │   │       └── AnalysisFormSection.jsx
 │   │   ├── auth/                   # Halaman otentikasi
-│   │   │   ├── Login.jsx
-│   │   │   ├── Register.jsx
-│   │   │   ├── OtpPage.jsx
-│   │   │   ├── ForgotPasswordPage.jsx
-│   │   │   └── ResetPasswordPage.jsx
 │   │   ├── home/
-│   │   │   └── HomePage.jsx
 │   │   ├── profile/                # Halaman & form profil user
-│   │   │   ├── ChangePasswordForm.jsx
-│   │   │   ├── EditProfilePage.jsx
-│   │   │   └── ProfilePage.jsx
 │   │   ├── status/                 # Halaman status/error
-│   │   │   ├── Error.jsx
-│   │   │   ├── NotFound.jsx
-│   │   │   └── NotLogin.jsx
 │   │   └── otp/                    # (opsional, jika halaman OTP terpisah)
-│   │       └── OtpPage.jsx
 │   │
 │   ├── routes/                     # Routing aplikasi
 │   │   ├── AppRouter.jsx           # Daftar rute utama aplikasi
@@ -209,3 +160,17 @@ frontend/
 ```
 
 Struktur ini dirancang untuk menjaga kode tetap terorganisir dan mudah untuk dikelola seiring dengan pertumbuhan aplikasi.
+
+## 📚 Dokumentasi Lengkap
+
+Lihat dokumentasi teknis di folder [`/docs`](./docs):
+
+- [Setup & Environment](./docs/setup.md)
+- [Arsitektur Proyek (MVP)](./docs/architecture.md)
+- [Strategi Testing (TDD + BDD)](./docs/testing.md)
+- [API Service](./docs/api.md)
+- [Manajemen State (Zustand)](./docs/state-management.md)
+
+## Author
+
+Ali Musthafa Kamal

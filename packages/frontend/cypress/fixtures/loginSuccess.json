@@ -1,0 +1,20 @@
+{
+  "status": "success",
+  "message": "Login berhasil!",
+  "data": {
+    "token": "mock.token.login.xxyy",
+    "user": {
+      "_id": "68434482e9f5cb12e731183c",
+      "username": "admin ganteng",
+      "email": "admin@gmail.com",
+      "isVerified": true,
+      "createdAt": "2025-06-06T19:41:54.960Z",
+      "updatedAt": "2025-06-18T12:40:00.364Z",
+      "__v": 0,
+      "youtubeChannelId": "UCIz271dZmYRFR68KSuXNMWw",
+      "youtubeChannelName": "Ali Musthafa Kamal",
+      "isYoutubeConnected": true,
+      "id": "68434482e9f5cb12e731183c"
+    }
+  }
+}

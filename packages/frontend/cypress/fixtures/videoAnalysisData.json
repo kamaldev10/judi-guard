@@ -1,0 +1,50 @@
+{
+  "urls": {
+    "valid": "https://www.youtube.com/watch?v=video123",
+    "notFound": "https://www.youtube.com/watch?v=notfound123",
+    "fail": "https://www.youtube.com/watch?v=fail123",
+    "invalid": "invalid-link"
+  },
+  "responses": {
+    "initProcessing": {
+      "status": "success",
+      "data": {
+        "_id": "mock-analysis-id-123",
+        "status": "PROCESSING",
+        "videoTitle": "My Test Video",
+        "youtubeVideoId": "video123",
+        "totalCommentsFetched": 0,
+        "totalCommentsAnalyzed": 0
+      }
+    },
+    "completed": {
+      "status": "success",
+      "data": {
+        "_id": "mock-analysis-id-123",
+        "status": "COMPLETED",
+        "videoTitle": "My Test Video",
+        "totalCommentsFetched": 10,
+        "totalCommentsAnalyzed": 10
+      }
+    },
+    "comments": [
+      {
+        "_id": "c1",
+        "commentTextDisplay": "Komentar Judi",
+        "classification": "JUDI",
+        "commentAuthorDisplayName": "Bot 1",
+        "commentPublishedAt": "2025-01-01"
+      },
+      {
+        "_id": "c2",
+        "commentTextDisplay": "Komentar Non Judi",
+        "classification": "NON JUDI",
+        "commentAuthorDisplayName": "Bot 2",
+        "commentPublishedAt": "2025-01-01"
+      }
+    ],
+    "notFoundError": {
+      "message": "Data analisis video tidak ditemukan atau Anda tidak memiliki akses"
+    }
+  }
+}

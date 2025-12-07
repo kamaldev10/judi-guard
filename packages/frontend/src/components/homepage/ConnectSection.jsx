@@ -1,8 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "motion/react";
-import IlustrasiAnalisis from "../../assets/images/IlustrasiAnalisis.jpg";
 import { Youtube } from "lucide-react";
+import { IlustrasiAnalisis } from "@/assets/images";
 
 // Varian animasi untuk Framer Motion
 const sectionVariants = {

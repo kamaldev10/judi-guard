@@ -1,9 +1,7 @@
-// File: src/hooks/useEditProfilePresenter.js
-
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { useUserStore } from "@/stores/user/userStore"; // ✅ Ganti ke userStore
+import { useUserStore } from "@/stores/userStore";
 
 export const useEditProfilePresenter = () => {
   const { getCurrentUser, updateProfile, isLoadingUser, error } =
@@ -110,7 +108,9 @@ export const useEditProfilePresenter = () => {
             customClass: { popup: "rounded-xl shadow-lg text-sm" },
           });
           setInitialData(formData);
-          navigate("/profile");
+          setTimeout(() => {
+            navigate("/profile");
+          }, 2000);
         } else {
           Swal.fire(
             "Gagal!",
@@ -144,6 +144,7 @@ export const useEditProfilePresenter = () => {
     isLoading: isLoading || isLoadingUser,
     isSaving,
     fetchError: fetchError || error,
+    initialData,
     handleInputChange,
     handleSubmit,
     handleCancel,

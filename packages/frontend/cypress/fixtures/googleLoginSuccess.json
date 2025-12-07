@@ -1,0 +1,14 @@
+{
+  "user": {
+    "_id": "google-user-id-abc123",
+    "id": "google-user-id-abc123",
+    "username": "Google User",
+    "name": "Google User",
+    "email": "google.user@gmail.com",
+    "isVerified": true,
+    "isYoutubeConnected": false,
+    "createdAt": "2025-01-15T10:00:00.000Z",
+    "updatedAt": "2025-01-15T10:00:00.000Z"
+  },
+  "token": "mock.google.jwt.token.xxyy"
+}

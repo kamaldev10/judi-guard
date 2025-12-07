@@ -16,7 +16,6 @@ import Swal from "sweetalert2";
 import { useAuthStore } from "@/stores/authStore";
 import LogoutButton from "@/components/ui/LogoutButton";
 import LoginButton from "@/components/ui/LoginButton";
-import ThemeToggle from "./ThemeToggle";
 
 const Header = () => {
   const currentUser = useAuthStore((state) => state.currentUser);

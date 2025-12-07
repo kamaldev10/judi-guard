@@ -4,6 +4,7 @@ const { BadRequestError, NotFoundError } = require("../../utils/errors"); // Pas
 const VideoAnalysis = require("../models/VideoAnalysis.model");
 const AnalyzedComment = require("../models/AnalyzedComment.model");
 const youtubeService = require("../services/youtube.service");
+
 const { default: mongoose } = require("mongoose");
 
 /**
@@ -198,7 +199,7 @@ const deleteAnalyzedCommentController = async (req, res, next) => {
     }
 
     // Panggil service layer untuk menghapus atau memoderasi
-    const result = await requestDeleteYoutubeComment(
+    const result = await videoAnalysisService.requestDeleteYoutubeComment(
       userId,
       analyzedCommentId,
       commentInDb.youtubeCommentId // Gunakan youtubeCommentId yang didapat dari DB

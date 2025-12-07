@@ -1,12 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import Swal from "sweetalert2";
 
 const Footer = () => {
-  const handleComingSoon = () => {
-    Swal.fire("Coming Soon");
-  };
-
   return (
     <footer className="bg-gray-800 text-white pt-10 pb-6 px-4 sm:px-6 md:px-12 lg:px-20">
       <div className="container mx-auto">
@@ -43,7 +38,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  to="/analisis"
+                  to="/analysis"
                   className="hover:text-blue-400 transition-colors"
                 >
                   Analisis
@@ -66,9 +61,8 @@ const Footer = () => {
             <ul className="space-y-2 text-xs sm:text-sm">
               <li>
                 <Link
-                  to="/faq"
+                  to="/#faq"
                   className="hover:text-blue-400 transition-colors"
-                  onClick={handleComingSoon}
                 >
                   FAQ
                 </Link>
@@ -110,7 +104,7 @@ const Footer = () => {
               <input
                 type="email"
                 placeholder="Email Anda"
-                className="p-2 rounded border border-gray-600 bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm flex-grow" // text-sm, flex-grow
+                className="grow p-2 rounded border border-gray-600 bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm " // text-sm, flex-grow
               />
               <button
                 type="submit"

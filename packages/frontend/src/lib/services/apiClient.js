@@ -9,7 +9,7 @@ export const apiClient = axios.create({
 
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("judiGuardToken"); // Ambil token dari localStorage
+    const token = localStorage.getItem("judiGuardToken");
     // DEBUG
     // console.log(
     //   "[API Interceptor] Attempting to get token from localStorage:",
@@ -44,9 +44,6 @@ apiClient.interceptors.response.use(
     //   error.response?.data
     // );
 
-    // bisa menambahkan logika global di sini, misalnya jika error.response.status === 401,
-    // panggil fungsi logout dari useAuthStore atau redirect.
-    // Namun, pastikan tidak tumpang tindih dengan penanganan error di komponen/hook.
     return Promise.reject(error);
   }
 );

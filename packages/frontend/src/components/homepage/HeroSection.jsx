@@ -1,9 +1,10 @@
 import React from "react";
-import heroImage from "../../assets/images/HeroImage.png";
-import Tagline from "../tagline/Tagline";
 import { motion } from "motion/react";
 import { Link as ScrollLink } from "react-scroll";
+import { useNavigate } from "react-router-dom";
+import { HeroImage } from "@/assets/images";
 import AnimateButton from "../ui/AnimateButton";
+import Tagline from "../tagline/Tagline";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -43,10 +44,14 @@ const imageVariants = {
 };
 
 const HeroSection = () => {
+  const navigate = useNavigate();
+  const handleToAnalysis = () => {
+    navigate("/analysis");
+  };
   return (
     <motion.section
       id="hero-section"
-      className="bg-gradient-to-r from-white via-blue-50 to-[#b9e1ff] min-h-[70vh]   flex flex-col justify-center items-center pt-4 lg:pt-12 pb-0 lg:pb-6 px-4 sm:px-6 lg:px-8 overflow-hidden scroll-mt-18 " // pt lebih besar untuk memberi ruang Header
+      className="bg-linear-to-r from-white via-blue-50 to-[#b9e1ff] min-h-[70vh] flex flex-col justify-center items-center pt-4 lg:pt-12 pb-0 lg:pb-6 px-4 sm:px-6 lg:px-8 overflow-hidden scroll-mt-18 "
     >
       <div className="container mx-auto">
         <div className="flex flex-col-reverse lg:flex-row items-center justify-between gap-8 lg:gap-16 w-full">
@@ -83,14 +88,17 @@ const HeroSection = () => {
                 duration={500}
               >
                 <div className="flex justify-center sm:justify-start">
-                  <AnimateButton text="Deteksi Sekarang" />
+                  <AnimateButton
+                    text="Deteksi Sekarang"
+                    onClick={handleToAnalysis}
+                  />
                 </div>
               </ScrollLink>
             </motion.div>
           </motion.div>
 
           <motion.div
-            className="flex justify-center lg:justify-end flex-1 w-full lg:w-auto " // flex-1 dan w-full untuk mobile
+            className="flex flex-1 justify-center lg:justify-end w-full lg:w-auto " // flex-1 dan w-full untuk mobile
             variants={imageVariants}
             initial="hidden"
             animate="visible"
@@ -98,7 +106,7 @@ const HeroSection = () => {
             viewport={{ once: true, amount: 0.3 }}
           >
             <img
-              src={heroImage}
+              src={HeroImage}
               alt="Ilustrasi Deteksi Komentar Judi"
               className="w-3/4 max-w-[280px] 
                          sm:w-3/5 sm:max-w-sm 

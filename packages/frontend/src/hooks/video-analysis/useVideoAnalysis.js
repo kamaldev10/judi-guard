@@ -1,26 +1,20 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-// src/hooks/useVideoAnalysis.js
 import { useState, useEffect, useCallback } from "react";
 import Swal from "sweetalert2";
 import {
   submitVideoForAnalysisApi,
   getVideoAnalysisApi,
   getAnalyzedCommentsApi,
-  // batchDeleteJudiCommentsApi,
   deleteSingleCommentApi,
   getStudioLinkApi,
-  getCurrentUserApi,
-} from "@/lib/services";
-import { validateYoutubeUrl } from "@/lib/utils/form-validators";
+} from "@/lib/services/videoAnalysisApi";
+
+import { getCurrentUserApi } from "@/lib/services/userApi";
+import { validateYoutubeUrl } from "@/lib/utils/formValidators";
 
 // Interval untuk polling status analisis (dalam milidetik)
 const POLLING_INTERVAL = 5000; // 5 detik
 
-/**
- * Custom hook untuk mengelola logika dan state terkait analisis video YouTube.
- * Mencakup pengambilan data pengguna, submit video untuk analisis, polling status,
- * pengambilan hasil komentar, dan aksi penghapusan komentar (batch dan tunggal).
- */
 export const useVideoAnalysis = () => {
   // State untuk data pengguna dan status koneksi YouTube
   const [currentUser, setCurrentUser] = useState(null);
@@ -274,42 +268,77 @@ export const useVideoAnalysis = () => {
   /**
    * Helper function terpusat untuk menangani error API dan menampilkan notifikasi Swal.
    * @param {Error} error - Objek error yang ditangkap dari panggilan API.
-   * @param {string} actionName - Nama aksi yang sedang dilakukan (misal, "Analisis Video").
+   * @param {string} actionName - Nama aksi yang sedang dilakukan.
    */
-  const handleApiError = (error, actionName = "Analisis Video") => {
-    // Axios biasanya membungkus error HTTP dalam `error.response`
-    if (error.response && error.response.status === 429) {
-      // Kasus Spesifik: Kuota Habis (HTTP 429 Too Many Requests)
-      Swal.fire({
+  const handleApiError = (error, actionName = "Proses") => {
+    const status = error.response?.status;
+    const serverMsg =
+      error.response?.data?.message ||
+      error.response?.data?.errorMessage ||
+      error.response?.data?.error ||
+      null;
+    const message = (error.message || serverMsg || "").toLowerCase();
+
+    // 429 — API quota exceeded
+    if (status === 429) {
+      return Swal.fire({
         icon: "error",
-        title: "Kuota API Youtube Habis",
-        // Gunakan pesan dari backend jika ada, atau fallback
+        title: "Kuota API YouTube Habis",
         text:
-          error.response.data?.message ||
-          "Jatah penggunaan YouTube API untuk hari ini telah habis. Fitur akan tersedia kembali besok.",
+          serverMsg ||
+          "Kuota penggunaan API YouTube Anda telah habis. Silakan coba lagi besok.",
         confirmButtonText: "Mengerti",
       });
-    } else if (
-      error.message.toLowerCase().includes("izin tidak cukup") ||
-      error.message.toLowerCase().includes("otorisasi youtube")
+    }
+
+    // 401 / 403 — Unauthorized or Token expired / insufficient permission
+    if (
+      status === 401 ||
+      status === 403 ||
+      message.includes("insufficient") ||
+      message.includes("izin tidak cukup") ||
+      message.includes("unauthorized") ||
+      message.includes("token") ||
+      message.includes("auth")
     ) {
-      // Kasus Spesifik: Masalah Izin/Otorisasi YouTube
-      Swal.fire({
+      return Swal.fire({
         icon: "warning",
-        title: "Otorisasi YouTube Diperlukan",
-        text: `Gagal melakukan ${actionName}. Pastikan akun YouTube Anda terhubung dengan benar dan memiliki izin yang diperlukan. Anda mungkin perlu menghubungkan ulang akun di halaman profil.`,
+        title: "Otorisasi YouTube Bermasalah",
+        text: "Sesi YouTube Anda telah kedaluwarsa atau izin tidak valid. Silakan hubungkan ulang akun YouTube di halaman profil.",
         confirmButtonText: "OK",
       });
-    } else {
-      // Kasus Error Umum Lainnya
-      Swal.fire({
+    }
+
+    // 404 — Video or resource not found
+    if (status === 404 || message.includes("tidak dapat diakses")) {
+      return Swal.fire({
         icon: "error",
-        title: `Oops! Terjadi Kesalahan`,
+        title: "Video Tidak Ditemukan",
         text:
-          error.message || `Gagal melakukan ${actionName}. Silakan coba lagi.`,
-        confirmButtonText: "Tutup",
+          serverMsg ||
+          error.response?.data?.errorMessage ||
+          "Video tidak ditemukan atau tidak dapat diakses.",
+        confirmButtonText: "OK",
       });
     }
+
+    // 500+ — Server error
+    if (status >= 500) {
+      return Swal.fire({
+        icon: "error",
+        title: "Gangguan Server",
+        text: "Terjadi gangguan pada server. Silakan coba beberapa saat lagi.",
+        confirmButtonText: "Baik",
+      });
+    }
+
+    // Default fallback
+    return Swal.fire({
+      icon: "error",
+      title: "Terjadi Kesalahan",
+      text: serverMsg || error.message || `Gagal melakukan ${actionName}`,
+      confirmButtonText: "Tutup",
+    });
   };
 
   /**
@@ -320,7 +349,11 @@ export const useVideoAnalysis = () => {
 
     const validationError = validateYoutubeUrl(videoUrl);
     if (validationError) {
-      Swal.fire("Input Tidak Valid", validationError, "warning");
+      Swal.fire({
+        title: "Input Tidak Valid",
+        text: validationError,
+        icon: "warning",
+      });
       return;
     }
 
@@ -372,7 +405,6 @@ export const useVideoAnalysis = () => {
         // isLoading umum bisa di-set false di sini jika polling yang akan menangani loading UI lebih lanjut
         // setIsLoading(false); // Karena isAnalyzing akan menjaga UI tetap 'sibuk'
       } else {
-        // Jika status dari backend adalah FAILED atau status error lainnya saat submit awal
         Swal.close();
         throw new Error(
           initialAnalysisData.errorMessage ||
@@ -380,42 +412,25 @@ export const useVideoAnalysis = () => {
         );
       }
     } catch (err) {
-      Swal.close(); // Tutup Swal loading jika masih terbuka
-      // Penanganan error otorisasi YouTube secara spesifik
-      if (
-        err.message.toLowerCase().includes("izin tidak cukup") ||
-        err.message.toLowerCase().includes("insufficient permission") ||
-        err.message.toLowerCase().includes("otorisasi youtube") ||
-        err.message.toLowerCase().includes("re-link") ||
-        err.message.toLowerCase().includes("token")
-      ) {
-        Swal.fire({
-          title: "Otorisasi YouTube Gagal",
-          text: "Aplikasi tidak memiliki izin atau sesi YouTube Anda bermasalah. Coba hubungkan ulang akun YouTube Anda di halaman profil.",
-          icon: "error",
-        });
-      } else {
-        Swal.fire("Error Analisis", err.message, "error");
-      }
+      Swal.close();
+
+      // Gunakan handler error terpusat
+      handleApiError(err, "Memulai Analisis Video");
 
       setIsAnalyzing(false);
       setPollingMessage("");
-      // Update status di videoAnalysisData jika sudah ada
+
       setVideoAnalysisData((prev) =>
         prev
           ? { ...prev, status: "FAILED", errorMessage: err.message }
           : { _id: null, status: "FAILED", errorMessage: err.message }
       );
     } finally {
-      // isLoading umum akan di-set false ketika isAnalyzing juga false (setelah polling atau error)
-      // atau jika proses submit awal langsung COMPLETED.
       if (!isAnalyzing) {
-        // Jika tidak ada lagi proses polling/analisis yang berjalan
         setIsLoading(false);
       }
     }
-  }, [videoUrl, checkPrerequisites, fetchComments]); // Hapus 'isAnalyzing' dari dependensi useCallback untuk handleSubmitAnalysis agar tidak memicu pendefinisian ulang saat isAnalyzing berubah di dalamnya.
-  // Jika ada logika yang bergantung pada isAnalyzing *sebelum* async, ia bisa dimasukkan.
+  }, [videoUrl, checkPrerequisites, fetchComments]);
 
   /**
    *FITUR INI AKAN DIGUNAKAN KETIKA SUDAH DISEDIAKAN OLEH YOUTUBE DATA API

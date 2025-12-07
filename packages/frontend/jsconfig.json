@@ -3,11 +3,11 @@
     "jsx": "react",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     },
     "types": ["cypress", "node"],
     "ignoreDeprecations": "6.0"
   },
   "exclude": ["node_modules", "dist"],
-  "include": ["src", "cypress/**.js"]
+  "include": ["./src/*", "cypress/**.js"]
 }

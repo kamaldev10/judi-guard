@@ -31,10 +31,22 @@ export default defineConfig({
     ],
     exclude: ["**/node_modules/**", "**/dist/**", "tests/e2e/**"],
     coverage: {
+      enabled: true,
       provider: "v8",
-      reporter: ["text", "html"],
-      include: ["src/"],
-      exclude: ["src/main.tsx", "src/setupTests.ts", "src/**/__tests__/**"],
+      reporter: ["text", "json", "html"],
+      exclude: [
+        "src/main.tsx",
+        "src/setupTests.ts",
+        "src/**/__tests__/**",
+        "src/constants",
+        "src/assets/",
+      ],
+      thresholds: {
+        statements: 80,
+        branches: 65,
+        functions: 80,
+        lines: 80,
+      },
     },
   },
 });

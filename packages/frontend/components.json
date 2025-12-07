@@ -16,7 +16,8 @@
     "ui": "@/components/ui",
     "shared": "@/components/shared",
     "lib": "@/lib",
-    "hooks": "@/hooks"
+    "hooks": "@/hooks",
+    "stores": "@/stores"
   },
   "iconLibrary": "lucide"
 }

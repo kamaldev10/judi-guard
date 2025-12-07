@@ -25,7 +25,7 @@
     "@gsap/react": "^2.1.2",
     "@headlessui/react": "^2.2.6",
     "@radix-ui/react-dropdown-menu": "^2.1.16",
-    "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-slot": "^1.2.4",
     "@react-oauth/google": "^0.12.2",
     "axios": "^1.9.0",
     "class-variance-authority": "^0.7.1",
@@ -47,6 +47,7 @@
     "react-head": "^3.4.2",
     "react-phone-input-2": "^2.15.1",
     "react-router-dom": "^7.5.3",
+    "react-router-hash-link": "^2.4.3",
     "react-scroll": "^1.9.3",
     "react-toastify": "^11.0.5",
     "recharts": "^2.15.3",
@@ -92,6 +93,6 @@
     "tw-animate-css": "^1.3.7",
     "typescript": "^5.9.2",
     "vite": "^6.3.5",
-    "vitest": "^4.0.1"
+    "vitest": "^4.0.15"
   }
 }

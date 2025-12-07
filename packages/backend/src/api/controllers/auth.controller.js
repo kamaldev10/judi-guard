@@ -359,15 +359,9 @@ const handleResetPassword = async (req, res, next) => {
 const handleChangePassword = async (req, res, next) => {
   try {
     const userId = req.user._id;
-    const { currentPassword, newPassword, confirmPassword } = req.body; // Ambil confirmPassword juga
+    const { currentPassword, newPassword } = req.body;
 
-    // Service changeUserPassword idealnya juga menerima confirmPassword jika ada validasi kecocokan
-    await authService.changeUserPassword(
-      userId,
-      currentPassword,
-      newPassword,
-      confirmPassword
-    );
+    await authService.changeUserPassword(userId, currentPassword, newPassword);
 
     res.status(200).json({
       success: true,

@@ -13,17 +13,24 @@ import {
 import { toast } from "react-toastify";
 import { Logo } from "@images";
 import Swal from "sweetalert2";
-import ThemeToggle from "../ThemeToggle";
-import { useAuthStore } from "@/stores/auth/authStore";
-import LogoutButton from "../ui/LogoutButton";
-import LoginButton from "../ui/LoginButton";
+import { useAuthStore } from "@/stores/authStore";
+import LogoutButton from "@/components/ui/LogoutButton";
+import LoginButton from "@/components/ui/LoginButton";
+import ThemeToggle from "./ThemeToggle";
 
 const Header = () => {
-  const { isAuthenticated, currentUser, logout } = useAuthStore();
-  const location = useLocation();
+  const currentUser = useAuthStore((state) => state.currentUser);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const logout = useAuthStore((state) => state.logout);
+
+  const { pathname } = useLocation();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const mobileMenuRef = useRef(null);
+
+  const handleToLogin = () => {
+    navigate("/login");
+  };
 
   const handleLogout = () => {
     Swal.fire({
@@ -37,8 +44,10 @@ const Header = () => {
       if (result.isConfirmed) {
         logout();
         setIsMobileMenuOpen(false);
-        navigate("/login");
         toast.error("Anda berhasil logout");
+        setTimeout(() => {
+          navigate("/login");
+        }, 0);
       }
     });
   };
@@ -49,7 +58,7 @@ const Header = () => {
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
-  }, [location.pathname]);
+  }, [pathname]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -77,7 +86,7 @@ const Header = () => {
     const baseClasses = `px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 inline-flex items-center`; // Tambahkan flex items-center
     const activeClasses = `text-blue-600 font-semibold ${isMobile ? "bg-blue-50" : "md:bg-transparent"}`;
     const inactiveClasses = `text-gray-700 hover:text-blue-600 ${isMobile ? "hover:bg-gray-100" : "md:hover:bg-transparent"}`;
-    return `${baseClasses} ${location.pathname === path ? activeClasses : inactiveClasses} ${isMobile ? "w-full text-left" : "inline-block"}`;
+    return `${baseClasses} ${pathname === path ? activeClasses : inactiveClasses} ${isMobile ? "w-full text-left" : "inline-block"}`;
   };
 
   const renderAuthButtons = (isMobile = false) => {
@@ -87,13 +96,15 @@ const Header = () => {
     } else {
       // User is not logged in - show login button
       return (
-        <Link
-          to="/login"
-          onClick={() => isMobile && setIsMobileMenuOpen(false)}
-          // className={`text-white bg-teal-500 hover:bg-teal-700 focus:ring-teal-400 ${buttonBaseClasses} ${isMobile ? "w-full mt-2 block" : ""}`}
-        >
-          <LoginButton />
-        </Link>
+        <LoginButton
+          data-cy="login-button"
+          onClick={() => {
+            handleToLogin();
+            if (isMobile) {
+              setIsMobileMenuOpen(false);
+            }
+          }}
+        />
       );
     }
   };
@@ -125,7 +136,7 @@ const Header = () => {
         </Link>
         <div className="container mx-auto px-4  sm:px-6 md:px-1 lg:px-8 ">
           <div className="flex items-center justify-between h-18">
-            <div className="flex flex-shrink-0">
+            <div className="flex shrink-0">
               <Link
                 to="/about-us"
                 className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors"
@@ -187,7 +198,8 @@ const Header = () => {
         {isMobileMenuOpen && (
           <div
             ref={mobileMenuRef}
-            className="md:hidden absolute top-18 inset-x-0 z-40" // Removed transform classes for simplicity, rely on conditional rendering
+            data-testid="mobile-menu-container"
+            className="md:hidden absolute top-18 inset-x-0 z-40"
           >
             <div className="flex justify-between py-2 px-5 border-t border-gray-200 bg-[#B9E6FD]">
               {isAuthenticated && currentUser && (
@@ -196,7 +208,10 @@ const Header = () => {
                   {currentUser.username || currentUser.name || "Pengguna"}
                 </span>
               )}
-              <div className=" ">{renderAuthButtons(true)}</div>
+              <div className="flex items-center gap-3">
+                <div className=" ">{renderAuthButtons(true)}</div>
+                {/* <ThemeToggle /> */}
+              </div>
             </div>
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-[#B9E6FD] border-t border-gray-200">
               <Link

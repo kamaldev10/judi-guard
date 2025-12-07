@@ -14,11 +14,12 @@
 .env.production
 
 # Testing coverage
-/coverage
+coverage/
 
 # Cypress output 
 cypress/videos/
 cypress/screenshots
+cypress/downloads
 
 # Log files
 npm-debug.log*

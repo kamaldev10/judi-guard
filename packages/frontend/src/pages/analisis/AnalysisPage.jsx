@@ -2,8 +2,8 @@ import { Title } from "react-head";
 import { useLocation } from "react-router-dom";
 import React, { useEffect, useMemo } from "react";
 
-import WorkGuideSection from "./work-guide-section/WorkGuideSection";
-import AnalysisFormSection from "./analysis-form-section/views/AnalysisFormSection";
+import WorkGuideSection from "@/components/work-guide/WorkGuideSection";
+import AnalysisFormSection from "@/components/analysis/AnalysisFormSection";
 
 const AnalysisPage = () => {
   const location = useLocation();
@@ -17,9 +17,9 @@ const AnalysisPage = () => {
         ref: React.createRef(),
       },
       {
-        id: "analysis-results",
+        id: "video-analysis-form",
         component: AnalysisFormSection,
-        title: "Analysis Result",
+        title: "Video Analysis Form",
         ref: React.createRef(),
       },
     ],
@@ -27,15 +27,34 @@ const AnalysisPage = () => {
   );
 
   useEffect(() => {
-    if (location.pathname === "/analisis") {
+    let timerId;
+
+    if (location.hash) {
+      const id = location.hash.substring(1);
+      const element = document.getElementById(id);
+      if (element) {
+        timerId = setTimeout(() => {
+          element.scrollIntoView({ behavior: "smooth" });
+        }, 100);
+        return;
+      }
+    }
+
+    if (location.pathname === "/analysis" && !location.hash) {
       const WorkGuideDetail = sections.find((s) => s.id === "work-guide");
       if (WorkGuideDetail && WorkGuideDetail.ref.current) {
-        setTimeout(() => {
+        timerId = setTimeout(() => {
           WorkGuideDetail.ref.current.scrollIntoView({ behavior: "smooth" });
         }, 100);
       }
     }
-  }, [location.pathname, sections]);
+
+    return () => {
+      if (timerId) {
+        clearTimeout(timerId);
+      }
+    };
+  }, [location, location.pathname, sections]);
 
   return (
     <>

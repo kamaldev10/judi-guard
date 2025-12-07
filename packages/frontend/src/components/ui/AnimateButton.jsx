@@ -2,115 +2,10 @@ import React from "react";
 import styled from "styled-components";
 import PropTypes from "prop-types";
 
-// const AnimateButton = ({
-//   text = "Click Me",
-//   bgColor = "#6225e6",
-//   hoverColor = "#fbc638",
-// }) => {
-//   return (
-//     <StyledWrapper $bgColor={bgColor} $hoverColor={hoverColor}>
-//       <button className="cta">
-//         <span className="span">{text}</span>
-//         <span className="second">{/* svg arrow */}</span>
-//       </button>
-//     </StyledWrapper>
-//   );
-// };
-
-// AnimateButton.propTypes = {
-//   text: PropTypes.string.isRequired,
-//   bgColor: PropTypes.string.isRequired,
-//   hoverColor: PropTypes.string.isRequired,
-// };
-
-// // gunakan $ prefix untuk transient props
-// const StyledWrapper = styled.div`
-//   .cta {
-//     display: flex;
-//     padding: 11px 33px;
-//     text-decoration: none;
-//     font-size: 20px;
-//     color: white;
-//     background: ${(props) => props.$bgColor || "#6225e6"};
-//     transition: 1s;
-//     box-shadow: 6px 6px 0 black;
-//     transform: skewX(-15deg);
-//     border: none;
-//     cursor: pointer;
-//   }
-
-//   .cta:focus {
-//     outline: none;
-//   }
-
-//   .cta:hover {
-//     transition: 0.5s;
-//     box-shadow: 10px 10px 0 ${(props) => props.$hoverColor || "#fbc638"};
-//   }
-
-//   .cta .second {
-//     transition: 0.5s;
-//     margin-right: 0px;
-//   }
-
-//   .cta:hover .second {
-//     margin-right: 45px;
-//   }
-
-//   .span {
-//     transform: skewX(15deg);
-//   }
-
-//   .second {
-//     width: 20px;
-//     margin-left: 30px;
-//     position: relative;
-//     top: 12%;
-//   }
-
-//   .one {
-//     transition: 0.4s;
-//     transform: translateX(-60%);
-//   }
-
-//   .two {
-//     transition: 0.5s;
-//     transform: translateX(-30%);
-//   }
-
-//   .cta:hover .three {
-//     animation: color_anim 1s infinite 0.2s;
-//   }
-
-//   .cta:hover .one {
-//     transform: translateX(0%);
-//     animation: color_anim 1s infinite 0.6s;
-//   }
-
-//   .cta:hover .two {
-//     transform: translateX(0%);
-//     animation: color_anim 1s infinite 0.4s;
-//   }
-
-//   @keyframes color_anim {
-//     0% {
-//       fill: white;
-//     }
-//     50% {
-//       fill: ${(props) => props.$hoverColor || "#fbc638"};
-//     }
-//     100% {
-//       fill: white;
-//     }
-//   }
-// `;
-
-// export default AnimateButton;
-
-const AnimateButton = ({ text = "Click Me" }) => {
+const AnimateButton = ({ text = "Click Me", ...props }) => {
   return (
     <StyledWrapper>
-      <button>
+      <button {...props}>
         <svg
           height={24}
           width={24}
@@ -129,9 +24,7 @@ const AnimateButton = ({ text = "Click Me" }) => {
   );
 };
 AnimateButton.propTypes = {
-  text: PropTypes.string.isRequired,
-  bgColor: PropTypes.string.isRequired,
-  hoverColor: PropTypes.string.isRequired,
+  text: PropTypes.string,
 };
 
 const StyledWrapper = styled.div`

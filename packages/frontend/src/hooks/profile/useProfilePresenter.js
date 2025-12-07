@@ -2,31 +2,24 @@ import { useState, useEffect, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { toast } from "react-toastify";
+import { useUserStore } from "@/stores/userStore";
+import { useAuthStore } from "@/stores/authStore";
+import { useYoutubeStore } from "@/stores/youtubeStore";
 
-import {
-  disconnectYoutubeAccountApi,
-  initiateYoutubeOAuthRedirectApi,
-} from "@/lib/services";
-import { useAuthStore } from "@/stores/auth/authStore";
-import { useUserStore } from "@/stores";
-
-/**
- * Presenter (sebagai custom hook) untuk mengelola semua logika dan state
- * yang terkait dengan halaman profil pengguna.
- * Menggunakan useAuthStore sebagai "single source of truth" untuk data pengguna.
- */
 export const useProfilePresenter = () => {
-  const { currentUser, isLoadingAuth, logout, refreshUser } = useAuthStore();
+  const { isLoadingUser, deleteAccount } = useUserStore();
+  const getCurrentUser = useUserStore((state) => state.getCurrentUser);
+  const currentUser = useAuthStore((state) => state.currentUser);
+  const { disconnectYoutube, connectYoutube } = useYoutubeStore();
 
-  const [isActionLoading, setIsActionLoading] = useState(false); // Satu state loading untuk semua aksi di halaman ini
-  const [actionError, setActionError] = useState(null); // Error spesifik dari aksi di halaman ini
+  const [isActionLoading, setIsActionLoading] = useState(false);
+
+  const [actionError, setActionError] = useState(null);
 
   const [youtubeStatusMessage, setYoutubeStatusMessage] = useState("");
 
   const navigate = useNavigate();
   const location = useLocation();
-
-  const { deleteAccount } = useUserStore();
 
   useEffect(() => {
     const transientKeywords = [
@@ -57,33 +50,29 @@ export const useProfilePresenter = () => {
       const errorMsgParam = queryParams.get("error");
       const successMsgParam = queryParams.get("message");
 
-      // Setelah callback, selalu panggil `refreshUser` untuk memastikan
-      // state global dan localStorage terupdate dengan data terbaru.
-      refreshUser().then(() => {
-        if (linked === "true") {
-          // toast.success(successMsgParam || "Akun YouTube berhasil terhubung!");
-          setYoutubeStatusMessage(successMsgParam || "Berhasil terhubung!");
-        } else if (linked === "false") {
-          const decodedErrorMsg = errorMsgParam
-            ? decodeURIComponent(errorMsgParam)
-            : "Gagal menghubungkan akun YouTube.";
-          toast.error(decodedErrorMsg);
-          setYoutubeStatusMessage(`Gagal: ${decodedErrorMsg}`);
-        }
-      });
+      if (linked === "true") {
+        // toast.success(successMsgParam || "Akun YouTube berhasil terhubung!");
+        setYoutubeStatusMessage(successMsgParam || "Berhasil terhubung!");
+
+        getCurrentUser();
+      } else if (linked === "false") {
+        const decodedErrorMsg = errorMsgParam
+          ? decodeURIComponent(errorMsgParam)
+          : "Gagal menghubungkan akun YouTube.";
+        toast.error(decodedErrorMsg);
+        setYoutubeStatusMessage(`Gagal: ${decodedErrorMsg}`);
+      }
 
       navigate(location.pathname, { replace: true });
     }
-  }, [location.search, location.pathname, navigate, refreshUser]);
+  }, [location.search, location.pathname, navigate]);
 
   // Handler untuk navigasi ke halaman edit profil
   const handleEditProfile = useCallback(() => {
     navigate("/profile/edit");
   }, [navigate]);
 
-  /**
-   * Mengeksekusi proses penghapusan akun setelah konfirmasi.
-   */
+  // Mengeksekusi proses penghapusan akun setelah konfirmasi.
   const executeDeleteAccount = useCallback(async () => {
     const confirmResult = await Swal.fire({
       title: "Anda yakin?",
@@ -102,14 +91,16 @@ export const useProfilePresenter = () => {
     const toastMsg = toast.loading("Menghapus Akun...");
 
     try {
-      await deleteAccount;
+      await deleteAccount();
       toast.update(toastMsg, {
         render: "Akun Anda telah berhasil dihapus.",
         type: "success",
         isLoading: false,
         autoClose: 3000,
       });
-      navigate("/");
+      setTimeout(() => {
+        navigate("/");
+      });
     } catch (err) {
       const errorMessage = err.message || "Gagal menghapus akun.";
       toast.update(toastMsg, {
@@ -131,7 +122,7 @@ export const useProfilePresenter = () => {
     setIsActionLoading(true); // Gunakan state loading aksi
     setYoutubeStatusMessage("Mengarahkan ke Google untuk otorisasi...");
     try {
-      const response = await initiateYoutubeOAuthRedirectApi();
+      const response = await connectYoutube();
       if (response?.data?.redirectUrl) {
         window.location.href = response.data.redirectUrl;
       } else {
@@ -166,7 +157,7 @@ export const useProfilePresenter = () => {
     const toastId = toast.loading("Memutuskan Koneksi...");
 
     try {
-      await disconnectYoutubeAccountApi();
+      await disconnectYoutube();
       const successMsg = "Akun YouTube berhasil diputuskan.";
       toast.update(toastId, {
         render: successMsg,
@@ -175,7 +166,6 @@ export const useProfilePresenter = () => {
         autoClose: 3000,
       });
       setYoutubeStatusMessage(successMsg);
-      await refreshUser(); // Panggil refreshUser untuk mendapatkan state user terbaru
     } catch (err) {
       const errorMsg = err.message || "Gagal memutuskan koneksi.";
       toast.update(toastId, {
@@ -188,23 +178,17 @@ export const useProfilePresenter = () => {
     } finally {
       setIsActionLoading(false);
     }
-  }, [refreshUser]);
+  });
 
-  // Mengembalikan semua state dan handler yang dibutuhkan oleh View
   return {
-    // Gunakan data langsung dari context sebagai sumber kebenaran
     user: currentUser,
-    // Loading jika context sedang memuat user ATAU ada aksi lokal berjalan
-    isLoading: isLoadingAuth,
-    // Error jika ada error dari context ATAU dari aksi lokal
+    isLoading: isLoadingUser,
     fetchError: currentUser || actionError,
 
-    // State spesifik untuk aksi di halaman ini
-    isDeleting: isActionLoading, // Bisa disamakan dengan isLoading, atau dibuat terpisah jika perlu
+    isDeleting: isActionLoading,
     isConnectingYouTube: isActionLoading,
     isDisconnectingYouTube: isActionLoading,
 
-    // Handler dan state lain
     handleEditProfile,
     executeDeleteAccount,
     isYoutubeConnected: !!currentUser?.youtubeChannelId,

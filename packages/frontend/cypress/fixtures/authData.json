@@ -1,0 +1,18 @@
+{
+  "validUser": {
+    "username": "admin",
+    "email": "admin@gmail.com",
+    "password": "Admin123",
+    "youtubeChannelId": "UCIz271dZmYRFR68KSuXNMWw",
+    "isYoutubeConnected": true
+  },
+  "validResetToken": "valid-mock-token-123",
+  "messages": {
+    "forgotPasswordSuccess": "Kami telah mengirim email berisi instruksi untuk mereset kata sandi Anda. Periksa folder inbox dan spam Anda.",
+    "resetPasswordSuccess": "Kata sandi berhasil direset",
+    "changePasswordSuccess": "Berhasil! Silakan login kembali",
+    "currentPasswordError": "Kata sandi saat ini salah",
+    "passwordMismatchError": "Kata sandi baru dan konfirmasi tidak cocok",
+    "passwordShortError": "Kata sandi baru harus minimal 8 karakter"
+  }
+}

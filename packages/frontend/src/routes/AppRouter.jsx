@@ -4,18 +4,16 @@ import { Routes, Route, Navigate } from "react-router-dom";
 
 // Impor komponen Layout dan utilitas
 import MainLayout from "@/components/layout/MainLayout";
-import PageLoader from "@/components/PageLoader";
+import PageLoader from "@/components/layout/PageLoader";
 
 // Lazy loading untuk semua komponen halaman
 const HomePage = lazy(() => import("@/pages/home/HomePage"));
 const AboutUs = lazy(() => import("@/pages/about-us/AboutUs"));
 const AnalysisPage = lazy(() => import("@/pages/analisis/AnalysisPage"));
 const ProfilePage = lazy(() => import("@/pages/profile/ProfilePage"));
-const EditProfilePage = lazy(
-  () => import("@/components/profile/EditProfilePage")
-);
-const LoginPage = lazy(() => import("@/pages/auth/Login"));
-const RegisterPage = lazy(() => import("@/pages/auth/Register"));
+const EditProfilePage = lazy(() => import("@/pages/profile/EditProfilePage"));
+const LoginPage = lazy(() => import("@/pages/auth/LoginPage"));
+const RegisterPage = lazy(() => import("@/pages/auth/RegisterPage"));
 const OtpPage = lazy(() => import("@/pages/auth/OtpPage"));
 const ForgotPasswordPage = lazy(
   () => import("@/pages/auth/ForgotPasswordPage")

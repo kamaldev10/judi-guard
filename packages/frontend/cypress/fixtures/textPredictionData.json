@@ -1,0 +1,30 @@
+{
+  "scenarios": [
+    {
+      "keyword": "slot gacor",
+      "classification": "JUDI",
+      "confidenceScore": 0.958,
+      "modelVersion": "distilbert-flask-v1"
+    },
+    {
+      "keyword": "video tutorial",
+      "classification": "NON_JUDI",
+      "confidenceScore": 0.992,
+      "modelVersion": "distilbert-flask-v1"
+    },
+    {
+      "keyword": "menang besar",
+      "classification": "JUDI",
+      "confidenceScore": 0.880,
+      "modelVersion": "distilbert-flask-v1"
+    }
+  ],
+  "errorResponse": {
+    "message": "ERROR_ANALYSIS"
+  },
+  "defaultResponse": {
+    "classification": "NON_JUDI",
+    "confidenceScore": 0.100,
+    "modelVersion": "distilbert-flask-v1"
+  }
+}

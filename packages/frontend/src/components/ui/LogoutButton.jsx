@@ -16,6 +16,7 @@ const LogoutButton = ({ onClick = () => {} }) => {
     </StyledWrapper>
   );
 };
+
 LogoutButton.propTypes = {
   onClick: PropTypes.func,
 };

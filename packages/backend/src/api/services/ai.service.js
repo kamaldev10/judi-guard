@@ -1,4 +1,4 @@
-const mlApiClient = require("../../core/mlApiClient"); // Impor klien axios kita
+const mlApiClient = require("../../core/mlApiClient");
 
 const AI_MODEL_VERSION = "distilbert-flask-v1";
 
@@ -19,11 +19,12 @@ const analyzeTextWithAI = async (text) => {
     };
   } catch (error) {
     console.error(`Gagal memanggil ML API (Flask): ${error.message}`);
-    return {
-      classification: "ERROR_ANALYSIS",
-      confidenceScore: 0,
-      modelVersion: AI_MODEL_VERSION,
-    };
+    next(error);
+    // return {
+    //   classification: "ERROR_ANALYSIS",
+    //   confidenceScore: 0,
+    //   modelVersion: AI_MODEL_VERSION,
+    // };
   }
 };
 

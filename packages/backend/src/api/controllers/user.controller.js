@@ -16,15 +16,11 @@ const getMe = async (req, res, next) => {
     //   `[Controller: getMe] Mengambil data untuk user ID: ${req.user._id}`
     // );
 
-    // 1. Ambil pengguna dari DB dan secara eksplisit sertakan semua token YouTube.
-    // Ini diperlukan agar virtual property 'isYoutubeConnected' bisa menghitung nilainya dengan benar.
     const userFromDb = await User.findById(userId).select(
       "+youtubeAccessToken +youtubeRefreshToken"
     );
 
     if (!userFromDb) {
-      // Kondisi ini seharusnya tidak pernah tercapai jika middleware `isAuthenticated` bekerja,
-      // karena middleware sudah memverifikasi bahwa user ada. Tapi ini pengaman yang bagus.
       throw new NotFoundError(
         "Pengguna tidak ditemukan di database meskipun token valid."
       );

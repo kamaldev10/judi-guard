@@ -1,6 +1,6 @@
 // src/app.js
 const express = require("express");
-const cors = require("cors"); // Pastikan sudah diimpor
+const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const mainRouter = require("./api/routes");
@@ -9,19 +9,16 @@ const { NotFoundError } = require("./utils/errors");
 
 const app = express();
 
-// --- AWAL PERUBAHAN KONFIGURASI CORS ---
 // Daftar origin yang diizinkan
 const allowedOrigins = [
   "http://localhost:5173", // Untuk development frontend React/Vite Anda
-  "https://judiguard.vercel.app", // Untuk produksi frontend Anda (pertahankan jika sudah ada)
+  "https://judiguard.vercel.app", // Untuk produksi frontend (Vercel)
   "http://judiguard.id",
   // Tambahkan origin lain jika perlu
 ];
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // Izinkan request tanpa origin (misalnya, dari Postman, mobile apps, curl)
-    // atau jika origin ada di dalam daftar allowedOrigins
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
@@ -33,8 +30,7 @@ const corsOptions = {
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"], // Header yang diizinkan
 };
 
-app.use(cors(corsOptions)); // Gunakan opsi CORS yang sudah dikonfigurasi
-// --- AKHIR PERUBAHAN KONFIGURASI CORS ---
+app.use(cors(corsOptions));
 
 app.use(helmet());
 app.use(express.json({ limit: "16kb" }));
@@ -47,7 +43,7 @@ if (process.env.NODE_ENV === "development") {
 app.use("/api/v1", mainRouter);
 
 app.get("/", (req, res) => {
-  res.send("Judi Guard Backend V1 is alive! 🚀");
+  res.send("Server Judi Guard is alive! 🚀");
 });
 
 app.use((req, res, next) => {

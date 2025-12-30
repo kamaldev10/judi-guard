@@ -74,12 +74,14 @@ export const useAuthStore = create((set, get) => ({
     set({ isLoadingAuth: true, error: null });
     try {
       const data = await signInWithGoogleApi(idToken);
-      if (data?.user && data?.token) {
-        get().setSession(data.user, data.token);
+      if (!data?.user || !data?.token) {
+        throw new Error("Respons dari server tidak lengkap");
       }
+      get().setSession(data.user, data.token);
       return data;
     } catch (err) {
-      set({ error: err.message });
+      const errorMessage = err?.data?.data?.message || err.message;
+      set({ error: errorMessage });
       throw err;
     } finally {
       set({ isLoadingAuth: false });

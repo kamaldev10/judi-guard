@@ -37,7 +37,7 @@ export const loginUserApi = async (credentials) => {
 export const signInWithGoogleApi = async (idToken) => {
   try {
     const response = await apiClient.post("/auth/google/signin", { idToken });
-    return response.data;
+    return response?.data?.data;
   } catch (error) {
     handleApiError(error, "Login Google gagal.");
   }

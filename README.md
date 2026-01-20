@@ -53,12 +53,13 @@ Proyek ini menggunakan arsitektur _monorepo_ yang terpisah antara backend dan fr
 
 ```
 judi-guard-app/
-├── backend/
-│   ├── ... (File-file backend)
-│   └── README.md  (Panduan khusus backend)
-├── frontend/
-│   ├── ... (File-file frontend)
-│   └── README.md  (Panduan khusus frontend)
+|---packages/
+    ├── backend/
+    │   ├── ... (File-file backend)
+    │   └── README.md  (Panduan khusus backend)
+    ├── frontend/
+    │   ├── ... (File-file frontend)
+    │   └── README.md  (Panduan khusus frontend)
 ├── .gitignore
 ├── LICENSE
 └── README.md      (Anda sedang melihat file ini)
@@ -93,7 +94,6 @@ Untuk menjalankan proyek ini di lingkungan lokal Anda, ikuti langkah-langkah di 
     ```
 
 3.  **Setup Backend:**
-
     - Masuk ke direktori backend, instal dependensi, dan konfigurasikan environment variables.
     - Untuk instruksi lebih detail, lihat file `backend/README.md`.
 

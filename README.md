@@ -73,8 +73,11 @@ Proyek ini menggunakan pendekatan **monorepo**, dengan pemisahan jelas antara fr
 
 ```bash
 judi-guard/
-├── backend/            # Backend service (Express + MongoDB)
-├── frontend/           # Frontend app (React)
+├── .vscode
+├── packages/
+|   ├── backend/        # Backend service (Express + MongoDB)
+|   ├── frontend/       # Frontend app (React)
+|   └── ml-api/         # Model AI
 ├── cypress/            # BDD End-to-End Testing
 ├── cypress.config.js
 ├── LICENSE

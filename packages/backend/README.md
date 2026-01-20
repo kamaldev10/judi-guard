@@ -1,18 +1,22 @@
-# Judi Guard - Backend 🛡️ (Server-Side)
+# Judi Guard – Backend 🛡️
 
-Selamat datang di direktori backend untuk proyek Judi Guard. Bagian ini bertanggung jawab atas semua logika sisi server, termasuk otentikasi pengguna, interaksi dengan database, integrasi dengan API eksternal, dan inti dari analisis komentar AI.
+Backend Judi Guard adalah **server-side service** yang bertanggung jawab atas autentikasi pengguna, integrasi API eksternal, pemrosesan analisis komentar spam judi, serta manajemen data dan moderasi.
+
+Dokumentasi ini berfokus **khusus pada aspek teknis backend**.
 
 ---
 
 ## 🛠️ Teknologi yang Digunakan
 
--   **Framework:** [Express.js](https://expressjs.com/)
--   **Database:** [MongoDB](https://www.mongodb.com/) dengan ODM [Mongoose](https://mongoosejs.com/)
--   **Authentication:** JSON Web Tokens (JWT) & Google OAuth
--   **API Integration:** [Axios](https://axios-http.com/), [YouTube Data API v3](https://developers.google.com/youtube/v3)
--   **Email Service:** [Mailgun](https://www.mailgun.com/)
--   **Development:** [Nodemon](https://nodemon.io/) untuk hot-reloading
--   **Package Manager:** [npm](https://www.npmjs.com/)
+- **Runtime:** Node.js
+- **Framework:** Express.js
+- **Database:** MongoDB + Mongoose
+- **Authentication:** JWT & Google OAuth
+- **External API:** YouTube Data API v3
+- **HTTP Client:** Axios
+- **Email Service:** Mailgun
+- **Development Tool:** Nodemon
+- **Package Manager:** npm
 
 ---
 
@@ -20,82 +24,112 @@ Selamat datang di direktori backend untuk proyek Judi Guard. Bagian ini bertangg
 
 ### 1. Prasyarat
 
--   Pastikan Anda sudah berada di dalam direktori `backend`. Jika belum, navigasi dari root proyek: `cd backend`.
--   Node.js dan npm sudah terinstal.
+- Node.js ≥ 18.x
+- MongoDB (local / cloud)
+- Akun Google Developer (YouTube API)
+
+Pastikan berada di direktori backend:
+
+```bash
+cd backend
+```
+
+---
 
 ### 2. Instalasi Dependensi
 
-```sh
-npm install
+```bash
+   npm install
 ```
+
+---
 
 ### 3. Konfigurasi Environment Variables
 
-Buat file `.env` di dalam direktori `backend`. Salin konten dari `.env.example` (jika ada) atau gunakan templat di bawah ini dan isi dengan kredensial Anda.
+Buat file .env di direktori backend:
 
-```ini
-# .env file
-
-# Server Configuration
+```bash
 PORT=5000
+MONGO_URI=mongodb+srv://<user>:<password>@<cluster>/<dbname>
 
-# MongoDB Connection
-MONGO_URI=mongodb+srv://<user>:<password>@<cluster-url>/<database-name>?retryWrites=true&w=majority
+JWT_SECRET=your_jwt_secret
 
-# JWT Secret Key
-JWT_SECRET=rahasia_super_aman_untuk_jwt
+GOOGLE_CLIENT_ID=xxxxx.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=xxxxx
 
-# Google OAuth Credentials
-GOOGLE_CLIENT_ID=xxxxxxxxxxxx.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=xxxxxxxxxxxx
+YOUTUBE_API_KEY=xxxxx
 
-# YouTube Data API
-YOUTUBE_API_KEY=xxxxxxxxxxxx
-
-# Mailgun API
-MAILGUN_API_KEY=key-xxxxxxxxxxxx
-MAILGUN_DOMAIN=mg.domainanda.com
+MAILGUN_API_KEY=key-xxxxx
+MAILGUN_DOMAIN=mg.yourdomain.com
 ```
 
-**Penting:** Jangan pernah membagikan file `.env` Anda atau mengunggahnya ke repositori publik.
-
----
+## ⚠️ Jangan commit file .env ke repository.
 
 ## ▶️ Menjalankan Server
 
--   **Untuk Development (dengan auto-restart):**
-    Server akan otomatis me-restart setiap kali ada perubahan file.
-    ```sh
-    npm run dev
-    ```
+### Development
 
--   **Untuk Produksi:**
-    ```sh
-    npm start
-    ```
-    Server akan berjalan di `http://localhost:5000` (atau port yang Anda tentukan).
-
-## 🧪 Menjalankan Tes
-
-Untuk menjalankan rangkaian pengujian (jika dikonfigurasi):
-```sh
-npm run test
+```bash
+npm run dev
 ```
+
+### Production
+
+```bash
+npm start
+```
+
+Server berjalan di:
+
+```bash
+http://localhost:5000
+```
+
+## 🌐 API Endpoint (Ringkas)
+
+| Method | Endpoint                          | Deskripsi         | Auth |
+| :----- | :-------------------------------- | ----------------- | ---- |
+| POST   | /api/v1/auth/register             | Registrasi user   | ❌   |
+| POST   | /api/v1/auth/login                | Login & JWT       | ❌   |
+| GET    | /api/v1/users/me                  | Profil user       | ✅   |
+| GET    | /api/v1/youtube/comments/:videoId | Ambil komentar    | ✅   |
+| POST   | /api/v1/analysis/comments         | Analisis komentar | ✅   |
+| POST   | /api/v1/moderation/action         | Moderasi komentar | ✅   |
+| GET    | /api/v1/moderation/history        | Riwayat moderasi  | ✅   |
 
 ---
 
-## 🌐 Endpoint API
+## 📂 Struktur Folder
 
-Berikut adalah beberapa contoh endpoint API utama yang tersedia:
+```bash
+backend/
+├── docs/
+├── src/
+│ ├── api/
+│ │ ├── controllers/
+│ │ ├── services/
+│ │ ├── models/
+│ │ ├── routes/
+│ │ ├── middlewares/
+│ │ └── validators/
+│ ├── config/
+│ ├── core/
+│ ├── utils/
+│ ├── app.js
+│ └── server.js
+├── .env.example
+├── package.json
+└── README.md
+```
 
-| Method  | Endpoint                                                 | Deskripsi                                       | Memerlukan Auth |
-| :-----  | :------------------------------------------------------- | :---------------------------------------------- | :-------------- |
-| `POST`  | `/api/v1/auth/register`                                  | Mendaftarkan pengguna baru.                     | Tidak           |
-| `POST`  | `/api/v1/auth/login`                                     | Login pengguna dan mendapatkan token JWT.       | Tidak           |
-| `GET`   | `/api/v1/youtube/connect`                                | Koneksi akun ke platform YouTube.               | Ya              |
-| `GET`   | `/api/v1/users/me`                                       | Mendapatkan data pengguna yang sedang login.    | Ya              |
-| `POST`  | `/api/v1/analysis/videos`                                | Mengirimkan video untuk dianalisis.             | Ya              |
-| `DELETE`| `/api/v1/analysis/videos/:analysisId/judi-comments`      | Mengirimkan video untuk dianalisis.             | Ya              |
+📌 Catatan
 
+Backend tidak menjalankan BDD testing secara langsung
 
-Dokumentasi API yang lebih lengkap dapat ditemukan menggunakan tools seperti Postman atau Swagger (jika diimplementasikan).
+Pengujian perilaku sistem dilakukan secara end-to-end menggunakan Cypress di root repository
+
+## 📄 Lisensi
+
+MIT License
+
+---

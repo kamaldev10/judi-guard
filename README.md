@@ -1,8 +1,10 @@
-# Judi Guard (v1)🛡
+# Judi Guard (v1) 🛡️
 
-<p align="left">Say Goodbye to Spam Judi  with Judi Guard.</p>
+<p align="left">Say Goodbye to Spam Judi with Judi Guard.</p>
 
-_<p align="center">![LogoWithSloganBgBlack](https://github.com/user-attachments/assets/162c46d0-584a-40ce-bfab-5f4290028cb9) </p>_
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/162c46d0-584a-40ce-bfab-5f4290028cb9" alt="Judi Guard Logo" />
+</p>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-yellow?logo=javascript&logoColor=black)](https://www.javascript.com/)
@@ -10,146 +12,114 @@ _<p align="center">![LogoWithSloganBgBlack](https://github.com/user-attachments/
 [![React](https://img.shields.io/badge/React-18.x-blue?logo=react)](https://reactjs.org/)
 [![Express.js](https://img.shields.io/badge/Express.js-4.x-lightgrey?logo=express)](https://expressjs.com/)
 
-Judi Guard adalah aplikasi web berbasis AI yang dirancang untuk mendeteksi dan menganalisis komentar yang mengandung unsur judi online pada platform seperti YouTube. Dengan teknologi cerdas, Judi Guard memberikan solusi cepat, akurat, dan efisien untuk membantu kreator konten dan manajer komunitas menjaga ruang interaksi mereka tetap bersih dan aman dari konten berbahaya.
-
 ---
 
-## 📋 Daftar Isi
+## 📌 Tentang Judi Guard
 
-- [Fitur Utama](#-fitur-utama)
-- [Arsitektur & Teknologi](#-arsitektur--teknologi)
-- [Struktur Proyek](#-struktur-proyek)
-- [Panduan Memulai](#-panduan-memulai)
-- [Instalasi](#-instalasi)
-- [Menjalankan Proyek](#-menjalankan-proyek)
-- [Kontribusi](#-kontribusi)
-- [Lisensi](#-lisensi)
+**Judi Guard** adalah aplikasi web berbasis AI yang dirancang untuk membantu kreator konten dan pengelola channel YouTube dalam **mendeteksi, menganalisis, dan memoderasi komentar spam judi online** secara lebih efektif.
+
+Aplikasi ini dikembangkan berdasarkan **Product Requirements Document (PRD)** dan hasil penelitian skripsi dengan pendekatan **Behaviour Driven Development (BDD)**, sehingga pengembangan sistem berfokus pada perilaku dan kebutuhan pengguna nyata.
 
 ---
 
 ## ✨ Fitur Utama
 
-- **🕵️ Analisis Komentar Berbasis AI:** Menggunakan model machine learning untuk mengidentifikasi pola dan kata kunci terkait judi online dengan akurasi tinggi.
-- **🔗 Integrasi YouTube API:** Terhubung langsung dengan YouTube Data API v3 untuk mengambil data komentar dari video secara _real-time_.
-- **👤 Otentikasi Pengguna Aman:** Sistem login dan registrasi menggunakan OAuth untuk memastikan keamanan data pengguna.
-- **📊 Dashboard Interaktif:** Antarmuka yang ramah pengguna untuk memvisualisasikan hasil analisis, melacak komentar, dan mengelola video yang dipantau.
-- **⚙️ Penanganan Error:** Dirancang dengan sistem penanganan error yang tangguh untuk memastikan pengalaman pengguna yang mulus.
+- 🕵️ **Deteksi Komentar Spam Judi Otomatis**
+- 📊 **Skor Kepercayaan & Tingkat Risiko Komentar**
+- 🧠 **Alasan / Indikator Deteksi yang Transparan**
+- 🛠️ **Moderasi Komentar (Individual & Massal)**
+- 📋 **Riwayat & Laporan Moderasi**
+- ⚙️ **Whitelist Akun & Blacklist Kata/Pola**
+- 🔗 **Integrasi YouTube Data API v3**
+
+---
+
+## 🧪 Behaviour Driven Development (BDD)
+
+Pengembangan Judi Guard menggunakan pendekatan **Behaviour Driven Development (BDD)** untuk memastikan bahwa sistem yang dibangun benar-benar sesuai dengan kebutuhan pengguna.
+
+### Peran BDD dalam Proyek Ini
+
+- User stories dan skenario Gherkin disusun berdasarkan PRD
+- Perilaku sistem menjadi fokus utama pengembangan
+- Pengujian dilakukan berdasarkan **perilaku**, bukan sekadar fungsi teknis
+
+### Automated Testing (End-to-End)
+
+- **Tool:** Cypress
+- **Lokasi:** Root repository (`/cypress`)
+- **Waktu eksekusi:** Setelah seluruh fitur utama terimplementasi
+- **Cakupan:** End-to-End (Frontend + Backend)
+
+Pendekatan ini memungkinkan pengujian bertindak sebagai **Automated User Acceptance Testing (UAT)** yang merepresentasikan perilaku pengguna nyata.
 
 ---
 
 ## 🛠️ Arsitektur & Teknologi
 
-Proyek ini menggunakan arsitektur _monorepo_ yang terpisah antara backend dan frontend untuk skalabilitas dan pemeliharaan yang lebih baik.
+Proyek ini menggunakan pendekatan **monorepo**, dengan pemisahan jelas antara frontend, backend, dan testing.
 
-| Bagian       | Teknologi                                                                                               |
-| :----------- | :------------------------------------------------------------------------------------------------------ |
-| **Backend**  | Node.js, Express, MongoDB (dengan Mongoose), JSON Web Tokens (JWT), YouTube Data API v3, Mailgun, Axios |
-| **Frontend** | React (dengan Vite), React Router, Tailwind CSS, Axios, ESLint                                          |
-| **Tools**    | Git, NPM, Nodemon, Markdown                                                                             |
+| Layer         | Teknologi                   |
+| ------------- | --------------------------- |
+| Frontend      | React + Vite, Tailwind CSS  |
+| Backend       | Node.js, Express, MongoDB   |
+| AI / Analisis | ML API (integrated service) |
+| Testing       | Cypress (BDD – E2E)         |
+| External API  | YouTube Data API v3         |
 
 ---
 
 ## 📁 Struktur Proyek
 
-```
-judi-guard-app/
-|---packages/
-    ├── backend/
-    │   ├── ... (File-file backend)
-    │   └── README.md  (Panduan khusus backend)
-    ├── frontend/
-    │   ├── ... (File-file frontend)
-    │   └── README.md  (Panduan khusus frontend)
-├── .gitignore
+```bash
+judi-guard/
+├── backend/            # Backend service (Express + MongoDB)
+├── frontend/           # Frontend app (React)
+├── cypress/            # BDD End-to-End Testing
+├── cypress.config.js
 ├── LICENSE
-└── README.md      (Anda sedang melihat file ini)
+└── README.md           # Dokumentasi utama (file ini)
 ```
 
 ---
 
-## 🚀 Panduan Memulai
-
-Untuk menjalankan proyek ini di lingkungan lokal Anda, ikuti langkah-langkah di bawah ini.
+## 🚀 Menjalankan Proyek (Development)
 
 ### Prasyarat
 
-- [Node.js](https://nodejs.org/en/) (v18 atau lebih tinggi direkomendasikan)
-- [npm](https://www.npmjs.com/) (biasanya terinstal bersama Node.js)
-- [Git](https://git-scm.com/)
+```bash
+Node.js ≥ 18.x
+
+npm
+
+Git
+```
 
 ---
 
-## ⚙️ Instalasi
+### Setup Backend
 
-1.  **Clone repositori ini:**
+```bash
+cd backend
+npm install
+npm run dev
+```
 
-    ```sh
-    git clone [https://github.com/kamaldev10/judi-guard-app.git](https://github.com/kamaldev10/judi-guard-app.git)
-    ```
+### Setup Frontend
 
-2.  **Masuk ke direktori proyek:**
-
-    ```sh
-    cd judi-guard-app
-    ```
-
-3.  **Setup Backend:**
-    - Masuk ke direktori backend, instal dependensi, dan konfigurasikan environment variables.
-    - Untuk instruksi lebih detail, lihat file `backend/README.md`.
-
-    ```sh
-    cd backend
-    npm install
-    ```
-
-4.  **Setup Frontend:**
-    - Kembali ke direktori utama, lalu masuk ke direktori frontend, instal dependensi, dan konfigurasikan environment variables.
-    - Untuk instruksi lebih detail, lihat file `frontend/README.md`.
-    ```sh
-    cd ../frontend
-    npm install
-    ```
-
----
-
-## ▶️ Menjalankan Proyek
-
-Anda perlu menjalankan **dua terminal terpisah** secara bersamaan: satu untuk backend dan satu untuk frontend.
-
-1.  **Terminal 1: Jalankan Server Backend**
-
-    ```sh
-    # Dari direktori judi-guard-app/backend
-    npm run dev
-    ```
-
-    Server backend akan berjalan di `http://localhost:5000` (atau port yang Anda tentukan di `.env`).
-
-2.  **Terminal 2: Jalankan Aplikasi Frontend**
-    ```sh
-    # Dari direktori judi-guard-app/frontend
-    npm run dev
-    ```
-    Aplikasi React akan berjalan di `http://localhost:5173` (atau port lain yang tersedia).
-
----
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
 ## 🤝 Kontribusi
 
-Kontribusi Anda sangat kami hargai! Jika Anda ingin berkontribusi, silakan lakukan _fork_ pada repositori ini dan buat _pull request_ dengan perubahan yang Anda usulkan.
-
-1.  Fork the Project
-2.  Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3.  Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4.  Push to the Branch (`git push origin feature/AmazingFeature`)
-5.  Open a Pull Request
-
----
+Kontribusi sangat terbuka untuk pengembangan lebih lanjut.
+Silakan fork repository ini dan ajukan pull request.
 
 ## 📄 Lisensi
 
-Didistribusikan di bawah Lisensi MIT. Lihat `LICENSE` untuk informasi lebih lanjut.
+Project ini menggunakan MIT License.
 
----
-
-<p align="center">Dibuat dengan ❤️ oleh Kamaldev10 and team</p>
+<p align="center"> Dibuat dengan ❤️ oleh Kamaldev10 </p>

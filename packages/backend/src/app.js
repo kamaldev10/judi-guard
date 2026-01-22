@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
+const cookieParser = require("cookie-parser");
 const mainRouter = require("./api/routes");
 const errorHandler = require("./api/middlewares/errorHandler");
 const { NotFoundError } = require("./utils/errors");
@@ -35,12 +36,13 @@ app.use(cors(corsOptions));
 app.use(helmet());
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
+app.use(cookieParser());
 
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 
-app.use("/api/v1", mainRouter);
+app.use("/api", mainRouter);
 
 app.get("/", (req, res) => {
   res.send("Server Judi Guard is alive! 🚀");

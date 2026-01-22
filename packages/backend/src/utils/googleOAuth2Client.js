@@ -2,12 +2,16 @@
 const { google } = require("googleapis");
 const config = require("../config/environment");
 
-const createOAuth2Client = () => {
-  return new google.auth.OAuth2(
-    config.youtube.clientId,
-    config.youtube.clientSecret,
-    config.youtube.redirectUri
+// Validasi Env Variables (Opsional, untuk debugging)
+if (!config.youtube.clientId || !config.youtube.clientSecret) {
+  console.error(
+    "ERROR: Google Client ID or Secret is missing in .env configuration",
   );
-};
+}
 
-module.exports = { createOAuth2Client };
+const googleOAuth2Client = new google.auth.OAuth2(
+  config.youtube.clientId,
+  config.youtube.clientSecret,
+);
+
+module.exports = googleOAuth2Client;

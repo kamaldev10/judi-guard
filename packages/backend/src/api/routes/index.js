@@ -5,6 +5,7 @@ const userRoutes = require("./user.routes");
 const videoAnalysisRoutes = require("./videoAnalysis.routes");
 const textPredictRoutes = require("./textPredict.routes");
 const studioRoutes = require("./studio.routes");
+const channelRoutes = require("./channel.routes");
 
 const router = express.Router();
 
@@ -20,5 +21,6 @@ router.use("/users", userRoutes);
 router.use("/analysis", videoAnalysisRoutes);
 router.use("/studio", studioRoutes);
 router.use("/text", textPredictRoutes);
+router.use("/videos", channelRoutes);
 
 module.exports = router;

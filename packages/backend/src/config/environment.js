@@ -19,6 +19,7 @@ const config = {
     clientId: process.env.YOUTUBE_CLIENT_ID,
     clientSecret: process.env.YOUTUBE_CLIENT_SECRET,
     redirectUri: process.env.YOUTUBE_REDIRECT_URI,
+    guestRedirectUri: process.env.GUEST_YOUTUBE_REDIRECT_URI,
     apiKey: process.env.YOUTUBE_API_KEY,
   },
   // Konfigurasi Email umum (jika masih digunakan untuk SMTP lain)
@@ -58,7 +59,7 @@ if (
   (!config.mailgun.apiKey || !config.mailgun.domain)
 ) {
   console.warn(
-    "WARNING: Mailgun API Key or Domain is not defined for production. Email sending might fail or use fallback."
+    "WARNING: Mailgun API Key or Domain is not defined for production. Email sending might fail or use fallback.",
   );
 }
 
@@ -78,7 +79,7 @@ if (
   !config.youtube.redirectUri
 ) {
   console.warn(
-    "WARNING: YouTube OAuth Client ID, Secret, or Redirect URI is not defined in .env file. YouTube integration might fail."
+    "WARNING: YouTube OAuth Client ID, Secret, or Redirect URI is not defined in .env file. YouTube integration might fail.",
   );
   process.exit(1);
 }

@@ -1,11 +1,10 @@
-// src/utils/errors.js
-
+//* src/utils/errors.js
 class AppError extends Error {
   constructor(message, statusCode) {
     super(message);
     this.statusCode = statusCode;
     this.status = `${statusCode}`.startsWith("4") ? "fail" : "error";
-    this.isOperational = true; // Untuk membedakan error operasional dari bug pemrograman
+    this.isOperational = true; // Pembeda error operasional vs bug code
     Error.captureStackTrace(this, this.constructor);
   }
 }
@@ -34,15 +33,15 @@ class ForbiddenError extends AppError {
   }
 }
 
-/**
- * Error class spesifik untuk menandakan bahwa kuota API telah terlampaui.
- * Menggunakan status code 429 Too Many Requests.
- */
 class QuotaExceededError extends AppError {
-  constructor(
-    message = "Kuota API harian telah terlampaui. Silahkan lanjutkan esok atau update quota"
-  ) {
+  constructor(message = "API Quota exceeded. Please try again later.") {
     super(message, 429);
+  }
+}
+
+class ValidationError extends AppError {
+  constructor(message = "Validation Error") {
+    super(message, 422);
   }
 }
 
@@ -53,4 +52,5 @@ module.exports = {
   UnauthorizedError,
   ForbiddenError,
   QuotaExceededError,
+  ValidationError,
 };

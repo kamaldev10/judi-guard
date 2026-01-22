@@ -1,23 +1,21 @@
-// src/api/services/youtube.service.js
+//* src/api/services/youtube.service.js
 const { google } = require("googleapis");
-const User = require("../models/User.model"); // Untuk mengambil token user
-const { createOAuth2Client } = require("../../utils/googleOAuth2Client"); // Utilitas OAuth2 client kita
+const User = require("../models/User.model");
+const googleOAuth2Client = require("../../utils/googleOAuth2Client");
 const {
   AppError,
   UnauthorizedError,
   NotFoundError,
   ForbiddenError,
-} = require("../../utils/errors"); // Utilitas error
-const config = require("../../config/environment"); // Konfigurasi environment
+} = require("../../utils/errors");
+const config = require("../../config/environment");
 const YOUTUBE_SCOPE = [
-  // Perbaiki nama variabel jika ini khusus untuk YouTube
-  // "https://www.googleapis.com/auth/userinfo.profile",
-  // "https://www.googleapis.com/auth/userinfo.email",
+  "https://www.googleapis.com/auth/userinfo.profile",
+  "https://www.googleapis.com/auth/userinfo.email",
   "https://www.googleapis.com/auth/youtube.force-ssl",
   // "https://www.googleapis.com/auth/youtube.readonly", // Alternatif jika hanya perlu baca
-  // "https://www.googleapis.com/auth/youtube", // Akses lebih luas jika diperlukan (misal, hapus komentar)
+  "https://www.googleapis.com/auth/youtube",
 ];
-// Tambahkan mutex untuk prevent race condition
 const tokenMutex = new Map();
 
 /**
@@ -29,12 +27,12 @@ const tokenMutex = new Map();
  */
 const getAuthenticatedYouTubeClient = async (userId) => {
   const user = await User.findById(userId).select(
-    "+youtubeAccessToken +youtubeRefreshToken +youtubeTokenExpiresAt"
+    "+youtubeAccessToken +youtubeRefreshToken +youtubeTokenExpiresAt",
   );
 
   if (!user || !user.youtubeAccessToken) {
     throw new UnauthorizedError(
-      "Pengguna belum menghubungkan akun YouTube atau token akses tidak ditemukan. Silakan hubungkan akun YouTube Anda melalui profil."
+      "Pengguna belum menghubungkan akun YouTube atau token akses tidak ditemukan. Silakan hubungkan akun YouTube Anda melalui profil.",
     );
   }
 
@@ -48,9 +46,6 @@ const getAuthenticatedYouTubeClient = async (userId) => {
       : null,
   });
 
-  // Cek apakah token perlu di-refresh (misalnya, jika kurang dari 5 menit lagi akan kedaluwarsa)
-  // Library googleapis biasanya akan mencoba refresh otomatis jika 'expiry_date' sudah lewat saat request dibuat,
-  // asalkan refresh_token ada. Namun, kita bisa proaktif.
   const fiveMinutesInMs = 5 * 60 * 1000;
   const needsRefresh =
     user.youtubeTokenExpiresAt &&
@@ -63,7 +58,6 @@ const getAuthenticatedYouTubeClient = async (userId) => {
         new Promise(async (resolve, reject) => {
           try {
             const { credentials } = await oAuth2Client.refreshAccessToken();
-            // Update user dan credentials
             console.info(credentials.scope);
             resolve(credentials);
           } catch (error) {
@@ -71,22 +65,18 @@ const getAuthenticatedYouTubeClient = async (userId) => {
           } finally {
             tokenMutex.delete(userId);
           }
-        })
+        }),
       );
     }
 
     try {
       console.log(
-        `[YouTubeService] Refreshing YouTube access token for user ${userId}...`
+        `[YouTubeService] Refreshing YouTube access token for user ${userId}...`,
       );
-      // Minta token baru menggunakan refresh token
       const credentials = await tokenMutex.get(userId);
       oAuth2Client.setCredentials(credentials);
       console.log(credentials.scope);
-      // Update token di database user
       user.youtubeAccessToken = credentials.access_token;
-      // Google mungkin atau mungkin tidak mengirim refresh_token baru saat refresh.
-      // Jika ada, update. Jika tidak, refresh token lama tetap valid.
       if (credentials.refresh_token) {
         user.youtubeRefreshToken = credentials.refresh_token;
       }
@@ -95,33 +85,293 @@ const getAuthenticatedYouTubeClient = async (userId) => {
         : null;
       await user.save();
       console.log(
-        `[YouTubeService] YouTube access token refreshed for user ${userId}. New expiry: ${user.youtubeTokenExpiresAt}`
+        `[YouTubeService] YouTube access token refreshed for user ${userId}. New expiry: ${user.youtubeTokenExpiresAt}`,
       );
     } catch (refreshError) {
       console.error(
         `[YouTubeService] Gagal me-refresh YouTube access token untuk user ${userId}:`,
         refreshError.response
           ? refreshError.response.data
-          : refreshError.message
+          : refreshError.message,
       );
-      // Jika refresh token gagal (misalnya, akses dicabut oleh pengguna di Google),
-      // kita harus menghapus token yang tidak valid dan meminta pengguna untuk re-autentikasi.
       user.youtubeAccessToken = undefined;
       user.youtubeRefreshToken = undefined;
       user.youtubeTokenExpiresAt = undefined;
       await user.save();
       throw new UnauthorizedError(
-        "Gagal memperbarui sesi YouTube Anda. Kemungkinan akses telah dicabut. Silakan hubungkan kembali akun YouTube Anda."
+        "Gagal memperbarui sesi YouTube Anda. Kemungkinan akses telah dicabut. Silakan hubungkan kembali akun YouTube Anda.",
       );
     }
   }
 
   const info = await oAuth2Client.getTokenInfo(
-    oAuth2Client.credentials.access_token
+    oAuth2Client.credentials.access_token,
   );
   console.log(info.scopes);
 
   return google.youtube({ version: "v3", auth: oAuth2Client });
+};
+
+/**
+ * Helper Private: Membuat Instance Google Client yang Terautentikasi.
+ * Penting: Kita membuat instance baru setiap kali fungsi dipanggil (Thread-Safe),
+ * alih-alih menggunakan instance global yang bisa menyebabkan konflik token antar user.
+ */
+const getClient = (tokens) => {
+  const client = new google.auth.OAuth2(
+    config.youtube.clientId,
+    config.youtube.clientSecret,
+    config.youtube.guestRedirectUri,
+  );
+
+  // Set credentials yang didapat dari Hybrid Auth (Cookie/DB)
+  client.setCredentials(tokens);
+
+  return google.youtube({ version: "v3", auth: client });
+};
+
+/**
+ * Helper: Ambil Identitas Channel (ID, Nama, Foto)
+ * Dipanggil CUMA SEKALI saat login/callback untuk disimpan di session.
+ */
+const getChannelIdentity = async (tokens) => {
+  try {
+    const youtube = getClient(tokens);
+    
+    // Ambil snippet (Nama, Foto) dan ID
+    const response = await youtube.channels.list({
+      part: 'snippet,id', 
+      mine: true,
+    });
+
+    if (!response.data.items || response.data.items.length === 0) {
+      throw new AppError('Channel YouTube tidak ditemukan.', 404);
+    }
+
+    const item = response.data.items[0];
+    
+    return {
+      id: item.id,
+      title: item.snippet.title,
+      thumbnail: item.snippet.thumbnails.default?.url,
+      customUrl: item.snippet.customUrl
+    };
+  } catch (error) {
+    console.error('[YouTube Service] Error getting identity:', error.message);
+    throw new AppError('Gagal mengambil identitas channel.', 500);
+  }
+};
+
+/**
+ * Mengambil Daftar Video Channel + Statistik (View, Like, Comment Count)
+ * Cost: 3 Unit per 50 Video (Sangat Hemat)
+ */
+const getChannelVideos = async (tokens, pageToken = "") => {
+  try {
+    const youtube = getClient(tokens);
+
+    // 1. Dapatkan ID Playlist "Uploads"
+    // Cost: 1 Unit
+    const channelRes = await youtube.channels.list({
+      part: "contentDetails",
+      mine: true,
+    });
+
+    if (!channelRes.data.items?.length) {
+      throw new AppError("Channel YouTube tidak ditemukan.", 404);
+    }
+
+    const uploadsPlaylistId =
+      channelRes.data.items[0].contentDetails.relatedPlaylists.uploads;
+
+    // 2. Ambil ID video dari playlist (Max 50)
+    // Cost: 1 Unit
+    const playlistRes = await youtube.playlistItems.list({
+      part: "contentDetails", // Kita cuma butuh ID di sini
+      playlistId: uploadsPlaylistId,
+      maxResults: 50,
+      pageToken: pageToken,
+    });
+
+    const videoItems = playlistRes.data.items;
+
+    if (!videoItems || videoItems.length === 0) {
+      return {
+        videos: [],
+        nextPageToken: null,
+        totalResults: 0,
+      };
+    }
+
+    // Ekstrak semua Video ID menjadi string koma (id1,id2,id3...)
+    const videoIds = videoItems
+      .map((item) => item.contentDetails.videoId)
+      .join(",");
+
+    // 3. Ambil Detail Statistik untuk 50 video tersebut sekaligus
+    // Cost: 1 Unit
+    const videosRes = await youtube.videos.list({
+      part: "snippet,statistics", // Ambil Snippet (Judul/Gbr) + Statistics (Angka)
+      id: videoIds,
+    });
+
+    // 4. Transformasi Data Lengkap
+    const videos = videosRes.data.items.map((item) => ({
+      id: item.id,
+      title: item.snippet.title,
+      thumbnail:
+        item.snippet.thumbnails.medium?.url ||
+        item.snippet.thumbnails.default?.url,
+      description: item.snippet.description,
+      publishedAt: item.snippet.publishedAt,
+      channelTitle: item.snippet.channelTitle,
+      statistics: {
+        viewCount: item.statistics.viewCount || "0",
+        likeCount: item.statistics.likeCount || "0",
+        commentCount: item.statistics.commentCount || "0",
+      },
+    }));
+
+    return {
+      videos,
+      nextPageToken: playlistRes.data.nextPageToken,
+      totalResults: playlistRes.data.pageInfo.totalResults,
+    };
+  } catch (error) {
+    console.error("[YouTube Service] Error fetching videos:", error.message);
+    if (error.code === 401 || error.message.includes("invalid_grant")) {
+      throw new AppError(
+        "Sesi YouTube kadaluarsa. Silakan hubungkan ulang.",
+        401,
+      );
+    }
+    throw new AppError(`Gagal mengambil video: ${error.message}`, 502);
+  }
+};
+
+/**
+ * Mengambil Komentar (Threads & Replies) dari Video Tertentu.
+ * * @param {Object} tokens - Token akses OAuth2
+ * @param {String} videoId - ID Video YouTube
+ * @param {String} pageToken - Token halaman
+ */
+const getVideoComments = async (tokens, videoId, pageToken = "") => {
+  try {
+    const youtube = getClient(tokens);
+
+    // Cost: 1 Unit
+    const response = await youtube.commentThreads.list({
+      part: "snippet,replies",
+      videoId: videoId,
+      maxResults: 50, // Batch maksimal
+      textFormat: "plainText",
+      pageToken: pageToken,
+      order: "relevance",
+    });
+
+    // Transformasi Data
+    const comments = response.data.items.map((item) => {
+      const topComment = item.snippet.topLevelComment.snippet;
+      const topId = item.snippet.topLevelComment.id;
+
+      return {
+        threadId: item.id,
+        videoId: item.snippet.videoId,
+        totalReplyCount: item.snippet.totalReplyCount,
+        isPublic: item.snippet.isPublic,
+
+        // Komentar Induk (Top Level)
+        topLevelComment: {
+          id: topId,
+          text: topComment.textDisplay,
+          author: {
+            name: topComment.authorDisplayName,
+            avatar: topComment.authorProfileImageUrl,
+            channelId: topComment.authorChannelId?.value,
+          },
+          likeCount: topComment.likeCount,
+          publishedAt: topComment.publishedAt,
+          updatedAt: topComment.updatedAt,
+        },
+
+        // Balasan (Replies) - YouTube otomatis menyertakan beberapa reply teratas
+        replies:
+          item.replies?.comments?.map((reply) => ({
+            id: reply.id,
+            text: reply.snippet.textDisplay,
+            author: {
+              name: reply.snippet.authorDisplayName,
+              avatar: reply.snippet.authorProfileImageUrl,
+              channelId: reply.snippet.authorChannelId?.value,
+            },
+            likeCount: reply.snippet.likeCount,
+            publishedAt: reply.snippet.publishedAt,
+          })) || [],
+      };
+    });
+
+    return {
+      comments,
+      nextPageToken: response.data.nextPageToken,
+    };
+  } catch (error) {
+    console.error("[YouTube Service] Error fetching comments:", error.message);
+    if (error.code === 403) {
+      throw new AppError(
+        "Komentar dinonaktifkan pada video ini atau kuota habis.",
+        403,
+      );
+    }
+    throw new AppError(`Gagal mengambil komentar: ${error.message}`, 502);
+  }
+};
+
+/**
+ * Mengambil satu video berdasarkan ID.
+ * Digunakan untuk fitur Search by URL.
+ */
+const getVideoById = async (tokens, videoId) => {
+  try {
+    const youtube = getClient(tokens);
+
+    // Cost: 1 Unit
+    const response = await youtube.videos.list({
+      part: "snippet,statistics,status",
+      id: videoId,
+    });
+
+    if (!response.data.items || response.data.items.length === 0) {
+      throw new AppError("Video tidak ditemukan atau bersifat privat.", 404);
+    }
+
+    const item = response.data.items[0];
+
+    // PENTING: Validasi Kepemilikan (Optional tapi Recommended)
+    // Kita cek apakah channelId video ini sama dengan channelId user yang login?
+    // Jika tidak, kita bisa beri flag "isOwner: false" agar frontend mematikan tombol hapus.
+
+    // Untuk saat ini, kita return datanya saja.
+    return {
+      id: item.id,
+      title: item.snippet.title,
+      thumbnail:
+        item.snippet.thumbnails.medium?.url ||
+        item.snippet.thumbnails.default?.url,
+      description: item.snippet.description,
+      publishedAt: item.snippet.publishedAt,
+      channelId: item.snippet.channelId,
+      channelTitle: item.snippet.channelTitle,
+      statistics: {
+        viewCount: item.statistics.viewCount || "0",
+        likeCount: item.statistics.likeCount || "0",
+        commentCount: item.statistics.commentCount || "0",
+      },
+    };
+  } catch (error) {
+    if (error.statusCode === 404) throw error;
+    console.error("[YouTube Service] Error searching video:", error.message);
+    throw new AppError(`Gagal mencari video: ${error.message}`, 502);
+  }
 };
 
 /**
@@ -139,40 +389,38 @@ const getVideoDetails = async (videoId, { youtubeClient, apiKey }) => {
 
   if (!authClient) {
     if (apiKey) {
-      // Buat client sementara dengan API Key (hanya untuk data publik, tidak terautentikasi sebagai user)
       authClient = google.youtube({ version: "v3", auth: apiKey });
       console.log(
-        `[YouTubeService] Mengambil detail video ${videoId} menggunakan API Key.`
+        `[YouTubeService] Mengambil detail video ${videoId} menggunakan API Key.`,
       );
     } else {
       throw new AppError(
         "Diperlukan youtubeClient (terautentikasi) atau apiKey untuk mengambil detail video.",
-        500
+        500,
       );
     }
   } else {
     console.log(
-      `[YouTubeService] Mengambil detail video ${videoId} menggunakan client terautentikasi.`
+      `[YouTubeService] Mengambil detail video ${videoId} menggunakan client terautentikasi.`,
     );
   }
 
   try {
     const response = await authClient.videos.list({
-      part: "snippet,contentDetails,statistics", // Ambil snippet (title, description), contentDetails (duration), statistics (viewCount, likeCount)
+      part: "snippet,contentDetails,statistics",
       id: videoId,
     });
 
     if (response.data.items && response.data.items.length > 0) {
       return response.data.items[0];
     }
-    // Jika items kosong, berarti video tidak ditemukan atau tidak dapat diakses
     throw new NotFoundError(
-      `Video dengan ID ${videoId} tidak ditemukan atau tidak dapat diakses.`
+      `Video dengan ID ${videoId} tidak ditemukan atau tidak dapat diakses.`,
     );
   } catch (error) {
     console.error(
       `[YouTubeService] Error mengambil detail video ${videoId}:`,
-      error.response ? error.response.data : error.message
+      error.response ? error.response.data : error.message,
     );
     if (error instanceof NotFoundError) throw error; // Teruskan error NotFoundError
 
@@ -183,19 +431,18 @@ const getVideoDetails = async (videoId, { youtubeClient, apiKey }) => {
     ) {
       throw new AppError(
         "Kuota YouTube API telah terlampaui. Silahkan coba lagi esok hari",
-        429
+        429,
       ); // Too Many Requests
     }
 
     if (error.code === 404) {
-      // Error dari Google API juga bisa 404
       throw new NotFoundError(
-        `Video dengan ID ${videoId} tidak ditemukan (API Error).`
+        `Video dengan ID ${videoId} tidak ditemukan (API Error).`,
       );
     }
     throw new AppError(
       `Gagal mengambil detail video: ${error.message}`,
-      error.code && typeof error.code === "number" ? error.code : 500
+      error.code && typeof error.code === "number" ? error.code : 500,
     );
   }
 };
@@ -205,47 +452,46 @@ const fetchCommentsForVideo = async (
   userId,
   { youtubeClient },
   maxResultsPerPage = 100,
-  limitTotalResults = 1000
+  limitTotalResults = 1000,
 ) => {
   if (!youtubeClient) {
     throw new AppError(
       "Diperlukan youtubeClient yang terautentikasi untuk mengambil komentar.",
-      500
+      500,
     );
   }
 
-  let allCommentThreads = []; // Akan menyimpan objek CommentThread utuh
+  let allCommentThreads = [];
   let nextPageToken = null;
   let fetchedCount = 0;
   const actualMaxPerPage = Math.min(maxResultsPerPage, 100);
 
   console.log(
-    `[YouTubeService] Mulai mengambil komentar (threads) untuk video ID: ${videoId}. UserID: ${userId}. Target: ${limitTotalResults} komentar.`
+    `[YouTubeService] Mulai mengambil komentar (threads) untuk video ID: ${videoId}. UserID: ${userId}. Target: ${limitTotalResults} komentar.`,
   );
 
   try {
     do {
       const resultsToFetchThisPage = Math.min(
         actualMaxPerPage,
-        limitTotalResults - fetchedCount
+        limitTotalResults - fetchedCount,
       );
       if (resultsToFetchThisPage <= 0) break;
 
       console.log(
-        `[YouTubeService] Mengambil halaman commentThreads... PageToken: ${nextPageToken}, MaxResults: ${resultsToFetchThisPage}`
+        `[YouTubeService] Mengambil halaman commentThreads... PageToken: ${nextPageToken}, MaxResults: ${resultsToFetchThisPage}`,
       );
       const response = await youtubeClient.commentThreads.list({
-        part: "snippet,replies", // Meminta snippet dan replies
+        part: "snippet,replies",
         videoId: videoId,
         maxResults: resultsToFetchThisPage,
         pageToken: nextPageToken,
         textFormat: "plainText",
-        order: "time", // Diubah ke 'time' untuk potensi hasil yang lebih lengkap/konsisten
+        order: "time",
       });
 
       if (response.data.items && response.data.items.length > 0) {
         response.data.items.forEach((threadItem) => {
-          // Validasi dasar untuk CommentThread dan topLevelComment
           if (
             threadItem &&
             threadItem.snippet &&
@@ -253,41 +499,32 @@ const fetchCommentsForVideo = async (
             threadItem.snippet.topLevelComment.id &&
             threadItem.snippet.topLevelComment.snippet
           ) {
-            // Memproses balasan yang mungkin sudah ada di threadItem.replies.comments
             const initialReplies = [];
             if (threadItem.replies && threadItem.replies.comments) {
               threadItem.replies.comments = threadItem.replies.comments.filter(
-                (reply) => reply && reply.id && reply.snippet
+                (reply) => reply && reply.id && reply.snippet,
               );
 
               threadItem.replies.comments.forEach((replyComment) => {
-                // Validasi dasar untuk balasan
                 if (replyComment && replyComment.id && replyComment.snippet) {
                   initialReplies.push({
-                    // Simpan hanya data yang relevan dari balasan
                     id: replyComment.id,
                     textDisplay: replyComment.snippet.textDisplay,
                     authorDisplayName: replyComment.snippet.authorDisplayName,
                     publishedAt: replyComment.snippet.publishedAt,
                     likeCount: replyComment.snippet.likeCount,
                     parentId: replyComment.snippet.parentId, // Seharusnya ID dari topLevelComment
-                    // ... field lain yang mungkin Anda butuhkan dari snippet balasan
                   });
                 }
               });
             }
 
-            // Menambahkan struktur yang dimodifikasi ke hasil
-            // Anda bisa memilih untuk menyimpan threadItem utuh, atau memformatnya di sini.
-            // Untuk konsistensi dengan cara Anda memproses komentar, mungkin lebih baik
-            // service videoAnalysis.service.js yang mengekstrak topLevelComment dan initialReplies ini.
-            // Untuk saat ini, kita simpan threadItem utuh, service lain yang akan memproses.
-            allCommentThreads.push(threadItem); // Menyimpan objek CommentThread utuh
+            allCommentThreads.push(threadItem);
             fetchedCount++;
           } else {
             console.warn(
               `[YouTubeService] Item commentThread tidak memiliki struktur yang diharapkan, dilewati:`,
-              JSON.stringify(threadItem, null, 2)
+              JSON.stringify(threadItem, null, 2),
             );
           }
         });
@@ -295,36 +532,32 @@ const fetchCommentsForVideo = async (
 
       nextPageToken = response.data.nextPageToken;
       console.log(
-        `[YouTubeService] Fetched ${fetchedCount} comment threads so far for video ${videoId}. Next page: ${!!nextPageToken}`
+        `[YouTubeService] Fetched ${fetchedCount} comment threads so far for video ${videoId}. Next page: ${!!nextPageToken}`,
       );
     } while (nextPageToken && fetchedCount < limitTotalResults);
 
     console.log(
-      `[YouTubeService] Total ${allCommentThreads.length} comment threads diambil untuk video ID: ${videoId}`
+      `[YouTubeService] Total ${allCommentThreads.length} comment threads diambil untuk video ID: ${videoId}`,
     );
-    return allCommentThreads; // Mengembalikan array objek CommentThread utuh
+    return allCommentThreads;
   } catch (error) {
-    // Cek terlebih dahulu apakah ini error karena kuota habis.
     const isQuotaError =
       error.response?.data?.error?.errors?.[0]?.reason === "quotaExceeded" ||
       error.message?.toLowerCase().includes("quotaexceeded");
 
     if (isQuotaError) {
-      // Log error di backend
       console.error(
-        `[YouTubeService] QUOTA EXCEEDED saat mencoba mengakses resource untuk video ${videoId}. UserID: ${userId}.`
+        `[YouTubeService] QUOTA EXCEEDED saat mencoba mengakses resource untuk video ${videoId}. UserID: ${userId}.`,
       );
 
-      // --- PERBAIKAN: Gunakan error class yang spesifik ---
       throw new QuotaExceededError(
-        "Kuota harian YouTube API telah habis. Silakan coba lagi besok."
+        "Kuota harian YouTube API telah habis. Silakan coba lagi besok.",
       );
     }
 
-    // ... (blok catch error Anda yang sudah baik tetap di sini) ...
     console.error(
       `[YouTubeService] Error mengambil commentThreads untuk video ${videoId} (UserID: ${userId}):`,
-      error.response ? error.response.data : error.message
+      error.response ? error.response.data : error.message,
     );
 
     const googleApiErrorMessage =
@@ -339,8 +572,8 @@ const fetchCommentsForVideo = async (
               code: error.code,
             },
           null,
-          2
-        )
+          2,
+        ),
       );
 
       if (
@@ -357,68 +590,15 @@ const fetchCommentsForVideo = async (
       }
       throw new AppError(
         `Akses ditolak untuk mengambil komentar: ${googleApiErrorMessage}`,
-        403
+        403,
       );
     }
-    // ... sisa penanganan error ...
     throw new AppError(
       `Gagal mengambil komentar: ${googleApiErrorMessage}`,
-      error.code && typeof error.code === "number" ? error.code : 500
+      error.code && typeof error.code === "number" ? error.code : 500,
     );
   }
 };
-
-// const deleteYoutubeComment = async (youtubeCommentId, { youtubeClient }) => {
-//   try {
-//     // 1. Verifikasi komentar ada
-//     const commentRes = await youtubeClient.comments.list({
-//       id: youtubeCommentId,
-//       part: "snippet,id",
-//     });
-
-//     if (commentRes.data.items.length === 0) {
-//       throw { code: 404, message: "COMMENT_NOT_FOUND" };
-//     }
-
-//     // 2. Verifikasi kepemilikan
-//     const myChannel = await youtubeClient.channels.list({
-//       mine: true,
-//       part: "id",
-//     });
-
-//     const comment = commentRes.data.items[0];
-//     if (comment.snippet.authorChannelId.value !== myChannel.data.items[0].id) {
-//       throw {
-//         code: 403,
-//         message: "NOT_COMMENT_OWNER",
-//         details: {
-//           yourChannelId: myChannel.data.items[0].id,
-//           commentAuthorId: comment.snippet.authorChannelId.value,
-//         },
-//       };
-//     }
-//     console.log(
-//       "[YOTUBE_SERVICE]Channel ID yang terautentikasi:",
-//       myChannel.data.items[0].id
-//     );
-//     console.log(
-//       "[YOTUBE_SERVICE]Pemilik komentar:",
-//       comment.snippet.authorChannelId.value
-//     );
-//     // 3. Eksekusi penghapusan
-//     const deleteRes = await youtubeClient.comments.delete({
-//       id: youtubeCommentId,
-//     });
-//     return deleteRes.data;
-//   } catch (error) {
-//     console.error("YouTube API Error:", {
-//       youtubeCommentId,
-//       error: error.message,
-//       details: error.details || error.response?.data,
-//     });
-//     throw error;
-//   }
-// };
 
 /**
  * Menghapus komentar YouTube secara permanen.
@@ -474,7 +654,7 @@ const deleteYoutubeComment = async (youtubeCommentId, { youtubeClient }) => {
       id: youtubeCommentId,
     });
     console.log(
-      `[YOUTUBE_SERVICE] Komentar ${youtubeCommentId} berhasil dihapus permanen oleh pemilik.`
+      `[YOUTUBE_SERVICE] Komentar ${youtubeCommentId} berhasil dihapus permanen oleh pemilik.`,
     );
     return deleteRes.data; // Biasanya kosong untuk delete yang berhasil
   } catch (error) {
@@ -500,7 +680,7 @@ const deleteYoutubeComment = async (youtubeCommentId, { youtubeClient }) => {
 const moderateYoutubeComment = async (
   youtubeCommentId,
   moderationStatus,
-  { youtubeClient }
+  { youtubeClient },
 ) => {
   try {
     // Untuk memoderasi komentar, kita perlu mengambil 'commentThread'
@@ -562,7 +742,7 @@ const moderateYoutubeComment = async (
       },
     });
     console.log(
-      `[YOUTUBE_SERVICE] Komentar ${youtubeCommentId} dimoderasi ke status: ${moderationStatus}`
+      `[YOUTUBE_SERVICE] Komentar ${youtubeCommentId} dimoderasi ke status: ${moderationStatus}`,
     );
     return updateRes.data;
   } catch (error) {
@@ -577,7 +757,12 @@ const moderateYoutubeComment = async (
 };
 
 module.exports = {
-  getAuthenticatedYouTubeClient,
+  // getAuthenticatedYouTubeClient,
+  getClient,
+  getChannelIdentity,
+  getChannelVideos,
+  getVideoComments,
+  getVideoById,
   getVideoDetails,
   fetchCommentsForVideo,
   deleteYoutubeComment,

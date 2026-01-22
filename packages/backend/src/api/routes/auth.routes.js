@@ -19,37 +19,37 @@ const router = express.Router();
 router.post(
   "/register",
   validateRequest(registerSchema, "body"),
-  authController.handleRegister
+  authController.handleRegister,
 );
 
 router.post(
   "/verify-otp",
   validateRequest(otpSchema, "body"),
-  authController.handleVerifyOtp
+  authController.handleVerifyOtp,
 );
 
 router.post(
   "/resend-otp",
   validateRequest(emailSchema, "body"),
-  authController.handleResendOtp
+  authController.handleResendOtp,
 );
 
 router.post(
   "/login",
   validateRequest(loginSchema, "body"),
-  authController.handleLogin
+  authController.handleLogin,
 );
 
 router.post(
   "/google/signin",
   validateRequest(googleLoginSchema, "body"),
-  authController.handleGoogleAuth
+  authController.handleGoogleAuth,
 );
 
 router.get(
   "/youtube/connect",
   isAuthenticated,
-  authController.redirectToGoogleOAuth
+  authController.redirectToGoogleOAuth,
 );
 
 router.get("/youtube/callback", authController.handleGoogleOAuthCallback);
@@ -57,19 +57,23 @@ router.get("/youtube/callback", authController.handleGoogleOAuthCallback);
 router.post(
   "/youtube/disconnect",
   isAuthenticated,
-  authController.handleDisconnectYouTube
+  authController.handleDisconnectYouTube,
 );
+
+router.get("/guest/connect", authController.handleConnectGuestYoutube);
+router.get("/guest/callback", authController.handleConnectGuestCallback);
+router.post("/guest/logout", authController.handleGuestLogout);
 
 router.post(
   "/forgot-password",
   validateRequest(forgotPasswordSchema),
-  authController.handleForgotPassword
+  authController.handleForgotPassword,
 );
 
 router.put(
   "/reset-password/:token",
   validateRequest(resetPasswordSchema),
-  authController.handleResetPassword
+  authController.handleResetPassword,
 );
 
 router.patch(
@@ -80,7 +84,7 @@ router.patch(
   // atau validateRequest(changePasswordSchema) jika middleware Anda cerdas.
   // Saya akan mengikuti pola yang paling mirip dengan '/reset-password/:token' untuk konsistensi jika skema sudah mencakup targetnya.
   validateRequest(changePasswordSchema), // 3. Validasi input
-  authController.handleChangePassword // 4. Panggil handler controller baru
+  authController.handleChangePassword, // 4. Panggil handler controller baru
 );
 
 module.exports = router;

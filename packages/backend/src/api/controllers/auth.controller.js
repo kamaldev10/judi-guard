@@ -1,7 +1,10 @@
 // src/api/controllers/auth.controller.js
-const { createOAuth2Client } = require("../../utils/googleOAuth2Client"); // Utilitas untuk OAuth2 client Google
+const googleOAuth2Client = require("../../utils/googleOAuth2Client"); // Utilitas untuk OAuth2 client Google
 const authService = require("../services/auth.service"); // Service untuk logika bisnis autentikasi
+const youtubeService = require("../services/youtube.service");
 const { BadRequestError, UnauthorizedError } = require("../../utils/errors"); // Custom error classes
+
+const GUEST_CALLBACK_URL = `${process.env.API_URL || "http://localhost:3000"}/api/auth/guest/callback`;
 
 /**
  * Menangani registrasi pengguna baru.
@@ -72,16 +75,6 @@ const handleLogin = async (req, res, next) => {
     // Memanggil service untuk proses login
     const { token, user } = await authService.loginUser(loginData);
 
-    // Opsi: Mengirim token via httpOnly cookie (jika Anda memilih pendekatan ini)
-    // Perlu: import config from '../../config/environment';
-    // const cookieOptions = {
-    //   httpOnly: true,
-    //   secure: process.env.NODE_ENV === "production",
-    //   maxAge: parseInt(config.jwt.expiresInSeconds, 10) * 1000, // config.jwt.expiresInSeconds harus ada
-    //   sameSite: 'Lax' // atau 'Strict' atau 'None' (jika cross-site dan secure)
-    // };
-    // res.cookie("jwtToken", token, cookieOptions);
-
     res.status(200).json({
       status: "success",
       message: "Login berhasil!",
@@ -134,12 +127,12 @@ const redirectToGoogleOAuth = (req, res, next) => {
     if (!req.user || !req.user._id) {
       return next(
         new UnauthorizedError(
-          "Pengguna tidak teridentifikasi untuk memulai proses OAuth YouTube."
-        )
+          "Pengguna tidak teridentifikasi untuk memulai proses OAuth YouTube.",
+        ),
       );
     }
 
-    const oAuth2Client = createOAuth2Client(); // Membuat instance OAuth2 client
+    const oAuth2Client = googleOAuth2Client(); // Membuat instance OAuth2 client
     const YOUTUBE_SCOPES = [
       // Perbaiki nama variabel jika ini khusus untuk YouTube
       "https://www.googleapis.com/auth/userinfo.profile",
@@ -154,6 +147,7 @@ const redirectToGoogleOAuth = (req, res, next) => {
       scope: YOUTUBE_SCOPES, // Scope harus string dipisahkan spasi
       state: req.user._id.toString(), // ID pengguna Judi Guard sebagai 'state' untuk verifikasi callback
       prompt: "consent", // Opsional: 'consent' akan selalu menampilkan layar persetujuan Google. Hapus untuk SSO jika sudah pernah setuju.
+      redirect_uri: process.env.YOUTUBE_REDIRECT_URI,
     });
 
     // Mengirim URL otorisasi ke frontend
@@ -190,51 +184,51 @@ const handleGoogleOAuthCallback = async (req, res, next) => {
           : `Error dari Google OAuth: ${oauthError}`;
       return res.redirect(
         `${frontendProfileUrl}?youtube_linked=false&error=${encodeURIComponent(
-          errorMessage
-        )}`
+          errorMessage,
+        )}`,
       );
     }
 
     if (!code) {
       return res.redirect(
         `${frontendProfileUrl}?youtube_linked=false&error=${encodeURIComponent(
-          "Kode otorisasi Google tidak ditemukan."
-        )}`
+          "Kode otorisasi Google tidak ditemukan.",
+        )}`,
       );
     }
 
     if (!judiGuardUserId) {
       return res.redirect(
         `${frontendProfileUrl}?youtube_linked=false&error=${encodeURIComponent(
-          "Parameter 'state' (ID pengguna Judi Guard) tidak ditemukan."
-        )}`
+          "Parameter 'state' (ID pengguna Judi Guard) tidak ditemukan.",
+        )}`,
       );
     }
 
     // Memanggil service untuk menukar kode dengan token dan menyimpan token YouTube
     const result = await authService.handleYoutubeOAuthCallback(
       code,
-      judiGuardUserId
+      judiGuardUserId,
     );
 
     // Redirect ke frontend dengan status sukses
     res.redirect(
       `${frontendProfileUrl}?youtube_linked=true&message=${encodeURIComponent(
-        result.message || "Akun YouTube berhasil terhubung."
-      )}`
+        result.message || "Akun YouTube berhasil terhubung.",
+      )}`,
     );
   } catch (error) {
     // Menangkap error dari authService.handleYoutubeOAuthCallback
     console.error(
       "[Controller] Error di handleGoogleOAuthCallback:",
       error.message,
-      error.stack
+      error.stack,
     );
     // Redirect ke frontend dengan pesan error
     res.redirect(
       `${frontendProfileUrl}?youtube_linked=false&error=${encodeURIComponent(
-        error.message || "Terjadi kesalahan saat memproses otorisasi YouTube."
-      )}`
+        error.message || "Terjadi kesalahan saat memproses otorisasi YouTube.",
+      )}`,
     );
     // next(error) bisa dipanggil jika Anda ingin global error handler juga mencatatnya,
     // tapi pastikan tidak ada respons ganda (karena redirect sudah dilakukan).
@@ -263,6 +257,95 @@ const handleDisconnectYouTube = async (req, res, next) => {
   }
 };
 
+// --- GUEST MODE HANDLERS ---
+/**
+ * @desc    Redirect user ke Google untuk izin akses YouTube (Mode Tamu)
+ * @route   GET /api/auth/guest/connect
+ */
+const handleConnectGuestYoutube = (req, res) => {
+  const url = googleOAuth2Client.generateAuthUrl({
+    access_type: "offline", // Wajib offline agar dapat Refresh Token
+    scope: [
+      "https://www.googleapis.com/auth/youtube.readonly",
+      "https://www.googleapis.com/auth/youtube.force-ssl",
+      "https://www.googleapis.com/auth/youtube",
+    ],
+    include_granted_scopes: true,
+    redirect_uri: GUEST_CALLBACK_URL, // PENTING: Harus beda/spesifik
+  });
+
+  res.redirect(url);
+};
+
+/**
+ * @desc    Callback dari Google untuk Mode Tamu
+ * @route   GET /api/auth/guest/callback
+ */
+const handleConnectGuestCallback = async (req, res, next) => {
+  try {
+    const { code } = req.query;
+    if (!code) {
+      return res.redirect(
+        `${process.env.FRONTEND_URL}/dashboard?error=access_denied`,
+      );
+    }
+
+    // 1. Tukar Code dengan Tokens
+    const { tokens } = await googleOAuth2Client.getToken({
+      code,
+      redirect_uri: GUEST_CALLBACK_URL, // Pastikan variabel ini sesuai kode Anda sebelumnya
+    });
+
+    // 2. OPTIMASI: Langsung ambil profil channel saat ini juga
+    const channelProfile = await youtubeService.getChannelIdentity(tokens);
+
+    // 3. Bungkus Token + Profil dalam satu objek Session
+    const sessionData = {
+      tokens: tokens,
+      channel: channelProfile, // { id, title, thumbnail }
+    };
+
+    // 4. Simpan paket lengkap ini ke Cookie
+    res.cookie("guest_session", JSON.stringify(sessionData), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 Hari
+    });
+
+    // Redirect dengan nama channel agar Frontend bisa langsung tahu
+    res.redirect(
+      `${process.env.FRONTEND_URL}/dashboard?status=guest_connected&channel=${encodeURIComponent(channelProfile.title)}`,
+    );
+  } catch (error) {
+    console.error("Guest Connect Error:", error);
+    res.redirect(
+      `${process.env.FRONTEND_URL}/dashboard?error=connection_failed`,
+    );
+  }
+};
+
+/**
+ * @desc    Logout dari Mode Tamu (Hapus Cookie)
+ * @route   POST /api/auth/guest/logout
+ * @access  Public
+ */
+const handleGuestLogout = (req, res) => {
+  const cookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+  };
+
+  // Hapus Cookie Utama
+  res.clearCookie("guest_session", cookieOptions);
+
+  res.status(200).json({
+    status: "success",
+    message: "Berhasil keluar dari mode tamu. Sesi telah dibersihkan.",
+  });
+};
+
 // --- Handler untuk Lupa, Reset, Ganti Password (sudah baik dari sebelumnya) ---
 const handleForgotPassword = async (req, res, next) => {
   try {
@@ -284,7 +367,7 @@ const handleForgotPassword = async (req, res, next) => {
         console.info(
           `Forgot Password - Attempt for Google-only account: [${
             result.email || email
-          }]`
+          }]`,
         );
         break;
       case "RESET_EMAIL_SENT":
@@ -296,7 +379,7 @@ const handleForgotPassword = async (req, res, next) => {
       case "EMAIL_SEND_FAILED":
         console.error(
           `Forgot Password - Email send failed for [${email}]. Error:`,
-          result.error?.message || result.error
+          result.error?.message || result.error,
         );
         break;
       case "UNKNOWN_USER_STATE":
@@ -305,20 +388,20 @@ const handleForgotPassword = async (req, res, next) => {
       case "SERVICE_ERROR":
         console.error(
           `Forgot Password - Service error for [${email}]. Error:`,
-          result.error?.message || result.error
+          result.error?.message || result.error,
         );
         const serviceError =
           result.error instanceof Error
             ? result.error
             : new Error(
                 result.error?.message ||
-                  "Terjadi kesalahan pada layanan reset password."
+                  "Terjadi kesalahan pada layanan reset password.",
               );
         if (!serviceError.status) serviceError.status = 500;
         return next(serviceError);
       default:
         console.error(
-          `Forgot Password - Unhandled service status for [${email}]: ${result.status}`
+          `Forgot Password - Unhandled service status for [${email}]: ${result.status}`,
         );
         return next(new Error("Terjadi kesalahan tak terduga."));
     }
@@ -332,7 +415,7 @@ const handleForgotPassword = async (req, res, next) => {
   } catch (error) {
     console.error(
       `Forgot Password - Controller level exception for [${req.body.email}]:`,
-      error
+      error,
     );
     return next(error);
   }
@@ -381,6 +464,9 @@ module.exports = {
   redirectToGoogleOAuth,
   handleGoogleOAuthCallback,
   handleDisconnectYouTube,
+  handleConnectGuestYoutube,
+  handleConnectGuestCallback,
+  handleGuestLogout,
   handleForgotPassword,
   handleResetPassword,
   handleChangePassword,

@@ -1,4 +1,4 @@
-// src/models/AnalyzedComment.model.js
+// packages/backend/src/api/models/AnalyzedComment.model.js
 const mongoose = require("mongoose");
 
 const analyzedCommentSchema = new mongoose.Schema(
@@ -7,28 +7,30 @@ const analyzedCommentSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "VideoAnalysis",
       required: true,
+      index: true,
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+      default: null,
     },
     youtubeVideoId: {
-      // ID video YouTube tempat komentar ini berada
       type: String,
       required: true,
+      index: true, // Tambahkan index disini
     },
     youtubeCommentId: {
-      // ID unik komentar dari YouTube (bisa top-level atau reply)
       type: String,
       required: true,
       unique: true,
     },
     parentYoutubeCommentId: {
-      // ID komentar YouTube induk jika ini adalah balasan
-      type: String, // Akan null atau undefined jika ini adalah komentar tingkat atas
-      index: true, // Tambahkan index jika Anda sering query berdasarkan ini
+      type: String, // String saja, default null otomatis jika tak diisi
+      default: null,
+      index: true,
     },
+
+    // --- TEKS KOMENTAR ---
     commentTextOriginal: {
       type: String,
       required: true,
@@ -37,46 +39,46 @@ const analyzedCommentSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+
+    // --- INFO AUTHOR ---
     commentAuthorDisplayName: { type: String },
     commentAuthorChannelId: { type: String },
     commentAuthorProfileImageUrl: { type: String },
+
+    // --- TIMESTAMPS VIDEO ---
     commentPublishedAt: { type: Date },
     commentUpdatedAt: { type: Date },
     likeCount: { type: Number, default: 0 },
-    // totalReplyCount hanya relevan untuk top-level comments jika Anda menyimpannya di sini.
-    // Jika tidak, field ini bisa dihapus dari AnalyzedComment dan hanya ada di CommentThread dari YouTube API.
-    // Untuk V1 ini, kita bisa hapus dari model AnalyzedComment untuk menyederhanakan,
-    // karena totalReplyCount ada di objek CommentThread dari youtube.service.js.
-    // totalReplyCount: { type: Number, default: 0 },
+
+    // --- HASIL ANALISIS ---
+    processingStatus: {
+      type: String,
+      enum: ["UNPROCESSED", "PROCESSED", "FAILED"],
+      default: "UNPROCESSED",
+      index: true,
+    },
     classification: {
       type: String,
-      enum: [
-        "JUDI",
-        "NON_JUDI",
-        "PENDING_ANALYSIS",
-        "ERROR_ANALYSIS",
-        "UNKNOWN",
-      ],
-      default: "PENDING_ANALYSIS",
+      enum: ["JUDI", "NON_JUDI", "UNKNOWN"],
+      default: "UNKNOWN",
+      index: true,
     },
-    aiConfidenceScore: { type: Number },
+    confidenceScore: { type: Number, default: 0 },
+    riskLevel: {
+      type: String,
+      enum: ["NONE", "LOW", "MEDIUM", "HIGH"],
+      default: "NONE",
+    },
+    detectedKeywords: [{ type: String }],
+    spamIndicators: { type: mongoose.Schema.Types.Mixed },
     aiModelVersion: { type: String },
-    isDeletedOnYoutube: { type: Boolean, default: false },
-    deletionAttemptedAt: { type: Date },
-    deletionError: { type: String },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
-
-// Index untuk query yang lebih efisien
-analyzedCommentSchema.index({ videoAnalysisId: 1 });
-analyzedCommentSchema.index({ userId: 1, youtubeVideoId: 1 }); // Mungkin tidak perlu userId di sini jika sudah ada di videoAnalysisId
-analyzedCommentSchema.index({ classification: 1 });
-// Index untuk youtubeCommentId sudah ada karena unique: true
 
 const AnalyzedComment = mongoose.model(
   "AnalyzedComment",
-  analyzedCommentSchema
+  analyzedCommentSchema,
 );
 
 module.exports = AnalyzedComment;

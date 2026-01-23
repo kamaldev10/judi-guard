@@ -1,9 +1,6 @@
 // src/utils/commentProcessor.js
-
-// Impor model dan service yang dibutuhkan oleh helper ini
-// Pastikan path ini benar relatif terhadap lokasi file utils Anda
 const AnalyzedComment = require("../api/models/AnalyzedComment.model");
-const aiService = require("../api/services/ai.service"); // Asumsi aiService ada di sini
+const aiService = require("../api/services/ai.service");
 
 /**
  * Helper function untuk memproses (cek duplikasi, analisis AI) dan menyimpan satu komentar

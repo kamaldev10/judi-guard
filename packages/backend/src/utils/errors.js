@@ -33,6 +33,12 @@ class ForbiddenError extends AppError {
   }
 }
 
+class ConflictError extends AppError {
+  constructor(message = "Resource already exists") {
+    super(message, 409);
+  }
+}
+
 class QuotaExceededError extends AppError {
   constructor(message = "API Quota exceeded. Please try again later.") {
     super(message, 429);
@@ -51,6 +57,7 @@ module.exports = {
   BadRequestError,
   UnauthorizedError,
   ForbiddenError,
+  ConflictError,
   QuotaExceededError,
   ValidationError,
 };

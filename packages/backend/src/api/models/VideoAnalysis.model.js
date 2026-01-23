@@ -1,4 +1,4 @@
-// src/models/VideoAnalysis.model.js
+//* packages/backend/src/api/models/VideoAnalysis.model.js
 const mongoose = require("mongoose");
 
 const videoAnalysisSchema = new mongoose.Schema(
@@ -6,7 +6,11 @@ const videoAnalysisSchema = new mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+      default: null,
+    },
+    isGuest: {
+      type: Boolean,
+      default: false,
     },
     youtubeVideoId: {
       type: String,
@@ -14,23 +18,20 @@ const videoAnalysisSchema = new mongoose.Schema(
     },
     videoTitle: {
       type: String,
+      default: "Unknown Title",
     },
+
     status: {
       type: String,
-      // PERBAIKAN: Tambahkan semua status baru yang terkait dengan proses penghapusan
-      enum: [
-        "PENDING",
-        "PROCESSING",
-        "COMPLETED",
-        "FAILED",
-        "DELETING_CLASSIFIED_COMMENTS", // Status saat proses hapus berjalan
-        "COMPLETED_ALL_DELETIONS_SUCCESSFULLY", // Status jika semua berhasil dihapus
-        "COMPLETED_DELETION_WITH_PARTIAL_ERRORS", // Status jika ada yang gagal dihapus
-        "FAILED_ALL_DELETIONS", // Status jika semua gagal dihapus
-        // Anda juga bisa menggunakan status yang lebih umum seperti "COMPLETED_JUDI_DELETION"
-      ],
+      enum: ["PENDING", "PROCESSING", "COMPLETED", "FAILED"],
       default: "PENDING",
     },
+    moderationStatus: {
+      type: String,
+      enum: ["NONE", "CLEANED", "PARTIAL"],
+      default: "NONE",
+    },
+
     totalCommentsFetched: {
       type: Number,
       default: 0,
@@ -39,14 +40,17 @@ const videoAnalysisSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-    errorMessage: {
-      type: String,
+    totalSpamDetected: {
+      type: Number,
+      default: 0,
     },
-    // Menambahkan field untuk melacak status batch delete (opsional tapi informatif)
+
+    errorMessage: { type: String },
+
     lastBatchDeletionAttemptAt: { type: Date },
-    lastBatchDeletionSuccessCount: { type: Number },
-    lastBatchDeletionFailureCount: { type: Number },
-    // ...
+    lastBatchDeletionSuccessCount: { type: Number, default: 0 },
+    lastBatchDeletionFailureCount: { type: Number, default: 0 },
+
     requestedAt: {
       type: Date,
       default: Date.now,
@@ -54,10 +58,10 @@ const videoAnalysisSchema = new mongoose.Schema(
     processingStartedAt: { type: Date },
     completedAt: { type: Date },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-// Index tetap sama
+// Compound Index: Agar satu user bisa cari history video tertentu dengan cepat
 videoAnalysisSchema.index({ userId: 1, youtubeVideoId: 1 });
 videoAnalysisSchema.index({ status: 1 });
 

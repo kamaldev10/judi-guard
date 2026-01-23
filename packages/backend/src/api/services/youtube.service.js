@@ -137,28 +137,28 @@ const getClient = (tokens) => {
 const getChannelIdentity = async (tokens) => {
   try {
     const youtube = getClient(tokens);
-    
+
     // Ambil snippet (Nama, Foto) dan ID
     const response = await youtube.channels.list({
-      part: 'snippet,id', 
+      part: "snippet,id",
       mine: true,
     });
 
     if (!response.data.items || response.data.items.length === 0) {
-      throw new AppError('Channel YouTube tidak ditemukan.', 404);
+      throw new AppError("Channel YouTube tidak ditemukan.", 404);
     }
 
     const item = response.data.items[0];
-    
+
     return {
       id: item.id,
       title: item.snippet.title,
       thumbnail: item.snippet.thumbnails.default?.url,
-      customUrl: item.snippet.customUrl
+      customUrl: item.snippet.customUrl,
     };
   } catch (error) {
-    console.error('[YouTube Service] Error getting identity:', error.message);
-    throw new AppError('Gagal mengambil identitas channel.', 500);
+    console.error("[YouTube Service] Error getting identity:", error.message);
+    throw new AppError("Gagal mengambil identitas channel.", 500);
   }
 };
 
@@ -323,6 +323,102 @@ const getVideoComments = async (tokens, videoId, pageToken = "") => {
       );
     }
     throw new AppError(`Gagal mengambil komentar: ${error.message}`, 502);
+  }
+};
+
+/**
+ * Mengambil SELURUH Komentar (Looping sampai habis).
+ * Digunakan untuk proses Analisis (Background Process).
+ */
+const getAllComments = async (tokens, videoId) => {
+  try {
+    const youtube = getClient(tokens);
+    let allComments = [];
+    let nextPageToken = null;
+    let hasNextPage = true;
+
+    // Loop terus selama masih ada halaman berikutnya (nextPageToken)
+    while (hasNextPage) {
+      // Cost: 1 Unit per request (per 100 komentar)
+      const response = await youtube.commentThreads.list({
+        part: "snippet,replies",
+        videoId: videoId,
+        maxResults: 100, // Kita maksimalkan ke 100 agar hemat request loop
+        textFormat: "plainText",
+        pageToken: nextPageToken || undefined,
+        order: "relevance",
+      });
+
+      const items = response.data.items || [];
+
+      // Transformasi Data
+      const batchComments = items.map((item) => {
+        const topComment = item.snippet.topLevelComment.snippet;
+        const topId = item.snippet.topLevelComment.id;
+
+        return {
+          threadId: item.id,
+          videoId: item.snippet.videoId,
+          totalReplyCount: item.snippet.totalReplyCount,
+          isPublic: item.snippet.isPublic,
+
+          // Komentar Induk (Top Level)
+          topLevelComment: {
+            id: topId,
+            text: topComment.textDisplay,
+            author: {
+              name: topComment.authorDisplayName,
+              avatar: topComment.authorProfileImageUrl,
+              channelId: topComment.authorChannelId?.value,
+            },
+            likeCount: topComment.likeCount,
+            publishedAt: topComment.publishedAt,
+            updatedAt: topComment.updatedAt,
+          },
+
+          // Balasan (Replies)
+          replies:
+            item.replies?.comments?.map((reply) => ({
+              id: reply.id,
+              text: reply.snippet.textDisplay,
+              author: {
+                name: reply.snippet.authorDisplayName,
+                avatar: reply.snippet.authorProfileImageUrl,
+                channelId: reply.snippet.authorChannelId?.value,
+              },
+              likeCount: reply.snippet.likeCount,
+              publishedAt: reply.snippet.publishedAt,
+            })) || [],
+        };
+      });
+
+      // Gabungkan hasil batch ini ke array utama
+      allComments = [...allComments, ...batchComments];
+
+      // Cek apakah masih ada halaman selanjutnya
+      nextPageToken = response.data.nextPageToken;
+      if (!nextPageToken) {
+        hasNextPage = false;
+      }
+    }
+
+    return allComments;
+  } catch (error) {
+    console.error(
+      "[YouTube Service] Error fetching all comments:",
+      error.message,
+    );
+
+    // Jika komentar dimatikan (403), return array kosong (bukan error fatal)
+    // agar proses analisis tetap bisa 'sukses' dengan hasil 0 komentar.
+    if (error.code === 403) {
+      return [];
+    }
+
+    throw new AppError(
+      `Gagal mengambil seluruh komentar: ${error.message}`,
+      502,
+    );
   }
 };
 
@@ -762,6 +858,7 @@ module.exports = {
   getChannelIdentity,
   getChannelVideos,
   getVideoComments,
+  getAllComments,
   getVideoById,
   getVideoDetails,
   fetchCommentsForVideo,

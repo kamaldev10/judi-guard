@@ -8,8 +8,31 @@ const {
   analysisIdParamSchema,
   commentAppIdParamSchema,
 } = require("../validators/video.validator");
+const ensureYoutubeAccess = require("../middlewares/ensureYoutubeAccess");
 
 const router = express.Router();
+
+//* --- NEW LOGIc ---
+
+router.post(
+  "/:videoId",
+  ensureYoutubeAccess,
+  videoAnalysisController.startAnalysis,
+);
+
+router.get(
+  "/status/:analysisId",
+  ensureYoutubeAccess,
+  videoAnalysisController.getAnalysisStatus,
+);
+
+router.get(
+  "/:analysisId/results",
+  ensureYoutubeAccess,
+  videoAnalysisController.getAnalysisResults,
+);
+
+// -------------
 
 // Rute untuk mengirimkan video untuk dianalisis
 // Dilindungi oleh isAuthenticated agar hanya user yang login bisa mengakses
@@ -17,7 +40,7 @@ router.post(
   "/videos",
   isAuthenticated,
   validateRequest(submitVideoSchema, "body"), // Validasi body request
-  videoAnalysisController.submitVideoForAnalysis
+  videoAnalysisController.submitVideoForAnalysis,
 );
 
 // Rute untuk mendapatkan hasil komentar yang sudah dianalisis
@@ -26,7 +49,7 @@ router.get(
   isAuthenticated,
   // Opsional: Validasi parameter analysisId jika Anda punya skema validatornya
   // validateRequest(analysisIdParamSchema, "params"),
-  videoAnalysisController.getAnalyzedCommentsForVideo
+  videoAnalysisController.getAnalyzedCommentsForVideo,
 );
 
 // Rute untuk menghapus SATU komentar spesifik dari YouTube (berdasarkan ID aplikasi kita)
@@ -39,12 +62,12 @@ router.delete(
       await videoAnalysisController.deleteAnalyzedCommentController(
         req,
         res,
-        next
+        next,
       );
     } catch (error) {
       next(error);
     }
-  }
+  },
 );
 
 // Menargetkan videoAnalysisId untuk menghapus semua komentar "judi" terkait.
@@ -53,7 +76,7 @@ router.delete(
   isAuthenticated,
   // Opsional: Validasi parameter analysisId
   // validateRequest(analysisIdParamSchema, "params"),
-  videoAnalysisController.batchDeleteJudiCommentsController // Controller baru untuk batch delete
+  videoAnalysisController.batchDeleteJudiCommentsController, // Controller baru untuk batch delete
 );
 
 module.exports = router;

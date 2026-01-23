@@ -49,6 +49,7 @@ const config = {
       `"${process.env.POSTMARK_SENDER_NAME || process.env.APP_NAME || "Judi Guard"}" <no-reply@yourdomain.com>`,
   },
 
+  aiModelVersion: process.env.AI_MODEL_VERSION || "distilbert-flask-v1-hybrid",
   //maksimal top level comment dan replies per comment
   MAX_TOP_LEVEL_COMMENTS: 50,
   MAX_REPLIES_PER_COMMENT: 20,

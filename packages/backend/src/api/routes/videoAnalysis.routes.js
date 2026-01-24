@@ -10,9 +10,12 @@ const {
 } = require("../validators/video.validator");
 const ensureYoutubeAccess = require("../middlewares/ensureYoutubeAccess");
 
+
 const router = express.Router();
 
 //* --- NEW LOGIc ---
+
+router.get("/history", isAuthenticated, videoAnalysisController.getHistory);
 
 router.post(
   "/:videoId",
@@ -30,6 +33,24 @@ router.get(
   "/:analysisId/results",
   ensureYoutubeAccess,
   videoAnalysisController.getAnalysisResults,
+);
+
+router.post(
+  "/:analysisId/action",
+  ensureYoutubeAccess,
+  videoAnalysisController.executeAction,
+);
+
+router.post(
+  "/:analysisId/undo",
+  ensureYoutubeAccess,
+  videoAnalysisController.undoAction,
+);
+
+router.get(
+  "/:analysisId/report/pdf",
+  ensureYoutubeAccess,
+  videoAnalysisController.downloadReport,
 );
 
 // -------------

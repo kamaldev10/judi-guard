@@ -186,6 +186,10 @@ const processAnalysis = async ({ analysisId, videoId, tokens, userId }) => {
 
 /**
  * Helper: Update Status & Stats
+ * @param {String} analysisId - ID Analisis
+ * @param {String} status - New Status
+ * @param {String} errorMessage - Optional Error Message
+ * @param {Object} stats - Optional Statistik tambahan
  */
 const updateAnalysisStatus = async (
   analysisId,
@@ -214,45 +218,185 @@ const updateAnalysisStatus = async (
  * @param {String} analysisId - ID Header Analisis
  * @param {Object} query - { page, limit, type }
  */
-const getAnalysisResults = async (
-  analysisId,
-  { page = 1, limit = 10, type = "all" },
-) => {
+const getAnalysisResults = async (analysisId, query) => {
+  const {
+    page = 1,
+    limit = 10,
+    riskLevel, // Filter: HIGH, MEDIUM, LOW
+    minConfidence, // Filter: 0.1 - 1.0
+    actionTaken, // Filter: NONE, DELETE, HOLD
+    search, // Search text
+  } = query;
+
   const skip = (page - 1) * limit;
 
-  // Filter Dasar
+  // Build Query Object
   const filter = { analysisId };
 
-  // OPSI: Apakah Anda ingin menampilkan komentar yang BELUM diproses di hasil akhir?
-  // Biasanya User hanya ingin lihat hasil yang sudah matang.
-  // Uncomment baris ini jika ingin menyembunyikan yang 'UNPROCESSED'
-  filter.processingStatus = "PROCESSED";
-
-  // Logic Filtering (Sesuaikan dengan Enum baru: Uppercase JUDI)
-  if (type === "spam") {
-    filter.classification = "JUDI";
-  } else if (type === "safe") {
-    filter.classification = "NON_JUDI";
+  // 1. Filter Risk Level (Bisa multiple, misal riskLevel=HIGH,MEDIUM)
+  if (riskLevel) {
+    const levels = riskLevel.split(",");
+    filter.riskLevel = { $in: levels };
   }
 
-  // Query DB
+  // 2. Filter Min Confidence Score
+  if (minConfidence) {
+    filter.confidenceScore = { $gte: parseFloat(minConfidence) };
+  }
+
+  // 3. Filter Status Tindakan (Sudah dihapus atau belum)
+  if (actionTaken) {
+    filter.actionTaken = actionTaken;
+  }
+
+  // 4. Search Text
+  if (search) {
+    filter.commentTextDisplay = { $regex: search, $options: "i" };
+  }
+
+  // Eksekusi Query
   const comments = await AnalyzedComment.find(filter)
-    .sort({ confidenceScore: -1 }) // Urutkan score tertinggi
+    .sort({ confidenceScore: -1, createdAt: -1 }) // Urutkan dari yang paling spam
     .skip(skip)
     .limit(parseInt(limit));
 
-  // 2. Hitung Total Data (untuk Frontend Pagination)
-  const totalComments = await AnalyzedComment.countDocuments(filter);
-  const totalPages = Math.ceil(totalComments / limit);
+  const totalItems = await AnalyzedComment.countDocuments(filter);
 
   return {
     comments,
     pagination: {
       currentPage: parseInt(page),
-      totalPages,
-      totalItems: totalComments,
+      totalPages: Math.ceil(totalItems / limit),
+      totalItems,
       itemsPerPage: parseInt(limit),
     },
+  };
+};
+
+/**
+ * Eksekusi Moderasi (Bulk atau Single)
+ * @param {Object} tokens - Token OAuth2
+ * @param {String} analysisId - ID Analisis (Header)
+ * @param {Array<String>} commentIds - Array ID MongoDB (bukan ID YouTube)
+ * @param {String} actionType - 'DELETE' atau 'HOLD'
+ */
+const executeModerationAction = async (
+  tokens,
+  analysisId,
+  commentIds,
+  actionType,
+  banAuthor = false,
+) => {
+  // 1. Validasi Action
+  let youtubeStatus;
+  if (actionType === "DELETE") {
+    youtubeStatus = "rejected";
+  } else if (actionType === "HOLD") {
+    youtubeStatus = "heldForReview";
+  } else {
+    throw new AppError("Aksi tidak valid.", 400);
+  }
+
+  // 2. Ambil ID YouTube Asli
+  const comments = await AnalyzedComment.find({
+    _id: { $in: commentIds },
+    analysisId: analysisId,
+  }).select("youtubeCommentId");
+
+  if (comments.length === 0) {
+    throw new AppError("Komentar tidak ditemukan.", 404);
+  }
+  const youtubeIds = comments.map((c) => c.youtubeCommentId);
+
+  console.log(
+    `[Moderation] Action: ${actionType}, Ban Author: ${banAuthor}, Total: ${youtubeIds.length}`,
+  );
+
+  // 3. Panggil YouTube API (Pass parameter banAuthor)
+  // Pastikan youtube.service.js Anda sudah menerima parameter ke-4 (banAuthor) sesuai kode sebelumnya
+  const apiResult = await youtubeService.setModerationStatus(
+    tokens,
+    youtubeIds,
+    youtubeStatus,
+    banAuthor, // <--- KIRIM KE YOUTUBE
+  );
+
+  // 4. Update Status di MongoDB
+  await AnalyzedComment.updateMany(
+    { _id: { $in: commentIds } },
+    {
+      $set: {
+        actionTaken: actionType,
+        actionTakenAt: new Date(),
+        authorBanned: banAuthor, // <--- CATAT DI DB
+      },
+    },
+  );
+
+  // 5. Update Statistik Header (Opsional, logika sama seperti sebelumnya)
+  if (actionType === "DELETE") {
+    await VideoAnalysis.findByIdAndUpdate(analysisId, {
+      lastBatchDeletionAttemptAt: new Date(),
+      $inc: {
+        lastBatchDeletionSuccessCount: apiResult.successCount,
+        lastBatchDeletionFailureCount: apiResult.failCount,
+      },
+      moderationStatus: "PARTIAL",
+    });
+  }
+
+  return {
+    requested: comments.length,
+    youtubeResult: apiResult,
+  };
+};
+
+/**
+ * Mengembalikan komentar yang dihapus/ditahan menjadi PUBLISHED (Undo).
+ */
+const executeUndoAction = async (tokens, analysisId, commentIds) => {
+  // 1. Ambil ID YouTube Asli dari DB
+  const comments = await AnalyzedComment.find({
+    _id: { $in: commentIds },
+    analysisId: analysisId,
+  }).select("youtubeCommentId");
+
+  if (comments.length === 0) {
+    throw new AppError("Komentar tidak ditemukan.", 404);
+  }
+  const youtubeIds = comments.map((c) => c.youtubeCommentId);
+
+  console.log(`[Undo] Restoring ${youtubeIds.length} comments to PUBLISHED...`);
+
+  // 2. Panggil YouTube API -> Status 'published'
+  // banAuthor: false (Kita tidak ingin nge-ban saat undo)
+  const apiResult = await youtubeService.setModerationStatus(
+    tokens,
+    youtubeIds,
+    "published",
+    false,
+  );
+
+  // 3. Reset Status di MongoDB
+  // Kita kembalikan actionTaken menjadi 'NONE' (atau bisa buat status baru 'RESTORED' jika ingin dicatat history-nya)
+  // Saya sarankan 'RESTORED' agar kita tahu komentar ini bekas dihapus.
+  await AnalyzedComment.updateMany(
+    { _id: { $in: commentIds } },
+    {
+      $set: {
+        actionTaken: "RESTORED",
+        actionTakenAt: new Date(),
+      },
+      // Note: Kita tidak mengubah authorBanned menjadi false disini,
+      // karena API YouTube setModerationStatus tidak secara eksplisit 'Unban'.
+      // Fitur Unban user butuh endpoint LiveChat/Settings yang berbeda.
+      // Jadi fokus Undo ini adalah: MENGEMBALIKAN KOMENTAR.
+    },
+  );
+
+  return {
+    requested: comments.length,
+    youtubeResult: apiResult,
   };
 };
 
@@ -791,8 +935,10 @@ module.exports = {
   createAnalysisRecord,
   processAnalysis,
   updateAnalysisStatus,
-  startVideoAnalysis,
   getAnalysisResults,
+  executeModerationAction,
+  executeUndoAction,
+  startVideoAnalysis,
   requestBatchDeleteJudiComments,
   requestDeleteYoutubeComment,
 };

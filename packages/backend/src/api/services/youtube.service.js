@@ -471,6 +471,127 @@ const getVideoById = async (tokens, videoId) => {
 };
 
 /**
+ * Mengubah status moderasi komentar (Support Bulk/Batch).
+ * Digunakan untuk: Hapus Spam (rejected) atau Tahan (heldForReview).
+ * * @param {Object} tokens - Token Akses OAuth2
+ * @param {Array<String>} commentIds - List ID Komentar YouTube (bukan ID Mongo)
+ * @param {String} status - 'rejected' | 'heldForReview' | 'published'
+ * @param {Boolean} banAuthor - Apakah user penulisnya juga di-banned? (Default: false)
+ */
+const setModerationStatus = async (
+  tokens,
+  commentIds,
+  status = "rejected",
+  banAuthor = false,
+) => {
+  try {
+    const youtube = getClient(tokens);
+
+    // 1. Validasi Input
+    if (!commentIds || commentIds.length === 0) {
+      return { success: true, successCount: 0, failCount: 0 };
+    }
+
+    // 2. Strategi Chunking (Pemecahan Paket)
+    // URL Request YouTube memiliki batas panjang karakter.
+    // Mengirim 50 ID sekaligus (dipisah koma) adalah batas aman & efisien.
+    const CHUNK_SIZE = 50;
+    const chunks = [];
+
+    for (let i = 0; i < commentIds.length; i += CHUNK_SIZE) {
+      chunks.push(commentIds.slice(i, i + CHUNK_SIZE));
+    }
+
+    let successCount = 0;
+    let failCount = 0;
+    const errors = [];
+
+    console.log(
+      `[YouTube Service] Memproses moderasi ${commentIds.length} komentar dalam ${chunks.length} batch...`,
+    );
+
+    // 3. Eksekusi Paralel (Promise.all)
+    // Kita kirim semua batch secara bersamaan agar prosesnya super cepat (< 2 detik)
+    const promises = chunks.map(async (chunkIds) => {
+      try {
+        // API Call: setModerationStatus menerima ID dipisah koma
+        await youtube.comments.setModerationStatus({
+          id: chunkIds.join(","), // Contoh: "id1,id2,id3"
+          moderationStatus: status,
+          banAuthor: banAuthor,
+        });
+
+        successCount += chunkIds.length;
+      } catch (err) {
+        console.error(`[YouTube Service] Gagal moderasi batch: ${err.message}`);
+        failCount += chunkIds.length;
+        errors.push(err.message);
+        // Kita catch error di sini agar batch lain yang sukses tidak ikut gagal
+      }
+    });
+
+    await Promise.all(promises);
+
+    return {
+      success: failCount === 0, // Sukses total jika tidak ada yang gagal
+      totalRequested: commentIds.length,
+      successCount,
+      failCount,
+      errors: errors.length > 0 ? errors : null,
+    };
+  } catch (error) {
+    console.error(
+      "[YouTube Service] Critical Error setModerationStatus:",
+      error.message,
+    );
+    throw new AppError(
+      `Gagal melakukan moderasi ke YouTube: ${error.message}`,
+      502,
+    );
+  }
+};
+
+/**
+ * Mencari Info Channel berdasarkan Handle (Username)
+ * Contoh: input '@gadgetin' -> output { id: 'UC...', title: 'GadgetIn' }
+ */
+const getChannelInfoByHandle = async (tokens, handle) => {
+  const oauth2Client = new google.auth.OAuth2(
+    config.googleClientId,
+    config.googleClientSecret,
+  );
+  oauth2Client.setCredentials(tokens);
+
+  const youtube = google.youtube({ version: "v3", auth: oauth2Client });
+
+  try {
+    const response = await youtube.channels.list({
+      part: "id,snippet",
+      forHandle: handle, // Parameter khusus untuk cari via handle
+    });
+
+    const items = response.data.items;
+    if (!items || items.length === 0) {
+      throw new AppError(
+        `Channel dengan handle '${handle}' tidak ditemukan.`,
+        404,
+      );
+    }
+
+    return {
+      channelId: items[0].id,
+      channelName: items[0].snippet.title,
+      thumbnail: items[0].snippet.thumbnails.default.url,
+    };
+  } catch (error) {
+    console.error("[YouTube Service] Error resolving handle:", error);
+    throw error;
+  }
+};
+
+// ---------------------------------------
+
+/**
  * Mengambil detail sebuah video YouTube.
  * @param {string} videoId - ID Video YouTube.
  * @param {object} options
@@ -860,6 +981,8 @@ module.exports = {
   getVideoComments,
   getAllComments,
   getVideoById,
+  setModerationStatus,
+  getChannelInfoByHandle,
   getVideoDetails,
   fetchCommentsForVideo,
   deleteYoutubeComment,

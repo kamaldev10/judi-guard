@@ -82,20 +82,20 @@ npm start
 Server berjalan di:
 
 ```bash
-http://localhost:5000
+http://localhost:3001
 ```
 
 ## 🌐 API Endpoint (Ringkas)
 
-| Method | Endpoint                          | Deskripsi         | Auth |
-| :----- | :-------------------------------- | ----------------- | ---- |
-| POST   | /api/v1/auth/register             | Registrasi user   | ❌   |
-| POST   | /api/v1/auth/login                | Login & JWT       | ❌   |
-| GET    | /api/v1/users/me                  | Profil user       | ✅   |
-| GET    | /api/v1/youtube/comments/:videoId | Ambil komentar    | ✅   |
-| POST   | /api/v1/analysis/comments         | Analisis komentar | ✅   |
-| POST   | /api/v1/moderation/action         | Moderasi komentar | ✅   |
-| GET    | /api/v1/moderation/history        | Riwayat moderasi  | ✅   |
+| Method | Endpoint                      | Deskripsi         | Auth |
+| :----- | :---------------------------- | ----------------- | ---- |
+| POST   | /api/auth/register            | Registrasi user   | ❌   |
+| POST   | /api/auth/login               | Login & JWT       | ❌   |
+| GET    | /api/users/me                 | Profil user       | ✅   |
+| GET    | /api/videos/:videoId/comments | Ambil komentar    | ✅   |
+| POST   | /api/analysis/comments        | Analisis komentar | ✅   |
+| POST   | /api/moderation/action        | Moderasi komentar | ✅   |
+| GET    | /api/moderation/history       | Riwayat moderasi  | ✅   |
 
 ---
 

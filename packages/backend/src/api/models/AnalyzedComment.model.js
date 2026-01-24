@@ -72,6 +72,21 @@ const analyzedCommentSchema = new mongoose.Schema(
     detectedKeywords: [{ type: String }],
     spamIndicators: { type: mongoose.Schema.Types.Mixed },
     aiModelVersion: { type: String },
+
+    // --- Moderation Action ---
+    actionTaken: {
+      type: String,
+      enum: ["NONE", "DELETE", "HOLD", "RESTORED"], // DELETE=Rejected, HOLD=HeldForReview, RESTORED=Undeleted
+      default: "NONE",
+      index: true,
+    },
+    actionTakenAt: {
+      type: Date,
+    },
+    authorBanned: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true },
 );

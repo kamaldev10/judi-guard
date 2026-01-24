@@ -1,7 +1,7 @@
 import { Given, When, Then } from "@badeball/cypress-cucumber-preprocessor";
 
 Given("I am on the login page", () => {
-  cy.intercept("POST", "**/api/v1/auth/login", (req) => {
+  cy.intercept("POST", "**/api/auth/login", (req) => {
     if (req.body.email === "unknown@example.com") {
       req.reply({
         statusCode: 404,
@@ -22,7 +22,7 @@ Given("I am on the login page", () => {
 
 // Mock untuk Google Login sukses.
 Given("I am prepared to successfully authenticate with Google", () => {
-  cy.intercept("POST", "**/api/v1/auth/google/signin", {
+  cy.intercept("POST", "**/api/auth/google/signin", {
     fixture: "googleLoginSuccess.json",
   }).as("googleLoginRequest");
 

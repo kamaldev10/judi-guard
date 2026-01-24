@@ -9,7 +9,7 @@ beforeEach(() => {
 });
 
 Given("I am on the registration page", () => {
-  cy.intercept("POST", "**/api/v1/auth/register", (req) => {
+  cy.intercept("POST", "**/api/auth/register", (req) => {
     const { email, username } = req.body;
 
     if (email === regData.existingEmailUser.email) {
@@ -37,7 +37,7 @@ Given("I am on the registration page", () => {
 });
 
 Given("a valid OTP code has been sent to {string}", (email) => {
-  cy.intercept("POST", "**/api/v1/auth/verify-otp", (req) => {
+  cy.intercept("POST", "**/api/auth/verify-otp", (req) => {
     const { otpCode } = req.body;
 
     if (otpCode === regData.otp.invalidCode) {
@@ -62,7 +62,7 @@ Given("a valid OTP code has been sent to {string}", (email) => {
     }
   }).as("verifyOtpApi");
 
-  cy.intercept("POST", "**/api/v1/auth/resend-otp", (req) => {
+  cy.intercept("POST", "**/api/auth/resend-otp", (req) => {
     const targetEmail = req.body.email || email;
     req.reply({
       statusCode: 200,

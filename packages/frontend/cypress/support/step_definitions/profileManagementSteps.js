@@ -27,11 +27,11 @@ Before({ tags: "@edit_profile" }, () => {
   cy.fixture("authData").then((data) => {
     cy.intercept(
       "GET",
-      "**/api/v1/users/me",
-      createMockUserResponse(data.validUser)
+      "**/api/users/me",
+      createMockUserResponse(data.validUser),
     ).as("getUser");
 
-    cy.intercept("PATCH", "**/api/v1/users/updateMe", (req) => {
+    cy.intercept("PATCH", "**/api/users/updateMe", (req) => {
       const { username } = req.body;
 
       if (username === "my-new-username") {
@@ -67,12 +67,12 @@ Before({ tags: "@delete_account" }, () => {
   cy.fixture("authData").then((data) => {
     cy.intercept(
       "GET",
-      "**/api/v1/users/me",
-      createMockUserResponse(data.validUser)
+      "**/api/users/me",
+      createMockUserResponse(data.validUser),
     ).as("getUser");
   });
 
-  cy.intercept("DELETE", "**/api/v1/users/deleteMe", {
+  cy.intercept("DELETE", "**/api/users/deleteMe", {
     statusCode: 200,
     body: { status: "success", message: "Akun Anda telah berhasil dihapus." },
   }).as("deleteAccountApi");
@@ -81,7 +81,7 @@ Before({ tags: "@delete_account" }, () => {
 Given("I am on the profile page", () => {
   const mockResponse = createMockUserResponse(authData.validUser);
 
-  cy.intercept("GET", "**/api/v1/users/me", mockResponse).as("getUser");
+  cy.intercept("GET", "**/api/users/me", mockResponse).as("getUser");
 
   cy.visit("/profile");
 

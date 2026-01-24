@@ -9,7 +9,7 @@ beforeEach(() => {
 });
 
 Given("I am at the text prediction section of the homepage", () => {
-  cy.intercept("POST", "**/api/v1/text/predict", (req) => {
+  cy.intercept("POST", "**/api/text/predict", (req) => {
     const { text } = req.body;
 
     if (!text) {
@@ -24,7 +24,7 @@ Given("I am at the text prediction section of the homepage", () => {
     }
 
     const matchedScenario = predictionData.scenarios.find((scenario) =>
-      text.toLowerCase().includes(scenario.keyword.toLowerCase())
+      text.toLowerCase().includes(scenario.keyword.toLowerCase()),
     );
 
     if (matchedScenario) {
@@ -56,7 +56,7 @@ Given("I am at the text prediction section of the homepage", () => {
 });
 
 Given("the prediction system is unavailable", () => {
-  cy.intercept("POST", "**/api/v1/text/predict", {
+  cy.intercept("POST", "**/api/text/predict", {
     statusCode: 500,
     body: { message: predictionData.errorResponse.message },
   }).as("predictTextApi");
@@ -68,7 +68,7 @@ Then(
     cy.getBySel("prediction-result-container").within(() => {
       cy.contains(classification).should("be.visible");
     });
-  }
+  },
 );
 
 Then("I should see the confidence score was {string}", (scoreText) => {

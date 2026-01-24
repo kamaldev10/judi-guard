@@ -10,7 +10,7 @@ beforeEach(() => {
 
 // --- FORGOT PASSWORD STEPS ---
 Given("I visit the login page to request a password reset", () => {
-  cy.intercept("POST", "**/api/v1/auth/forgot-password", (req) => {
+  cy.intercept("POST", "**/api/auth/forgot-password", (req) => {
     req.reply({
       statusCode: 200,
       body: { message: authData.messages.forgotPasswordSuccess },
@@ -29,7 +29,7 @@ When("I click the Forgot Password link", () => {
 Given("I visit the reset password page with a valid token", () => {
   const token = authData.validResetToken;
 
-  cy.intercept("PUT", `**/api/v1/auth/reset-password/${token}`, (req) => {
+  cy.intercept("PUT", `**/api/auth/reset-password/${token}`, (req) => {
     req.reply({
       statusCode: 200,
       body: { message: authData.messages.resetPasswordSuccess },
@@ -42,7 +42,7 @@ Given("I visit the reset password page with a valid token", () => {
 // --- CHANGE PASSWORD STEPS ---
 Before({ tags: "@change_password" }, () => {
   cy.fixture("authData").then((data) => {
-    cy.intercept("PATCH", "**/api/v1/auth/change-password", (req) => {
+    cy.intercept("PATCH", "**/api/auth/change-password", (req) => {
       const { currentPassword, newPassword, confirmPassword } = req.body;
 
       if (currentPassword !== data.validUser.password) {

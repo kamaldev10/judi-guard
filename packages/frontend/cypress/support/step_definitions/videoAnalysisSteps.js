@@ -1,7 +1,7 @@
 import { Given, When, Then } from "@badeball/cypress-cucumber-preprocessor";
 
 let videoData;
-const ANALYSIS_API_URL = "**/api/v1/analysis/videos";
+const ANALYSIS_API_URL = "**/api/analysis/videos";
 const MOCK_ANALYSIS_ID = "mock-analysis-id-123";
 
 // Load fixture sebelum tes berjalan
@@ -41,7 +41,7 @@ Given("I am on the video analysis page", () => {
 
 // Mock User TERHUBUNG dengan YouTube
 Given("my YouTube account is connected", () => {
-  cy.intercept("GET", "**/api/v1/users/me", {
+  cy.intercept("GET", "**/api/users/me", {
     statusCode: 200,
     body: {
       status: "success",
@@ -71,7 +71,7 @@ Given("my YouTube account is connected", () => {
 });
 
 Given("my YouTube account is NOT connected", () => {
-  cy.intercept("GET", "**/api/v1/users/me", {
+  cy.intercept("GET", "**/api/users/me", {
     statusCode: 200,
     body: {
       status: "success",
@@ -147,7 +147,7 @@ Then("I should see the list of analyzed comments", () => {
 
   if (videoData?.responses?.comments?.length > 0) {
     cy.contains(videoData.responses.comments[0].commentTextDisplay).should(
-      "be.visible"
+      "be.visible",
     );
   }
 });

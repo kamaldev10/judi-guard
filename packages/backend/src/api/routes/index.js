@@ -6,6 +6,7 @@ const videoAnalysisRoutes = require("./videoAnalysis.routes");
 const textPredictRoutes = require("./textPredict.routes");
 const studioRoutes = require("./studio.routes");
 const channelRoutes = require("./channel.routes");
+const configurationRoutes = require("./configuration.routes");
 
 const router = express.Router();
 
@@ -22,5 +23,6 @@ router.use("/analysis", videoAnalysisRoutes);
 router.use("/studio", studioRoutes);
 router.use("/text", textPredictRoutes);
 router.use("/videos", channelRoutes);
+router.use("/config", configurationRoutes);
 
 module.exports = router;

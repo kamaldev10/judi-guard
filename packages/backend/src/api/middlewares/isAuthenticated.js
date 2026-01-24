@@ -5,6 +5,8 @@ const User = require("../models/User.model"); // Opsional: jika ingin mengambil 
 
 const isAuthenticated = async (req, res, next) => {
   try {
+    // console.log("Header Auth:", req.headers.authorization);
+
     let token;
     // 1. Cek apakah token ada di Authorization header
     if (
@@ -21,8 +23,8 @@ const isAuthenticated = async (req, res, next) => {
     if (!token) {
       return next(
         new UnauthorizedError(
-          "Anda tidak login. Silakan login untuk mendapatkan akses."
-        )
+          "Anda tidak login. Silakan login untuk mendapatkan akses.",
+        ),
       );
     }
 
@@ -36,8 +38,8 @@ const isAuthenticated = async (req, res, next) => {
       // Jika verifyToken mengembalikan null karena token tidak valid atau error lainnya
       return next(
         new ForbiddenError(
-          "Token tidak valid atau kedaluwarsa. Silakan login kembali."
-        )
+          "Token tidak valid atau kedaluwarsa. Silakan login kembali.",
+        ),
       );
     }
 
@@ -48,8 +50,8 @@ const isAuthenticated = async (req, res, next) => {
     if (!currentUser) {
       return next(
         new ForbiddenError(
-          "Pengguna yang terkait dengan token ini sudah tidak ada."
-        )
+          "Pengguna yang terkait dengan token ini sudah tidak ada.",
+        ),
       );
     }
 
@@ -84,7 +86,7 @@ const isAuthenticated = async (req, res, next) => {
     }
     if (error.name === "TokenExpiredError") {
       return next(
-        new ForbiddenError("Token kedaluwarsa. Silakan login kembali.")
+        new ForbiddenError("Token kedaluwarsa. Silakan login kembali."),
       );
     }
     next(error); // Teruskan ke global error handler

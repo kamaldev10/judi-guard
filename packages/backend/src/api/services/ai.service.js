@@ -2,117 +2,123 @@
 const mlApiClient = require("../../core/mlApiClient");
 const AnalyzedComment = require("../models/AnalyzedComment.model");
 const VideoAnalysis = require("../models/VideoAnalysis.model");
+const { Whitelist, Blacklist } = require("../models/UserConfig.model");
 const { AppError } = require("../../utils/errors");
 const config = require("../../config/environment");
 
-// --- 1. DEFINISI RULES & BOBOT (WEIGHTS) ---
-// Bobot menentukan seberapa parah indikator tersebut.
-const RULES = {
+const DEFAULT_GAMBLING_KEYWORDS = require("../constants/spamKeywords");
+
+// --- 1. DEFINISI RULES DASAR ---
+const BASE_RULES = {
   PHONE_PATTERN: /(\+62|62|08)\d{8,}/,
   LINK_PATTERN: /(https?:\/\/[^\s]+|wa\.me\/|t\.me\/|bit\.ly\/|s\.id\/)/,
 
-  // Blacklist: Kata yang hampir pasti digunakan oleh bot judi
-  GAMBLING_KEYWORDS: [
-    "gacor",
-    "slot",
-    "maxwin",
-    "sensasional",
-    "jackpot",
-    "wd",
-    "depo",
-    "togel",
-    "olympus",
-    "zeus",
-    "pragmatic",
-    "scatter",
-    "petir",
-    "pola",
-    "rungkad",
-  ],
+  DEFAULT_GAMBLING_KEYWORDS: DEFAULT_GAMBLING_KEYWORDS,
 
-  // Bobot Skor
   WEIGHTS: {
-    BLACKLIST: 100, // Langsung Auto High Risk
-    PHONE: 40, // Indikator Kuat
-    LINK: 30, // Indikator Sedang (bisa jadi link tugas/sah)
+    BLACKLIST: 100,
+    PHONE: 40,
+    LINK: 30,
   },
 };
 
 /**
- * --- 2. LOGIC HYBRID WEIGHTED SCORING ---
- * Menggabungkan Probabilitas AI + Deterministik Regex
+ * --- 2. LOGIC HYBRID + USER CONFIG ---
+ * Menerima data User Config (Whitelist/Blacklist) dari parameter
  */
-const enrichPrediction = (text, aiClassification, aiConfidence) => {
+const enrichPrediction = (
+  commentData,
+  aiClassification,
+  aiConfidence,
+  userBlacklist,
+  userWhitelist,
+) => {
+  const text = commentData.commentTextOriginal;
+  const authorChannelId = commentData.commentAuthorChannelId; // ID Channel Penulis
+  const textLower = text.toLowerCase();
+
   let indicators = {
     hasPhoneNumber: false,
     hasLink: false,
     hasGamblingKeywords: false,
+    isWhitelisted: false,
   };
   let reasons = [];
   let totalScore = 0;
 
-  const textLower = text.toLowerCase();
+  // --- PRIORITAS 1: CEK WHITELIST USER ---
+  // Jika penulis ada di whitelist, abaikan semua indikator spam.
+  if (userWhitelist.has(authorChannelId)) {
+    return {
+      classification: "NON_JUDI",
+      confidenceScore: 0,
+      spamIndicators: { ...indicators, isWhitelisted: true },
+      riskLevel: "NONE",
+      detectedKeywords: ["User Whitelist (Trusted Account)"],
+      processingStatus: "PROCESSED",
+      aiModelVersion: config.aiModelVersion,
+    };
+  }
 
-  // A. Hitung Base Score dari AI (Probabilistic)
-  // Jika AI mendeteksi JUDI, kita ambil persentase keyakinannya sebagai skor awal.
-  // Contoh: Confidence 0.95 = 95 Poin.
+  // --- PRIORITAS 2: LOGIKA AI & SCORING ---
+
+  // A. Hitung Base Score dari AI
   if (aiClassification === "JUDI") {
     totalScore += aiConfidence * 100;
   }
 
-  // B. Tambahkan Skor dari Indikator (Deterministic)
+  // B. Cek Blacklist (Gabungan Default + User Custom)
+  const allKeywords = [
+    ...BASE_RULES.DEFAULT_GAMBLING_KEYWORDS,
+    ...userBlacklist,
+  ];
 
-  // 1. Cek Blacklist (Bobot: 100)
-  const foundKeywords = RULES.GAMBLING_KEYWORDS.filter((word) =>
-    textLower.includes(word),
-  );
+  // Cari match
+  const foundKeywords = allKeywords.filter((word) => textLower.includes(word));
+
   if (foundKeywords.length > 0) {
     indicators.hasGamblingKeywords = true;
-    reasons.push(`Kata Kunci Terlarang: ${foundKeywords.join(", ")}`);
-    totalScore += RULES.WEIGHTS.BLACKLIST;
+    // Tampilkan max 3 keyword agar reason tidak kepanjangan
+    reasons.push(`Blacklist: ${foundKeywords.slice(0, 3).join(", ")}`);
+    totalScore += BASE_RULES.WEIGHTS.BLACKLIST;
   }
 
-  // 2. Cek Nomor Telepon (Bobot: 40)
-  if (RULES.PHONE_PATTERN.test(text)) {
+  // C. Cek Regex (Phone & Link)
+  if (BASE_RULES.PHONE_PATTERN.test(text)) {
     indicators.hasPhoneNumber = true;
     reasons.push("Mengandung Nomor Telepon");
-    totalScore += RULES.WEIGHTS.PHONE;
+    totalScore += BASE_RULES.WEIGHTS.PHONE;
   }
 
-  // 3. Cek Link (Bobot: 30)
-  if (RULES.LINK_PATTERN.test(text)) {
+  if (BASE_RULES.LINK_PATTERN.test(text)) {
     indicators.hasLink = true;
     reasons.push("Mengandung Tautan Eksternal");
-    totalScore += RULES.WEIGHTS.LINK;
+    totalScore += BASE_RULES.WEIGHTS.LINK;
   }
 
-  // C. Penentuan Final Classification & Risk Level
+  // --- PRIORITAS 3: PENENTUAN FINAL ---
   let finalClassification = aiClassification;
   let riskLevel = "NONE";
 
-  // LOGIC OVERRIDE:
-  // Jika AI bilang NON_JUDI, tapi skor > 100 (karena ada Blacklist Word),
-  // kita paksa ubah jadi JUDI. Safety Net!
+  // Override: Jika skor tinggi (kena blacklist/regex) walau AI bilang aman -> Paksa JUDI
   if (finalClassification === "NON_JUDI" && totalScore >= 100) {
     finalClassification = "JUDI";
     reasons.push("Override: Terdeteksi Indikator Berat");
   }
 
-  // Penentuan Risk Level Berdasarkan Total Score
+  // Tentukan Risk Level
   if (finalClassification === "JUDI") {
     if (totalScore >= 100) {
-      riskLevel = "HIGH"; // Hampir pasti spam (Gabungan AI + Rule atau Blacklist)
+      riskLevel = "HIGH";
     } else if (totalScore >= 80) {
-      riskLevel = "MEDIUM"; // AI sangat yakin atau AI ragu tapi ada link
+      riskLevel = "MEDIUM";
     } else if (totalScore >= 50) {
-      riskLevel = "LOW"; // AI yakin tapi confidence rendah & tanpa bukti lain
+      riskLevel = "LOW";
     } else {
-      // Skor < 50, anggap NONE (AI halusinasi / false positive lemah)
       riskLevel = "NONE";
       finalClassification = "NON_JUDI";
     }
 
-    // Jika masuk kategori judi tapi belum ada alasan spesifik (hanya semantik)
     if (finalClassification === "JUDI" && reasons.length === 0) {
       reasons.push(
         `Terdeteksi Semantik AI (${Math.round(aiConfidence * 100)}%)`,
@@ -121,7 +127,7 @@ const enrichPrediction = (text, aiClassification, aiConfidence) => {
   }
 
   return {
-    classification: finalClassification === "JUDI" ? "JUDI" : "NON_JUDI", // Pastikan Uppercase sesuai Enum
+    classification: finalClassification,
     confidenceScore: aiConfidence,
     spamIndicators: indicators,
     riskLevel: riskLevel,
@@ -140,19 +146,43 @@ const runAiClassification = async (analysisId) => {
       `[AI Service] Memulai klasifikasi untuk Analysis ID: ${analysisId}`,
     );
 
-    // 1. Ambil komentar 'UNPROCESSED'
-    // Gunakan nama field yang benar: 'commentTextOriginal'
+    // 1. Ambil Data Analisis untuk mengetahui User ID
+    const analysisRecord = await VideoAnalysis.findById(analysisId);
+    if (!analysisRecord) throw new Error("Data analisis tidak ditemukan.");
+
+    const userId = analysisRecord.userId; // Bisa null jika Guest
+
+    // 2. FETCH KONFIGURASI USER (Whitelist & Blacklist)
+    let userBlacklist = [];
+    let userWhitelist = new Set(); // Set untuk pencarian O(1)
+
+    // Hanya fetch jika bukan Guest
+    if (userId) {
+      // Ambil Blacklist Custom
+      const blDocs = await Blacklist.find({ userId }).select("keyword");
+      userBlacklist = blDocs.map((d) => d.keyword.toLowerCase());
+
+      // Ambil Whitelist Custom
+      const wlDocs = await Whitelist.find({ userId }).select("channelId");
+      wlDocs.forEach((d) => userWhitelist.add(d.channelId));
+
+      console.log(
+        `[AI Service] User Config Loaded: ${userBlacklist.length} Blacklist words, ${userWhitelist.size} Whitelisted channels.`,
+      );
+    }
+
+    // 3. Ambil Komentar (Tambahkan field commentAuthorChannelId)
     const commentsToAnalyze = await AnalyzedComment.find({
       analysisId: analysisId,
       processingStatus: "UNPROCESSED",
-    }).select("_id commentTextOriginal");
+    }).select("_id commentTextOriginal commentAuthorChannelId"); // <--- PENTING: Ambil ID Author
 
     if (commentsToAnalyze.length === 0) {
       console.log("[AI Service] Tidak ada komentar baru untuk dianalisis.");
       return;
     }
 
-    // 2. Siapkan Payload untuk Python
+    // 4. Siapkan Payload ke Python (Hanya ID dan Teks)
     const payload = {
       comments: commentsToAnalyze.map((c) => ({
         id: c._id.toString(),
@@ -164,27 +194,31 @@ const runAiClassification = async (analysisId) => {
       `[AI Service] Mengirim ${payload.comments.length} komentar ke ML API...`,
     );
 
-    // 3. Panggil API Python
+    // 5. Panggil API Python
     const response = await mlApiClient.post("/api/analyze", payload);
-    const { results } = response.data; // [{id, classification, confidenceScore}, ...]
+    const { results } = response.data;
 
     if (!results || !Array.isArray(results)) {
       throw new Error("Format respons ML API tidak valid.");
     }
 
-    // 4. Map Teks Asli untuk Enrichment
-    const textMap = {};
+    // 6. Mapping Data Asli agar bisa dicek Whitelist/Blacklist
+    const commentMap = {};
     commentsToAnalyze.forEach((c) => {
-      textMap[c._id.toString()] = c.commentTextOriginal;
+      commentMap[c._id.toString()] = c; // Simpan object lengkap (text + authorId)
     });
 
-    // 5. Gabungkan Hasil AI + Logic Hybrid
+    // 7. Gabungkan Hasil AI + Config User
     const bulkOps = results.map((res) => {
-      const originalText = textMap[res.id];
+      const originalData = commentMap[res.id];
+
+      // PASSING CONFIG USER KE SINI
       const enriched = enrichPrediction(
-        originalText,
+        originalData,
         res.classification,
         res.confidenceScore,
+        userBlacklist,
+        userWhitelist,
       );
 
       return {
@@ -193,7 +227,7 @@ const runAiClassification = async (analysisId) => {
           update: {
             $set: {
               processingStatus: "PROCESSED",
-              classification: enriched.classification, // JUDI / NON_JUDI
+              classification: enriched.classification,
               confidenceScore: enriched.confidenceScore,
               spamIndicators: enriched.spamIndicators,
               riskLevel: enriched.riskLevel,
@@ -205,13 +239,12 @@ const runAiClassification = async (analysisId) => {
       };
     });
 
-    // 6. Eksekusi Bulk Write
+    // 8. Eksekusi Bulk Write
     if (bulkOps.length > 0) {
       await AnalyzedComment.bulkWrite(bulkOps);
     }
 
-    // 7. Hitung Statistik Akhir untuk Header VideoAnalysis
-    // Kita hitung yang status akhirnya JUDI
+    // 9. Update Statistik Header
     const processedIds = results.map((r) => r.id);
     const finalSpamCount = await AnalyzedComment.countDocuments({
       _id: { $in: processedIds },
@@ -220,7 +253,6 @@ const runAiClassification = async (analysisId) => {
 
     const moderationStatus = finalSpamCount > 0 ? "NONE" : "CLEANED";
 
-    // Update Header (Increment total, bukan replace, agar aman jika batching)
     await VideoAnalysis.findByIdAndUpdate(analysisId, {
       $inc: {
         totalCommentsAnalyzed: commentsToAnalyze.length,

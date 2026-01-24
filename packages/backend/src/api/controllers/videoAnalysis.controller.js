@@ -4,6 +4,7 @@ const youtubeService = require("../services/youtube.service");
 const { BadRequestError, NotFoundError } = require("../../utils/errors");
 const AnalyzedComment = require("../models/AnalyzedComment.model");
 const VideoAnalysis = require("../models/VideoAnalysis.model");
+const generateModerationReport = require("../../utils/pdfGenerator");
 
 //* --- NEW LOGIC ---
 
@@ -98,7 +99,6 @@ const getAnalysisStatus = async (req, res, next) => {
 const getAnalysisResults = async (req, res, next) => {
   try {
     const { analysisId } = req.params;
-    const { page, limit, type } = req.query; // type: 'all' | 'spam' | 'safe'
 
     // Validasi kepemilikan (Opsional tapi recommended)
     // Cek apakah analysisId ini milik user yang sedang login
@@ -107,11 +107,10 @@ const getAnalysisResults = async (req, res, next) => {
       throw new AppError("Data analisis tidak ditemukan.", 404);
     }
 
-    const data = await videoAnalysisService.getAnalysisResults(analysisId, {
-      page,
-      limit,
-      type,
-    });
+    const data = await videoAnalysisService.getAnalysisResults(
+      analysisId,
+      req.query,
+    );
 
     res.status(200).json({
       status: "success",
@@ -122,6 +121,141 @@ const getAnalysisResults = async (req, res, next) => {
   }
 };
 
+/**
+ * @body { commentIds: [...], action: "DELETE", banAuthor: true }
+ */
+const executeAction = async (req, res, next) => {
+  try {
+    const { analysisId } = req.params;
+    // Ambil banAuthor dari body (default false jika tidak dikirim)
+    const { commentIds, action, banAuthor = false } = req.body;
+    const tokens = req.youtubeTokens;
+
+    if (!commentIds || !Array.isArray(commentIds) || commentIds.length === 0) {
+      throw new AppError(
+        "Daftar ID komentar (commentIds) wajib diisi array.",
+        400,
+      );
+    }
+    if (!action) {
+      throw new AppError("Jenis aksi (action) wajib diisi.", 400);
+    }
+
+    // Teruskan banAuthor ke Service
+    const result = await videoAnalysisService.executeModerationAction(
+      tokens,
+      analysisId,
+      commentIds,
+      action,
+      banAuthor, // <--- Passing ke Service
+    );
+
+    res.status(200).json({
+      status: "success",
+      message: `Berhasil memproses ${action} (Ban: ${banAuthor}) untuk ${result.requested} komentar.`,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Mengembalikan komentar ke status Published (Undo Delete/Hold)
+ * @route   POST /api/analysis/:analysisId/undo
+ * @body    { commentIds: ["id1", "id2"] }
+ */
+const undoAction = async (req, res, next) => {
+  try {
+    const { analysisId } = req.params;
+    const { commentIds } = req.body;
+    const tokens = req.youtubeTokens;
+
+    if (!commentIds || !Array.isArray(commentIds) || commentIds.length === 0) {
+      throw new AppError(
+        "Daftar ID komentar (commentIds) wajib diisi array.",
+        400,
+      );
+    }
+
+    const result = await videoAnalysisService.executeUndoAction(
+      tokens,
+      analysisId,
+      commentIds,
+    );
+
+    res.status(200).json({
+      status: "success",
+      message: `Berhasil mengembalikan (Undo) ${result.requested} komentar menjadi Published.`,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    menampilkan daftar video yang pernah dianalisis user beserta status akhirnya (Cleaned/Not Cleaned)
+ * @route   GET /api/analysis/history
+ */
+const getHistory = async (req, res, next) => {
+  try {
+    const userId = req.user.id; // Dari middleware protect
+    const { page = 1, limit = 10 } = req.query;
+
+    const skip = (page - 1) * limit;
+
+    // Cari riwayat milik user tersebut
+    const history = await VideoAnalysis.find({ userId })
+      .sort({ requestedAt: -1 }) // Terbaru di atas
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    const total = await VideoAnalysis.countDocuments({ userId });
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        history,
+        pagination: {
+          page: parseInt(page),
+          total,
+          pages: Math.ceil(total / limit),
+        },
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const downloadReport = async (req, res, next) => {
+  try {
+    const { analysisId } = req.params;
+
+    // 1. Ambil Data Header
+    const analysisData = await VideoAnalysis.findById(analysisId);
+    if (!analysisData) throw new AppError("Data analisis tidak ditemukan", 404);
+
+    // 2. Ambil Daftar Komentar SPAM (Yang Risk High/Medium)
+    const comments = await AnalyzedComment.find({
+      analysisId: analysisId,
+      classification: "JUDI",
+    }).limit(200); // Batasi 200 biar PDF generation cepat
+
+    // 3. Set Header Response agar Browser download file
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=Laporan_Spam_${analysisId}.pdf`,
+    );
+
+    // 4. Generate PDF
+    generateModerationReport(analysisData, comments, res);
+  } catch (error) {
+    next(error);
+  }
+};
 // ----------------------------------
 
 /**
@@ -283,6 +417,10 @@ module.exports = {
   startAnalysis,
   getAnalysisStatus,
   getAnalysisResults,
+  executeAction,
+  undoAction,
+  getHistory,
+  downloadReport,
   submitVideoForAnalysis,
   getAnalyzedCommentsForVideo,
   batchDeleteJudiCommentsController,

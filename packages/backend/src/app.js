@@ -28,7 +28,14 @@ const corsOptions = {
   },
   credentials: true, // Penting jika Anda mengirim cookies atau header Authorization
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"], // Metode HTTP yang diizinkan
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"], // Header yang diizinkan
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "X-Requested-With",
+    "Cache-Control",
+    "Pragma",
+    "Expires",
+  ], // Header yang diizinkan
 };
 
 app.use(cors(corsOptions));

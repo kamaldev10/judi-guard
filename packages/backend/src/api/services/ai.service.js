@@ -46,7 +46,7 @@ const enrichPrediction = (
   let reasons = [];
   let totalScore = 0;
 
-  // --- PRIORITAS 1: CEK WHITELIST USER ---
+  // ---CEK WHITELIST USER ---
   // Jika penulis ada di whitelist, abaikan semua indikator spam.
   if (userWhitelist.has(authorChannelId)) {
     return {
@@ -60,14 +60,13 @@ const enrichPrediction = (
     };
   }
 
-  // --- PRIORITAS 2: LOGIKA AI & SCORING ---
-
-  // A. Hitung Base Score dari AI
+  // --- LOGIKA AI & SCORING ---
+  // Hitung Base Score dari AI
   if (aiClassification === "JUDI") {
     totalScore += aiConfidence * 100;
   }
 
-  // B. Cek Blacklist (Gabungan Default + User Custom)
+  // Cek Blacklist (Gabungan Default + User Custom)
   const allKeywords = [
     ...BASE_RULES.DEFAULT_GAMBLING_KEYWORDS,
     ...userBlacklist,
@@ -96,7 +95,7 @@ const enrichPrediction = (
     totalScore += BASE_RULES.WEIGHTS.LINK;
   }
 
-  // --- PRIORITAS 3: PENENTUAN FINAL ---
+  // --- PENENTUAN FINAL ---
   let finalClassification = aiClassification;
   let riskLevel = "NONE";
 
@@ -146,13 +145,13 @@ const runAiClassification = async (analysisId) => {
       `[AI Service] Memulai klasifikasi untuk Analysis ID: ${analysisId}`,
     );
 
-    // 1. Ambil Data Analisis untuk mengetahui User ID
+    // Ambil Data Analisis untuk mengetahui User ID
     const analysisRecord = await VideoAnalysis.findById(analysisId);
     if (!analysisRecord) throw new Error("Data analisis tidak ditemukan.");
 
     const userId = analysisRecord.userId; // Bisa null jika Guest
 
-    // 2. FETCH KONFIGURASI USER (Whitelist & Blacklist)
+    // FETCH KONFIGURASI USER (Whitelist & Blacklist)
     let userBlacklist = [];
     let userWhitelist = new Set(); // Set untuk pencarian O(1)
 
@@ -166,23 +165,23 @@ const runAiClassification = async (analysisId) => {
       const wlDocs = await Whitelist.find({ userId }).select("channelId");
       wlDocs.forEach((d) => userWhitelist.add(d.channelId));
 
-      console.log(
-        `[AI Service] User Config Loaded: ${userBlacklist.length} Blacklist words, ${userWhitelist.size} Whitelisted channels.`,
-      );
+      // console.log(
+      //   `[AI Service] User Config Loaded: ${userBlacklist.length} Blacklist words, ${userWhitelist.size} Whitelisted channels.`,
+      // );
     }
 
-    // 3. Ambil Komentar (Tambahkan field commentAuthorChannelId)
+    // Ambil Komentar (Tambahkan field commentAuthorChannelId)
     const commentsToAnalyze = await AnalyzedComment.find({
       analysisId: analysisId,
       processingStatus: "UNPROCESSED",
-    }).select("_id commentTextOriginal commentAuthorChannelId"); // <--- PENTING: Ambil ID Author
+    }).select("_id commentTextOriginal commentAuthorChannelId");
 
     if (commentsToAnalyze.length === 0) {
       console.log("[AI Service] Tidak ada komentar baru untuk dianalisis.");
       return;
     }
 
-    // 4. Siapkan Payload ke Python (Hanya ID dan Teks)
+    // Siapkan Payload ke Python (Hanya ID dan Teks)
     const payload = {
       comments: commentsToAnalyze.map((c) => ({
         id: c._id.toString(),
@@ -190,11 +189,11 @@ const runAiClassification = async (analysisId) => {
       })),
     };
 
-    console.log(
-      `[AI Service] Mengirim ${payload.comments.length} komentar ke ML API...`,
-    );
+    // console.log(
+    //   `[AI Service] Mengirim ${payload.comments.length} komentar ke ML API...`,
+    // );
 
-    // 5. Panggil API Python
+    // Panggil API Python
     const response = await mlApiClient.post("/api/analyze", payload);
     const { results } = response.data;
 
@@ -202,13 +201,13 @@ const runAiClassification = async (analysisId) => {
       throw new Error("Format respons ML API tidak valid.");
     }
 
-    // 6. Mapping Data Asli agar bisa dicek Whitelist/Blacklist
+    // Mapping Data Asli agar bisa dicek Whitelist/Blacklist
     const commentMap = {};
     commentsToAnalyze.forEach((c) => {
-      commentMap[c._id.toString()] = c; // Simpan object lengkap (text + authorId)
+      commentMap[c._id.toString()] = c;
     });
 
-    // 7. Gabungkan Hasil AI + Config User
+    // Gabungkan Hasil AI + Config User
     const bulkOps = results.map((res) => {
       const originalData = commentMap[res.id];
 
@@ -239,12 +238,12 @@ const runAiClassification = async (analysisId) => {
       };
     });
 
-    // 8. Eksekusi Bulk Write
+    // Eksekusi Bulk Write
     if (bulkOps.length > 0) {
       await AnalyzedComment.bulkWrite(bulkOps);
     }
 
-    // 9. Update Statistik Header
+    // Update Statistik Header
     const processedIds = results.map((r) => r.id);
     const finalSpamCount = await AnalyzedComment.countDocuments({
       _id: { $in: processedIds },
@@ -261,9 +260,9 @@ const runAiClassification = async (analysisId) => {
       $set: { moderationStatus: moderationStatus },
     });
 
-    console.log(
-      `[AI Service] Sukses. Spam terdeteksi (Batch ini): ${finalSpamCount}`,
-    );
+    // console.log(
+    //   `[AI Service] Sukses. Spam terdeteksi (Batch ini): ${finalSpamCount}`,
+    // );
   } catch (error) {
     console.error("[AI Service] Error:", error.message);
     if (error.code === "ECONNREFUSED" || error.response?.status >= 500) {

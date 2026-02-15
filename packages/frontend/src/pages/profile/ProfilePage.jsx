@@ -4,7 +4,7 @@ import { AlertTriangle } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { useProfilePresenter } from "@/hooks/profile/useProfilePresenter";
 import PageLoader from "@/components/layout/PageLoader";
-import NotLogin from "../status/NotLogin";
+import NotLogin from "@/components/status/NotLogin";
 
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { ProfileConnection } from "@/components/profile/ProfileConnection";

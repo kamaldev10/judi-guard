@@ -62,20 +62,15 @@ def analyze_batch():
         results = []
 
         # Loop processing
-        # Catatan: Untuk optimasi tingkat lanjut (ribuan data), kita bisa batching di level Tensor.
-        # Tapi untuk level Skripsi/Apps menengah, loop ini sudah sangat cepat.
         for item in comments:
             mongo_id = item.get('id')
             text = item.get('text', '')
 
-            # Skip jika data tidak lengkap
             if not mongo_id: 
                 continue
 
-            # Lakukan Prediksi
             prediction = get_prediction(text)
 
-            # Masukkan hasil ke list
             results.append({
                 "id": mongo_id,
                 "classification": prediction['classification'],   # "JUDI" / "NON_JUDI"

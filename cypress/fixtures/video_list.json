@@ -1,0 +1,23 @@
+{
+  "status": "success",
+  "data": {
+    "videos": [
+      {
+        "id": "eeKxI45uZ0Y",
+        "title": "Video Contoh Judi Guard",
+        "thumbnail": "https://via.placeholder.com/320x180",
+        "publishedAt": "2025-01-01T10:00:00Z",
+        "statistics": { "viewCount": "100", "commentCount": "50" }
+      },
+      {
+        "id": "sample_video_2",
+        "title": "Tutorial React JS",
+        "thumbnail": "https://via.placeholder.com/320x180",
+        "publishedAt": "2025-01-02T10:00:00Z",
+        "statistics": { "viewCount": "200", "commentCount": "10" }
+      }
+    ],
+    "nextPageToken": null,
+    "totalResults": 2
+  }
+}

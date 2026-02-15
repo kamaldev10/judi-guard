@@ -1,0 +1,12 @@
+{
+  "judiGuardToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODQzNDQ4MmU5ZjVjYjEyZTczMTE4M2MiLCJ1c2VybmFtZSI6IkFkbWluIEdhbnRlbmciLCJpYXQiOjE3NzAxMzc5NzQsImV4cCI6MTc3MDc0Mjc3NH0.ziTGMNZ7tuzabdSmtsU0HImRX22diOyr6px8gE6gLbE",
+  "judiGuardUser": {
+    "_id": "68434482e9f5cb12e731183c",
+    "username": "User Baru",
+    "email": "newuser@gmail.com",
+    "isVerified": true,
+    "isYoutubeConnected": false,
+    "youtubeChannelId": null,
+    "youtubeChannelName": null
+  }
+}

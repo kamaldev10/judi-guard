@@ -1,0 +1,12 @@
+{
+  "status": "success",
+  "data": {
+    "_id": "analysis_123_abc",
+    "status": "COMPLETED",
+    "totalCommentsFetched": 100,
+    "totalCommentsAnalyzed": 100,
+    "totalSpamDetected": 25,
+    "moderationStatus": "NEEDS_ACTION",
+    "completedAt": "2025-10-01T12:01:00Z"
+  }
+}

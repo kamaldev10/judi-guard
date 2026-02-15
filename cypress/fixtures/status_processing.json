@@ -1,0 +1,10 @@
+{
+  "status": "success",
+  "data": {
+    "_id": "analysis_123_abc",
+    "status": "PROCESSING",
+    "totalCommentsFetched": 50,
+    "totalCommentsAnalyzed": 10,
+    "totalSpamDetected": 0
+  }
+}

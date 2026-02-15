@@ -1,0 +1,13 @@
+{
+  "tokens": {
+    "access_token": "ya29.mocked_google_access_token",
+    "refresh_token": "mocked_refresh_token",
+    "expiry_date": 1770141169326
+  },
+  "channel": {
+    "id": "UCIz271dZmYRFR68KSuXNMWw",
+    "title": "Ali Musthafa Kamal",
+    "thumbnail": "https://yt3.ggpht.com/E1XOY9zQjA3LCJO-ht09zS_z35shhS9FUxbAXY6XrvLf_6Or0YspbWhfeKQHuue0pmr-yE4EazU=s88-c-k-c0x00ffffff-no-rj",
+    "customUrl": "@alimusthafakamal7881"
+  }
+}

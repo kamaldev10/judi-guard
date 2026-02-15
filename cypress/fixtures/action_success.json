@@ -1,0 +1,5 @@
+{
+  "status": "success",
+  "message": "Berhasil memproses DELETE",
+  "data": { "requested": 1, "youtubeResult": { "successCount": 1 } }
+}

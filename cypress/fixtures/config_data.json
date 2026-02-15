@@ -1,0 +1,14 @@
+{
+  "whitelist": [
+    { "id": 1, "username": "@AdminResmi", "note": "Ini akun resmi admin" },
+    {
+      "id": 2,
+      "username": "@Moderator01",
+      "note": "Ini akun moderator terpercaya"
+    }
+  ],
+  "blacklist": [
+    { "id": 1, "keyword": "slot" },
+    { "id": 2, "keyword": "zeus" }
+  ]
+}

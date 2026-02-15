@@ -1,0 +1,32 @@
+{
+  "status": "success",
+  "data": {
+    "history": [
+      {
+        "_id": "hist_001",
+        "videoTitle": "Tutorial Cara Menang Slot",
+        "youtubeVideoId": "vid_abc123",
+        "requestedAt": "2025-10-01T14:30:00Z",
+        "totalCommentsAnalyzed": 150,
+        "totalSpamDetected": 45,
+        "status": "COMPLETED",
+        "moderationStatus": "PARTIAL"
+      },
+      {
+        "_id": "hist_002",
+        "videoTitle": "Belajar React untuk Pemula",
+        "youtubeVideoId": "vid_xyz789",
+        "requestedAt": "2025-09-28T09:15:00Z",
+        "totalCommentsAnalyzed": 80,
+        "totalSpamDetected": 0,
+        "status": "COMPLETED",
+        "moderationStatus": "CLEANED"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "total": 2,
+      "pages": 1
+    }
+  }
+}

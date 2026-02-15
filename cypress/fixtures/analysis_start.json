@@ -1,0 +1,10 @@
+{
+  "status": "success",
+  "message": "Permintaan analisis diterima.",
+  "data": {
+    "analysisId": "analysis_123_abc",
+    "videoId": "eeKxI45uZ0Y",
+    "status": "PROCESSING",
+    "ticketCreated": true
+  }
+}

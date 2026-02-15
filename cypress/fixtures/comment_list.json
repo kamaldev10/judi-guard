@@ -1,0 +1,90 @@
+[
+  {
+    "threadId": "t1",
+    "videoId": "eeKxI45uZ0Y",
+    "totalReplyCount": 0,
+    "isPublic": true,
+    "topLevelComment": {
+      "id": "c1",
+      "text": "Konten yang sangat bermanfaat, terima kasih bang!",
+      "author": {
+        "name": "User Fixture 1",
+        "avatar": "https://i.pravatar.cc/150?img=1",
+        "channelId": "channel_1"
+      },
+      "likeCount": 10,
+      "publishedAt": "2025-10-01T12:00:00Z",
+      "updatedAt": "2025-10-01T12:00:00Z"
+    },
+    "replies": []
+  },
+  {
+    "threadId": "t2",
+    "videoId": "eeKxI45uZ0Y",
+    "totalReplyCount": 1,
+    "isPublic": true,
+    "topLevelComment": {
+      "id": "c2",
+      "text": "Mampir kakak, situs gacor hari ini pasti profit www.judigacor.com",
+      "author": {
+        "name": "Spammer Fixture",
+        "avatar": "https://i.pravatar.cc/150?img=8",
+        "channelId": "spam_channel"
+      },
+      "likeCount": 2,
+      "publishedAt": "2025-10-01T12:05:00Z",
+      "updatedAt": "2025-10-01T12:05:00Z"
+    },
+    "replies": [
+      {
+        "id": "r1",
+        "text": "Link spam, laporkan!",
+        "author": {
+          "name": "User Anti Spam",
+          "avatar": "https://i.pravatar.cc/150?img=4",
+          "channelId": "anti_spam"
+        },
+        "likeCount": 5,
+        "publishedAt": "2025-10-01T12:10:00Z"
+      }
+    ]
+  },
+  {
+    "threadId": "t3",
+    "videoId": "eeKxI45uZ0Y",
+    "totalReplyCount": 0,
+    "isPublic": true,
+    "topLevelComment": {
+      "id": "c3",
+      "text": "Yang mau menang besar, cek profil saya. Zeus x500 menanti!",
+      "author": {
+        "name": "Bandar 88",
+        "avatar": "https://i.pravatar.cc/150?img=12",
+        "channelId": "bandar_channel"
+      },
+      "likeCount": 0,
+      "publishedAt": "2025-10-01T13:00:00Z",
+      "updatedAt": "2025-10-01T13:00:00Z"
+    },
+    "replies": []
+  },
+  {
+    "threadId": "t4",
+    "videoId": "eeKxI45uZ0Y",
+    "totalReplyCount": 0,
+    "isPublic": true,
+    "topLevelComment": {
+      "id": "c4",
+      "text": "Bang mau tanya, menit 5:30 itu kodingannya error kenapa ya?",
+      "author": {
+        "name": "Student Developer",
+        "avatar": "https://i.pravatar.cc/150?img=33",
+        "channelId": "student_channel"
+      },
+      "likeCount": 1,
+      "publishedAt": "2025-10-01T14:00:00Z",
+      "updatedAt": "2025-10-01T14:00:00Z"
+    },
+    "replies": []
+  }
+]

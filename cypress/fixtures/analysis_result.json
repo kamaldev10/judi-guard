@@ -1,0 +1,73 @@
+{
+  "status": "success",
+  "data": {
+    "comments": [
+      {
+        "_id": "res_c1",
+        "commentTextDisplay": "Konten yang sangat bermanfaat, terima kasih bang!",
+        "commentAuthorDisplayName": "User Fixture 1",
+        "commentAuthorProfileImageUrl": "https://i.pravatar.cc/150?img=1",
+        "classification": "HAM",
+        "riskLevel": "LOW",
+        "confidenceScore": 0.02,
+        "detectedKeywords": [],
+        "actionTaken": "NONE",
+        "commentPublishedAt": "2025-10-01T12:00:00Z",
+        "youtubeVideoId": "eeKxI45uZ0Y",
+        "youtubeCommentId": "c1",
+        "spamIndicators": { "isWhitelisted": true }
+      },
+      {
+        "_id": "res_c2",
+        "commentTextDisplay": "Mampir kakak, situs gacor hari ini pasti profit www.judigacor.com",
+        "commentAuthorDisplayName": "Spammer Fixture",
+        "commentAuthorProfileImageUrl": "https://i.pravatar.cc/150?img=8",
+        "classification": "JUDI",
+        "riskLevel": "HIGH",
+        "confidenceScore": 0.99,
+        "detectedKeywords": ["gacor", "profit", "situs"],
+        "actionTaken": "NONE",
+        "commentPublishedAt": "2025-10-01T12:05:00Z",
+        "youtubeVideoId": "eeKxI45uZ0Y",
+        "youtubeCommentId": "c2",
+        "spamIndicators": { "isWhitelisted": false }
+      },
+      {
+        "_id": "res_c3",
+        "commentTextDisplay": "Yang mau menang besar, cek profil saya. Zeus x500 menanti!",
+        "commentAuthorDisplayName": "Bandar 88",
+        "commentAuthorProfileImageUrl": "https://i.pravatar.cc/150?img=12",
+        "classification": "JUDI",
+        "riskLevel": "HIGH",
+        "confidenceScore": 0.95,
+        "detectedKeywords": ["zeus", "menang besar"],
+        "actionTaken": "NONE",
+        "commentPublishedAt": "2025-10-01T13:00:00Z",
+        "youtubeVideoId": "eeKxI45uZ0Y",
+        "youtubeCommentId": "c3",
+        "spamIndicators": { "isWhitelisted": false }
+      },
+      {
+        "_id": "res_c4",
+        "commentTextDisplay": "Bang mau tanya, menit 5:30 itu kodingannya error kenapa ya?",
+        "commentAuthorDisplayName": "Student Developer",
+        "commentAuthorProfileImageUrl": "https://i.pravatar.cc/150?img=33",
+        "classification": "HAM",
+        "riskLevel": "LOW",
+        "confidenceScore": 0.05,
+        "detectedKeywords": [],
+        "actionTaken": "NONE",
+        "commentPublishedAt": "2025-10-01T14:00:00Z",
+        "youtubeVideoId": "eeKxI45uZ0Y",
+        "youtubeCommentId": "c4",
+        "spamIndicators": { "isWhitelisted": false }
+      }
+    ],
+    "pagination": { "currentPage": 1, "totalPages": 1, "totalItems": 4 },
+    "stats": {
+      "totalCommentsAnalyzed": 4,
+      "totalSpamDetected": 2,
+      "moderationStatus": "NEEDS_ACTION"
+    }
+  }
+}

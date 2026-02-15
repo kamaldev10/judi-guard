@@ -1,0 +1,32 @@
+{
+  "status": "success",
+  "data": {
+    "comments": [
+      {
+        "_id": "c1",
+        "commentTextDisplay": "Info slot gacor",
+        "commentAuthorDisplayName": "Spammer Fixture",
+        "commentAuthorProfileImageUrl": "https://via.placeholder.com/50",
+        "classification": "JUDI",
+        "riskLevel": "HIGH",
+        "confidenceScore": 0.99,
+        "actionTaken": "DELETE",
+        "youtubeVideoId": "v1",
+        "youtubeCommentId": "yc1"
+      },
+      {
+        "_id": "c2",
+        "commentTextDisplay": "Konten bagus",
+        "commentAuthorDisplayName": "Good User",
+        "commentAuthorProfileImageUrl": "https://via.placeholder.com/50",
+        "classification": "NON_JUDI",
+        "riskLevel": "LOW",
+        "confidenceScore": 0.01,
+        "actionTaken": "NONE",
+        "youtubeVideoId": "v1",
+        "youtubeCommentId": "yc2"
+      }
+    ],
+    "pagination": { "currentPage": 1, "totalPages": 1, "totalItems": 2 }
+  }
+}

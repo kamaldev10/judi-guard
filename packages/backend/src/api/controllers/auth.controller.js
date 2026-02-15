@@ -3,8 +3,11 @@ const googleOAuth2Client = require("../../utils/googleOAuth2Client"); // Utilita
 const authService = require("../services/auth.service"); // Service untuk logika bisnis autentikasi
 const youtubeService = require("../services/youtube.service");
 const { BadRequestError, UnauthorizedError } = require("../../utils/errors"); // Custom error classes
+const google = require("googleapis");
+const config = require("../../config/environment");
 
-const GUEST_CALLBACK_URL = `${process.env.API_URL || "http://localhost:3000"}/api/auth/guest/callback`;
+const GUEST_CALLBACK_URL = `${process.env.API_URL || "http://localhost:3001"}/api/auth/guest/callback`;
+const USER_CALLBACK_URL = `${process.env.API_URL || "http://localhost:3001"}/api/auth/youtube/callback`;
 
 /**
  * Menangani registrasi pengguna baru.
@@ -123,41 +126,28 @@ const handleGoogleAuth = async (req, res, next) => {
  */
 const redirectToGoogleOAuth = (req, res, next) => {
   try {
-    // Pastikan req.user._id ada (dari middleware isAuthenticated)
-    if (!req.user || !req.user._id) {
-      return next(
-        new UnauthorizedError(
-          "Pengguna tidak teridentifikasi untuk memulai proses OAuth YouTube.",
-        ),
-      );
+    if (!req.user || !req.user.id) {
+      return next(new UnauthorizedError("User tidak teridentifikasi."));
     }
 
-    const oAuth2Client = googleOAuth2Client(); // Membuat instance OAuth2 client
     const YOUTUBE_SCOPES = [
-      // Perbaiki nama variabel jika ini khusus untuk YouTube
       "https://www.googleapis.com/auth/userinfo.profile",
       "https://www.googleapis.com/auth/userinfo.email",
       "https://www.googleapis.com/auth/youtube.force-ssl",
-      // "https://www.googleapis.com/auth/youtube.readonly", // Alternatif jika hanya perlu baca
-      "https://www.googleapis.com/auth/youtube", // Akses lebih luas jika diperlukan (misal, hapus komentar)
+      "https://www.googleapis.com/auth/youtube",
     ];
 
-    const authorizeUrl = oAuth2Client.generateAuthUrl({
-      access_type: "offline", // Untuk mendapatkan refresh_token agar akses bisa diperpanjang
-      scope: YOUTUBE_SCOPES, // Scope harus string dipisahkan spasi
-      state: req.user._id.toString(), // ID pengguna Judi Guard sebagai 'state' untuk verifikasi callback
-      prompt: "consent", // Opsional: 'consent' akan selalu menampilkan layar persetujuan Google. Hapus untuk SSO jika sudah pernah setuju.
-      redirect_uri: process.env.YOUTUBE_REDIRECT_URI,
+    const authorizeUrl = googleOAuth2Client.generateAuthUrl({
+      access_type: "offline",
+      scope: YOUTUBE_SCOPES,
+      state: req.user.id.toString(), // Bawa ID user ke Google
+      prompt: "consent", // Paksa refresh token keluar
+      redirect_uri: USER_CALLBACK_URL, // PENTING: Harus beda/spesifik
     });
 
-    // Mengirim URL otorisasi ke frontend
     res.status(200).json({
       status: "success",
-      message:
-        "Silakan lanjutkan ke URL otorisasi Google untuk menghubungkan akun YouTube.",
-      data: {
-        redirectUrl: authorizeUrl,
-      },
+      data: { redirectUrl: authorizeUrl },
     });
   } catch (error) {
     next(error);
@@ -169,69 +159,35 @@ const redirectToGoogleOAuth = (req, res, next) => {
  * Menyimpan token YouTube dan mengarahkan pengguna kembali ke frontend.
  */
 const handleGoogleOAuthCallback = async (req, res, next) => {
-  const frontendProfileUrl = process.env.FRONTEND_URL
-    ? `${process.env.FRONTEND_URL}/profile` // Atau halaman spesifik untuk callback
-    : "http://localhost:5173/profile"; // Fallback URL frontend
+  // URL Frontend (Ganti sesuai env Anda)
+  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+  const redirectBase = `${frontendUrl}/dashboard`; // Redirect ke dashboard, bukan profile
 
   try {
-    const { code, state: judiGuardUserId, error: oauthError } = req.query;
+    const { code, state: userId, error } = req.query;
 
-    // Tangani jika pengguna menolak otorisasi atau ada error dari Google
-    if (oauthError) {
-      const errorMessage =
-        oauthError === "access_denied"
-          ? "Pengguna menolak permintaan izin YouTube."
-          : `Error dari Google OAuth: ${oauthError}`;
+    if (error) {
       return res.redirect(
-        `${frontendProfileUrl}?youtube_linked=false&error=${encodeURIComponent(
-          errorMessage,
-        )}`,
+        `${redirectBase}?status=error&msg=${encodeURIComponent(error)}`,
       );
     }
 
-    if (!code) {
+    if (!code || !userId) {
       return res.redirect(
-        `${frontendProfileUrl}?youtube_linked=false&error=${encodeURIComponent(
-          "Kode otorisasi Google tidak ditemukan.",
-        )}`,
+        `${redirectBase}?status=error&msg=InvalidCallbackParams`,
       );
     }
 
-    if (!judiGuardUserId) {
-      return res.redirect(
-        `${frontendProfileUrl}?youtube_linked=false&error=${encodeURIComponent(
-          "Parameter 'state' (ID pengguna Judi Guard) tidak ditemukan.",
-        )}`,
-      );
-    }
+    // Panggil Service untuk Simpan Token
+    await authService.handleYoutubeOAuthCallback(code, userId);
 
-    // Memanggil service untuk menukar kode dengan token dan menyimpan token YouTube
-    const result = await authService.handleYoutubeOAuthCallback(
-      code,
-      judiGuardUserId,
-    );
-
-    // Redirect ke frontend dengan status sukses
+    // Redirect Sukses
+    res.redirect(`${redirectBase}?status=connected`);
+  } catch (err) {
+    console.error("Callback Error:", err);
     res.redirect(
-      `${frontendProfileUrl}?youtube_linked=true&message=${encodeURIComponent(
-        result.message || "Akun YouTube berhasil terhubung.",
-      )}`,
+      `${redirectBase}?status=error&msg=${encodeURIComponent(err.message)}`,
     );
-  } catch (error) {
-    // Menangkap error dari authService.handleYoutubeOAuthCallback
-    console.error(
-      "[Controller] Error di handleGoogleOAuthCallback:",
-      error.message,
-      error.stack,
-    );
-    // Redirect ke frontend dengan pesan error
-    res.redirect(
-      `${frontendProfileUrl}?youtube_linked=false&error=${encodeURIComponent(
-        error.message || "Terjadi kesalahan saat memproses otorisasi YouTube.",
-      )}`,
-    );
-    // next(error) bisa dipanggil jika Anda ingin global error handler juga mencatatnya,
-    // tapi pastikan tidak ada respons ganda (karena redirect sudah dilakukan).
   }
 };
 
@@ -240,17 +196,12 @@ const handleGoogleOAuthCallback = async (req, res, next) => {
  */
 const handleDisconnectYouTube = async (req, res, next) => {
   try {
-    const userId = req.user._id; // req.user._id dari middleware isAuthenticated
-
-    // Memanggil service untuk memutuskan koneksi akun YouTube
-    const updatedUser = await authService.disconnectYouTubeAccount(userId);
+    const userId = req.user.id;
+    await authService.disconnectYouTubeAccount(userId);
 
     res.status(200).json({
-      success: true, // Menggunakan 'success' agar konsisten dengan respons lain jika diinginkan
+      status: "success",
       message: "Akun YouTube berhasil diputuskan.",
-      data: {
-        user: updatedUser, // Mengembalikan data pengguna yang sudah diupdate (tanpa token YouTube)
-      },
     });
   } catch (error) {
     next(error);
@@ -270,11 +221,17 @@ const handleConnectGuestYoutube = (req, res) => {
       "https://www.googleapis.com/auth/youtube.force-ssl",
       "https://www.googleapis.com/auth/youtube",
     ],
+    prompt: "consent",
     include_granted_scopes: true,
     redirect_uri: GUEST_CALLBACK_URL, // PENTING: Harus beda/spesifik
   });
 
-  res.redirect(url);
+  res.status(200).json({
+    status: "success",
+    data: {
+      url: url,
+    },
+  });
 };
 
 /**
@@ -326,11 +283,11 @@ const handleConnectGuestCallback = async (req, res, next) => {
 };
 
 /**
- * @desc    Logout dari Mode Tamu (Hapus Cookie)
+ * @desc    menghapus koneksi YT di dsahboard
  * @route   POST /api/auth/guest/logout
  * @access  Public
  */
-const handleGuestLogout = (req, res) => {
+const handleGuestDisconnect = (req, res) => {
   const cookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -342,7 +299,7 @@ const handleGuestLogout = (req, res) => {
 
   res.status(200).json({
     status: "success",
-    message: "Berhasil keluar dari mode tamu. Sesi telah dibersihkan.",
+    message: "Berhasil memutuskan koneksi Youtube. Sesi telah dibersihkan.",
   });
 };
 
@@ -464,9 +421,11 @@ module.exports = {
   redirectToGoogleOAuth,
   handleGoogleOAuthCallback,
   handleDisconnectYouTube,
+
   handleConnectGuestYoutube,
   handleConnectGuestCallback,
-  handleGuestLogout,
+  handleGuestDisconnect,
+
   handleForgotPassword,
   handleResetPassword,
   handleChangePassword,

@@ -5,6 +5,7 @@ const { AppError } = require("../../utils/errors");
 
 /**
  * Controller untuk mengambil daftar video.
+ * Route: GET /api/videos
  */
 const getMyVideos = async (req, res, next) => {
   try {
@@ -25,6 +26,7 @@ const getMyVideos = async (req, res, next) => {
 
 /**
  * Controller untuk mengambil komentar video.
+ * Route: GET /api/videos/:videoId/comments
  */
 const getVideoComments = async (req, res, next) => {
   try {

@@ -1,10 +1,36 @@
 // src/api/controllers/user.controller.js
 
 const User = require("../models/User.model");
+const youtubeService = require("../services/youtube.service");
 const { NotFoundError, BadRequestError } = require("../../utils/errors");
 
+// --------------NEW LOGIC----------------------
+
 /**
- * Mengambil data profil dari pengguna yang sedang login.
+ * Mengambil profil YouTube yang sedang terhubung.
+ * Bisa diakses oleh Member (via Token DB) maupun Guest (via Cookie).
+ */
+const getYoutubeProfile = async (req, res, next) => {
+  try {
+    // req.youtubeTokens DIJAMIN ADA karena route ini dijaga 'ensureYoutubeAccess'
+    const tokens = req.youtubeTokens;
+
+    // Panggil service untuk minta data terbaru ke YouTube
+    const profile = await youtubeService.getChannelIdentity(tokens);
+
+    res.status(200).json({
+      status: "success",
+      data: profile,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ------------------------------------------------
+
+/**
+ * Mengambil data profil dari pengguna yang sedang login (Via DB).
  * Data diambil berdasarkan `req.user` yang sudah disiapkan oleh middleware `isAuthenticated`.
  */
 const getMe = async (req, res, next) => {
@@ -17,12 +43,12 @@ const getMe = async (req, res, next) => {
     // );
 
     const userFromDb = await User.findById(userId).select(
-      "+youtubeAccessToken +youtubeRefreshToken"
+      "+youtubeAccessToken +youtubeRefreshToken",
     );
 
     if (!userFromDb) {
       throw new NotFoundError(
-        "Pengguna tidak ditemukan di database meskipun token valid."
+        "Pengguna tidak ditemukan di database meskipun token valid.",
       );
     }
 
@@ -82,8 +108,8 @@ const updateMe = async (req, res, next) => {
         // PERBAIKAN: Gunakan return agar eksekusi berhenti di sini
         return next(
           new BadRequestError(
-            `Field '${field}' tidak dapat diubah melalui rute ini.`
-          )
+            `Field '${field}' tidak dapat diubah melalui rute ini.`,
+          ),
         );
       }
     }
@@ -100,7 +126,9 @@ const updateMe = async (req, res, next) => {
 
     if (Object.keys(allowedUpdates).length === 0) {
       return next(
-        new BadRequestError("Tidak ada data valid yang dikirim untuk diupdate.")
+        new BadRequestError(
+          "Tidak ada data valid yang dikirim untuk diupdate.",
+        ),
       );
     }
 
@@ -154,7 +182,7 @@ const deleteMe = async (req, res, next) => {
       userId,
       { active: false }, // Contoh soft delete
       // Jika ingin hard delete: await User.findByIdAndDelete(userId);
-      { new: true }
+      { new: true },
     );
 
     if (!user) {
@@ -173,6 +201,7 @@ const deleteMe = async (req, res, next) => {
 };
 
 module.exports = {
+  getYoutubeProfile,
   getMe,
   updateMe,
   deleteMe,

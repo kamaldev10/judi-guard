@@ -377,6 +377,8 @@ const executeUndoAction = async (tokens, analysisId, commentIds) => {
     false,
   );
 
+  console.log("DEBUG YOUTUBE RESPONSE:", JSON.stringify(apiResult, null, 2));
+
   // 3. Reset Status di MongoDB
   // Kita kembalikan actionTaken menjadi 'NONE' (atau bisa buat status baru 'RESTORED' jika ingin dicatat history-nya)
   // Saya sarankan 'RESTORED' agar kita tahu komentar ini bekas dihapus.
@@ -384,7 +386,7 @@ const executeUndoAction = async (tokens, analysisId, commentIds) => {
     { _id: { $in: commentIds } },
     {
       $set: {
-        actionTaken: "RESTORED",
+        actionTaken: "NONE",
         actionTakenAt: new Date(),
       },
       // Note: Kita tidak mengubah authorBanned menjadi false disini,

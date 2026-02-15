@@ -1,6 +1,7 @@
 // src/api/routes/auth.routes.js
 const express = require("express");
 const authController = require("../controllers/auth.controller");
+const userController = require("../controllers/user.controller");
 const validateRequest = require("../middlewares/validateRequest");
 const {
   registerSchema,
@@ -13,6 +14,7 @@ const {
   googleLoginSchema,
 } = require("../validators/auth.validator");
 const isAuthenticated = require("../middlewares/isAuthenticated");
+const ensureYoutubeAccess = require("../middlewares/ensureYoutubeAccess");
 
 const router = express.Router();
 
@@ -60,9 +62,15 @@ router.post(
   authController.handleDisconnectYouTube,
 );
 
+router.get(
+  "/youtube/profile",
+  ensureYoutubeAccess,
+  userController.getYoutubeProfile,
+);
+
 router.get("/guest/connect", authController.handleConnectGuestYoutube);
 router.get("/guest/callback", authController.handleConnectGuestCallback);
-router.post("/guest/logout", authController.handleGuestLogout);
+router.post("/guest/disconnect", authController.handleGuestDisconnect);
 
 router.post(
   "/forgot-password",

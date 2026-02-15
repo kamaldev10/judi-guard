@@ -7,7 +7,7 @@ const {
   NotFoundError,
 } = require("../../utils/errors");
 const { generateToken, generateRandomToken } = require("../../utils/jwt"); // Impor fungsi generateToken
-const { createOAuth2Client } = require("../../utils/googleOAuth2Client"); // Impor
+const googleOAuth2Client = require("../../utils/googleOAuth2Client");
 const { google } = require("googleapis"); // Impor google untuk youtube API client nanti
 const sendEmail = require("../../utils/emailSender"); // Impor pengirim email
 const crypto = require("crypto"); // Modul bawaan Node.js untuk generate string acak
@@ -28,7 +28,7 @@ const registerUser = async (userData) => {
   }
   if (existingUser && !existingUser.isVerified) {
     console.log(
-      `Email ${email} sudah terdaftar tapi belum diverifikasi. Mengupdate OTP.`
+      `Email ${email} sudah terdaftar tapi belum diverifikasi. Mengupdate OTP.`,
     );
   }
 
@@ -49,7 +49,7 @@ const registerUser = async (userData) => {
     const existingUsername = await User.findOne({ username });
     if (existingUsername) {
       throw new BadRequestError(
-        "Username sudah digunakan. Silakan gunakan username lain."
+        "Username sudah digunakan. Silakan gunakan username lain.",
       );
     }
     userToSave = new User({
@@ -77,7 +77,7 @@ const registerUser = async (userData) => {
     if (!emailResult.success) {
       console.error(
         "Gagal mengirim email OTP setelah registrasi:",
-        emailResult.error
+        emailResult.error,
       );
       // Anda mungkin ingin menangani ini (misalnya, memberitahu user untuk coba lagi nanti)
       // Untuk sekarang, proses registrasi (penyimpanan user) tetap dianggap berhasil
@@ -86,7 +86,7 @@ const registerUser = async (userData) => {
     }
     if (emailResult.previewUrl) {
       console.log(
-        `Email OTP dikirim (Ethereal). Preview: ${emailResult.previewUrl}`
+        `Email OTP dikirim (Ethereal). Preview: ${emailResult.previewUrl}`,
       );
     }
 
@@ -127,7 +127,7 @@ const verifyOtp = async (email, otpCode) => {
   }
   if (!user.otpCode || !user.otpExpiresAt) {
     throw new BadRequestError(
-      "Tidak ada OTP yang tertunda untuk akun ini. Silakan daftar atau minta OTP baru."
+      "Tidak ada OTP yang tertunda untuk akun ini. Silakan daftar atau minta OTP baru.",
     );
   }
   if (user.otpCode !== otpCode) {
@@ -139,7 +139,7 @@ const verifyOtp = async (email, otpCode) => {
     user.otpExpiresAt = undefined;
     await user.save();
     throw new BadRequestError(
-      "Kode OTP sudah kedaluwarsa. Silakan minta OTP baru."
+      "Kode OTP sudah kedaluwarsa. Silakan minta OTP baru.",
     );
   }
 
@@ -200,7 +200,7 @@ const resendOtp = async (email) => {
   }
   if (emailResult.previewUrl) {
     console.log(
-      `Email OTP (kirim ulang) dikirim. Preview: ${emailResult.previewUrl}`
+      `Email OTP (kirim ulang) dikirim. Preview: ${emailResult.previewUrl}`,
     );
   }
 
@@ -236,9 +236,9 @@ const loginUser = async (userData) => {
   // 4. Persiapkan data user untuk respons (tanpa password)
   const userResponse = user.toObject();
   delete userResponse.password;
-  delete userResponse.youtubeAccessToken; // Sembunyikan token sensitif ini juga dari respons login umum
-  delete userResponse.youtubeRefreshToken;
-  delete userResponse.youtubeTokenExpiresAt;
+  // delete userResponse.youtubeAccessToken; // Sembunyikan token sensitif ini juga dari respons login umum
+  // delete userResponse.youtubeRefreshToken;
+  // delete userResponse.youtubeTokenExpiresAt;
 
   console.log(userResponse);
   return { token, user: userResponse };
@@ -247,15 +247,15 @@ const loginUser = async (userData) => {
 const signInWithGoogle = async (idTokenString) => {
   if (!config.googleSignIn || !config.googleSignIn.clientId) {
     console.error(
-      "Konfigurasi Google Sign-In Client ID di backend belum lengkap."
+      "Konfigurasi Google Sign-In Client ID di backend belum lengkap.",
     );
     throw new AppError(
       "Konfigurasi Google Sign-In Client ID di backend belum lengkap.",
-      500
+      500,
     );
   }
   const googleIdTokenVerifierClient = new OAuth2Client(
-    config.googleSignIn.clientId
+    config.googleSignIn.clientId,
   );
 
   try {
@@ -266,13 +266,13 @@ const signInWithGoogle = async (idTokenString) => {
     const payload = ticket.getPayload();
     if (!payload || !payload.email || !payload.sub) {
       throw new UnauthorizedError(
-        "Google ID Token tidak valid atau informasi tidak lengkap."
+        "Google ID Token tidak valid atau informasi tidak lengkap.",
       );
     }
 
     if (!payload.email_verified) {
       console.warn(
-        `Percobaan masuk dengan email Google yang belum terverifikasi: ${payload.email}`
+        `Percobaan masuk dengan email Google yang belum terverifikasi: ${payload.email}`,
       );
     }
 
@@ -333,148 +333,101 @@ const signInWithGoogle = async (idTokenString) => {
       error.message.includes("Invalid token signature")
     ) {
       throw new UnauthorizedError(
-        "Sesi Google tidak valid atau kedaluwarsa. Silakan coba lagi."
+        "Sesi Google tidak valid atau kedaluwarsa. Silakan coba lagi.",
       );
     }
     if (error instanceof AppError || error instanceof UnauthorizedError)
       throw error;
     throw new AppError(
       `Gagal autentikasi dengan Google: ${error.message}`,
-      500
+      500,
     );
   }
 };
 
 const handleYoutubeOAuthCallback = async (authCode, judiGuardUserId) => {
   try {
-    const oAuth2Client = createOAuth2Client();
-    const { tokens } = await oAuth2Client.getToken(authCode); // Tukar code dengan tokens
+    // 1. Tukar Code dengan Token
+    const { tokens } = await googleOAuth2Client.getToken(authCode);
 
-    // Simpan tokens ke user
-    // tokens berisi: access_token, refresh_token, expiry_date, scope, token_type
-    // refresh_token hanya akan diberikan pada otorisasi pertama jika access_type: 'offline'
-
+    // 2. Siapkan data update
     const updateData = {
       youtubeAccessToken: tokens.access_token,
-      // Simpan refresh_token hanya jika ada (Google hanya mengirimkannya sekali)
-      ...(tokens.refresh_token && {
-        youtubeRefreshToken: tokens.refresh_token,
-      }),
       youtubeTokenExpiresAt: new Date(tokens.expiry_date),
+      isYoutubeConnected: true, // Tambahkan flag ini biar mudah dicek di frontend/middleware
     };
 
-    // Opsional: Dapatkan info channel pengguna setelah mendapatkan token
-    // Ini untuk menyimpan youtubeChannelId dan youtubeChannelName
-    oAuth2Client.setCredentials(tokens);
-    const youtube = google.youtube({ version: "v3", auth: oAuth2Client });
+    // PENTING: Google hanya kirim refresh_token SEKALI (saat user pertama kali allow).
+    // Jadi kalau ada refresh_token baru, simpan. Kalau tidak, JANGAN ditimpa undefined (biarkan yang lama).
+    if (tokens.refresh_token) {
+      updateData.youtubeRefreshToken = tokens.refresh_token;
+    }
+
+    // 3. Ambil Info Channel
+    googleOAuth2Client.setCredentials(tokens);
+    const youtube = google.youtube({ version: "v3", auth: googleOAuth2Client });
+
     try {
       const channelInfoResponse = await youtube.channels.list({
-        mine: true, // Mendapatkan channel milik pengguna yang terautentikasi
-        part: "id,snippet", // id dan snippet (untuk nama channel)
+        mine: true,
+        part: "id,snippet",
       });
 
-      if (
-        channelInfoResponse.data.items &&
-        channelInfoResponse.data.items.length > 0
-      ) {
+      if (channelInfoResponse.data.items?.length > 0) {
         const channel = channelInfoResponse.data.items[0];
         updateData.youtubeChannelId = channel.id;
         updateData.youtubeChannelName = channel.snippet.title;
+        updateData.youtubeChannelThumbnailUrl =
+          channel.snippet.thumbnails?.default?.url; // Tambahkan foto jika perlu
       }
     } catch (channelError) {
-      console.error(
-        "Gagal mendapatkan info channel YouTube setelah OAuth:",
-        channelError.message
-      );
-      // Lanjutkan meskipun gagal mendapatkan info channel, token tetap disimpan
+      console.error("Gagal mendapatkan info channel:", channelError.message);
     }
 
+    // 4. Update User di Database
     const updatedUser = await User.findByIdAndUpdate(
       judiGuardUserId,
       updateData,
-      { new: true } // Kembalikan dokumen yang sudah diupdate
-    ).select("-password"); // Jangan kembalikan password
+      { new: true, runValidators: true },
+    ).select("-password");
 
     if (!updatedUser) {
-      throw new AppError(
-        "User Judi Guard tidak ditemukan untuk menyimpan token YouTube.",
-        404
-      );
+      throw new AppError("User tidak ditemukan.", 404);
     }
 
-    // Jangan kembalikan token sensitif dalam respons ini
     const userResponse = updatedUser.toObject();
+
+    // Hapus data sensitif sebelum return (opsional, krn di controller biasanya cuma ambil message)
     delete userResponse.youtubeAccessToken;
     delete userResponse.youtubeRefreshToken;
-    delete userResponse.youtubeTokenExpiresAt;
 
     return { message: "Akun YouTube berhasil terhubung!", user: userResponse };
   } catch (error) {
-    console.error("Error selama callback YouTube OAuth:", error.message);
-    // Error bisa dari oAuth2Client.getToken() atau saat update user
-    // Periksa apakah error dari Google API atau dari aplikasi kita
-    if (
-      error.response &&
-      error.response.data &&
-      error.response.data.error_description
-    ) {
-      // Error dari Google
-      throw new AppError(
-        `Error dari Google: ${error.response.data.error_description}`,
-        500
-      );
-    }
-    throw new AppError(
-      `Gagal menghubungkan akun YouTube: ${error.message}`,
-      500
-    );
+    console.error("Error callback OAuth:", error.message);
+    throw new AppError(`Gagal menghubungkan YouTube: ${error.message}`, 500);
   }
 };
 
-/**
- * Memutuskan koneksi akun YouTube untuk pengguna.
- * @param {string} userId - ID pengguna yang akan diputuskan koneksi YouTube-nya.
- * @returns {Promise<object>} Objek pengguna yang telah diperbarui (tanpa field sensitif).
- */
 const disconnectYouTubeAccount = async (userId) => {
   const user = await User.findById(userId);
+  if (!user) throw new NotFoundError("Pengguna tidak ditemukan.");
 
-  if (!user) {
-    throw new NotFoundError("Pengguna tidak ditemukan.");
-  }
-
-  // Jika tidak ada koneksi YouTube, tidak ada yang perlu dilakukan (atau bisa beri pesan)
-  if (!user.youtubeAccessToken && !user.youtubeChannelId) {
-    // Anda bisa memilih untuk melempar error atau mengembalikan pesan bahwa tidak ada yang diputuskan
-    // throw new AppError("Akun YouTube tidak terhubung dengan pengguna ini.", 400);
-    // Atau cukup kembalikan user apa adanya dengan pesan sukses yang berbeda nanti di controller
-    console.log(
-      `[AuthService] Pengguna ${userId} mencoba disconnect YouTube, tapi memang belum terhubung.`
-    );
-  }
-
-  // Hapus field-field terkait YouTube
+  // Reset field YouTube
   user.youtubeAccessToken = undefined;
   user.youtubeRefreshToken = undefined;
   user.youtubeTokenExpiresAt = undefined;
   user.youtubeChannelId = undefined;
   user.youtubeChannelName = undefined;
-  user.youtubeChannelThumbnailUrl = undefined; // Jika Anda menyimpan ini juga
+  user.isYoutubeConnected = false; // Reset flag
 
   await user.save();
 
-  // Kembalikan objek pengguna yang sudah bersih dan diperbarui
-  const userToReturn = user.toObject({ virtuals: true });
+  const userToReturn = user.toObject();
   delete userToReturn.password;
-  delete userToReturn.otpCode;
-  delete userToReturn.otpExpiresAt;
-  delete userToReturn.youtubeAccessToken; // Pastikan semua token sensitif dihapus dari respons
+  delete userToReturn.youtubeAccessToken;
   delete userToReturn.youtubeRefreshToken;
-  delete userToReturn.youtubeTokenExpiresAt;
-  // googleId juga bisa dihapus jika tidak relevan untuk respons ini
-  // delete userToReturn.googleId;
 
-  return userToReturn; // Mengembalikan user yang sudah diupdate
+  return userToReturn;
 };
 
 /**
@@ -557,18 +510,18 @@ const requestPasswordReset = async (emailAddress) => {
           if (emailResult.previewUrl) {
             // Jika menggunakan Ethereal untuk development
             console.log(
-              `Password reset email preview URL (Ethereal): ${emailResult.previewUrl}`
+              `Password reset email preview URL (Ethereal): ${emailResult.previewUrl}`,
             );
           }
           console.info(
-            `Password reset email sent successfully to: ${user.email}`
+            `Password reset email sent successfully to: ${user.email}`,
           );
           return { status: "RESET_EMAIL_SENT" };
         } else {
           // Jika sendEmail mengembalikan { success: false, error: ... }
           console.error(
             `Failed to send password reset email (reported by emailSender) to ${user.email}:`,
-            emailResult ? emailResult.error : "Unknown email sending error"
+            emailResult ? emailResult.error : "Unknown email sending error",
           );
           // Hapus token yang baru dibuat karena email gagal terkirim
           await PasswordReset.deleteOne({
@@ -586,7 +539,7 @@ const requestPasswordReset = async (emailAddress) => {
         // Error saat memanggil sendEmail itu sendiri
         console.error(
           `Critical error during sendEmail call for password reset to ${user.email}:`,
-          error
+          error,
         );
         // Hapus token yang baru dibuat karena email gagal terkirim
         await PasswordReset.deleteOne({ token: resetToken, userId: user._id });
@@ -597,14 +550,14 @@ const requestPasswordReset = async (emailAddress) => {
     // Jika sampai sini, berarti user ada tapi tidak punya googleId maupun password.
     // Ini kondisi yang aneh dan seharusnya tidak terjadi jika data user konsisten.
     console.error(
-      `Password reset attempt for user in unknown state (no password, no googleId): ${emailAddress}`
+      `Password reset attempt for user in unknown state (no password, no googleId): ${emailAddress}`,
     );
     return { status: "UNKNOWN_USER_STATE" };
   } catch (error) {
     // Tangani error sistem/database yang lebih umum di sini
     console.error(
       `System error in requestPasswordReset for email ${emailAddress}:`,
-      error
+      error,
     );
 
     return { status: "SERVICE_ERROR", error };
@@ -622,13 +575,13 @@ const processPasswordReset = async (plainTokenFromURL, newPassword) => {
 
   if (!passwordResetEntry) {
     throw new BadRequestError(
-      "Token reset tidak valid atau sudah kedaluwarsa."
+      "Token reset tidak valid atau sudah kedaluwarsa.",
     );
   }
 
   if (passwordResetEntry.expiresAt < new Date()) {
     throw new BadRequestError(
-      "Token reset sudah kedaluwarsa. Silakan minta reset kata sandi lagi."
+      "Token reset sudah kedaluwarsa. Silakan minta reset kata sandi lagi.",
     );
   }
 
@@ -636,7 +589,7 @@ const processPasswordReset = async (plainTokenFromURL, newPassword) => {
   if (!user) {
     await PasswordReset.findByIdAndDelete(passwordResetEntry._id);
     throw new NotFoundError(
-      "Pengguna yang terkait dengan token ini tidak ditemukan."
+      "Pengguna yang terkait dengan token ini tidak ditemukan.",
     );
   }
 
@@ -672,18 +625,18 @@ Tim JudiGuard
     if (!emailConfirmationResult.success) {
       console.warn(
         "Failed to send password change confirmation email (reported by emailSender):",
-        emailConfirmationResult.error
+        emailConfirmationResult.error,
       );
     }
     if (emailConfirmationResult.previewUrl) {
       console.log(
-        `Ethereal preview URL for password confirmation: ${emailConfirmationResult.previewUrl}`
+        `Ethereal preview URL for password confirmation: ${emailConfirmationResult.previewUrl}`,
       );
     }
   } catch (emailError) {
     console.error(
       "Error during sendEmail call for password change confirmation:",
-      emailError
+      emailError,
     );
   }
 };
@@ -700,7 +653,7 @@ const changeUserPassword = async (userId, currentPassword, newPassword) => {
   // Jika pengguna mendaftar via Google dan belum pernah mengatur password lokal
   if (!user.password) {
     throw new BadRequestError(
-      'Anda belum mengatur password lokal. Silakan gunakan opsi "Lupa Password" untuk membuat password baru jika Anda login via Google.'
+      'Anda belum mengatur password lokal. Silakan gunakan opsi "Lupa Password" untuk membuat password baru jika Anda login via Google.',
     );
   }
 
@@ -711,7 +664,7 @@ const changeUserPassword = async (userId, currentPassword, newPassword) => {
 
   if (currentPassword === newPassword) {
     throw new BadRequestError(
-      "Password baru tidak boleh sama dengan password saat ini."
+      "Password baru tidak boleh sama dengan password saat ini.",
     );
   }
 
@@ -727,7 +680,7 @@ Password untuk akun JudiGuard Anda (${
     user.email
   }) telah berhasil diubah melalui halaman profil pada ${new Date().toLocaleString(
     "id-ID",
-    { timeZone: "Asia/Jakarta" }
+    { timeZone: "Asia/Jakarta" },
   )}.
 
 Jika Anda merasa tidak melakukan perubahan ini, segera amankan akun Anda.
@@ -745,13 +698,13 @@ Tim JudiGuard
     if (!emailConfirmationResult.success) {
       console.warn(
         "Gagal mengirim email notifikasi perubahan password (change password):",
-        emailConfirmationResult.error
+        emailConfirmationResult.error,
       );
     }
   } catch (emailError) {
     console.error(
       "Error mengirim email notifikasi perubahan password (change password):",
-      emailError
+      emailError,
     );
   }
   // Keberhasilan atau kegagalan pengiriman email notifikasi tidak menghentikan respons sukses utama

@@ -47,27 +47,28 @@ const userSchema = new mongoose.Schema(
       select: false,
     },
     // Untuk V1, token YouTube akan disimpan di sini
+    youtubeChannelId: { type: String },
+    youtubeChannelName: { type: String },
     youtubeAccessToken: { type: String, select: false },
     youtubeRefreshToken: { type: String, select: false },
     youtubeTokenExpiresAt: { type: Date, select: false },
-    youtubeChannelId: { type: String },
-    youtubeChannelName: { type: String },
+    isYoutubeConnected: { type: Boolean, default: false },
   },
   {
     timestamps: true, // Otomatis membuat createdAt dan updatedAt
     toJSON: { virtuals: true }, // Izinkan virtuals di JSON output
     toObject: { virtuals: true }, // Izinkan virtuals di object output
-  }
+  },
 );
 
-userSchema.virtual("isYoutubeConnected").get(function () {
-  // Dianggap terhubung jika ada access token dan channel ID (atau salah satunya, sesuai definisi Anda)
-  return !!(
-    this.youtubeChannelId &&
-    this.youtubeAccessToken &&
-    this.youtubeRefreshToken
-  );
-});
+// userSchema.virtual("isYoutubeConnected").get(function () {
+//   // Dianggap terhubung jika ada access token dan channel ID (atau salah satunya, sesuai definisi Anda)
+//   return !!(
+//     this.youtubeChannelId &&
+//     this.youtubeAccessToken &&
+//     this.youtubeRefreshToken
+//   );
+// });
 
 // Middleware: Hash password sebelum user disimpan
 userSchema.pre("save", async function (next) {

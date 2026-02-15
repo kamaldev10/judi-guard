@@ -68,9 +68,9 @@ const isAuthenticated = async (req, res, next) => {
     // Menyimpan seluruh objek user bisa berguna agar tidak perlu query DB lagi di controller.
     req.user = currentUser.toObject(); // Konversi ke plain object
     delete req.user.password; // Pastikan password tidak terbawa
-    delete req.user.youtubeAccessToken; // Sembunyikan token sensitif
-    delete req.user.youtubeRefreshToken;
-    delete req.user.youtubeTokenExpiresAt;
+    // delete req.user.youtubeAccessToken; // Sembunyikan token sensitif
+    // delete req.user.youtubeRefreshToken;
+    // delete req.user.youtubeTokenExpiresAt;
     delete req.user.__v; // Hapus field __v dari Mongoose
 
     // Atau hanya menyimpan payload dari token jika tidak mau query DB di sini:

@@ -19,7 +19,9 @@ const ensureYoutubeAccess = async (req, res, next) => {
         const token = authHeader.split(" ")[1];
         const decoded = verifyToken(token);
 
-        const user = await User.findById(decoded.id).select("+tokens");
+        const user = await User.findById(decoded.id).select(
+          "+youtubeAccessToken +youtubeRefreshToken +youtubeTokenExpiresAt",
+        );
 
         if (user && user.tokens && user.tokens.access_token) {
           req.user = user; // Set konteks user (opsional, untuk logging)

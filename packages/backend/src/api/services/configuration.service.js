@@ -25,6 +25,7 @@ const addToWhitelist = async (userId, data) => {
     // 2. Panggil YouTube API
     const channelInfo = await youtubeService.getChannelInfoByHandle(
       user.youtubeAccessToken,
+      user.youtubeRefreshToken,
       channelId,
     );
 

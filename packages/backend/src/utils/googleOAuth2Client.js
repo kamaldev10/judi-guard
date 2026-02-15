@@ -12,6 +12,7 @@ if (!config.youtube.clientId || !config.youtube.clientSecret) {
 const googleOAuth2Client = new google.auth.OAuth2(
   config.youtube.clientId,
   config.youtube.clientSecret,
+  config.youtube.redirectUri,
 );
 
 module.exports = googleOAuth2Client;

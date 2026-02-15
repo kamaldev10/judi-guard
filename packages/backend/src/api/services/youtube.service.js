@@ -36,7 +36,7 @@ const getAuthenticatedYouTubeClient = async (userId) => {
     );
   }
 
-  const oAuth2Client = createOAuth2Client();
+  const oAuth2Client = googleOAuth2Client();
   oAuth2Client.setCredentials({
     scope: YOUTUBE_SCOPE.join(" "),
     access_token: user.youtubeAccessToken,
@@ -442,10 +442,6 @@ const getVideoById = async (tokens, videoId) => {
 
     const item = response.data.items[0];
 
-    // PENTING: Validasi Kepemilikan (Optional tapi Recommended)
-    // Kita cek apakah channelId video ini sama dengan channelId user yang login?
-    // Jika tidak, kita bisa beri flag "isOwner: false" agar frontend mematikan tombol hapus.
-
     // Untuk saat ini, kita return datanya saja.
     return {
       id: item.id,
@@ -560,14 +556,28 @@ const getChannelInfoByHandle = async (tokens, handle) => {
     config.googleClientId,
     config.googleClientSecret,
   );
-  oauth2Client.setCredentials(tokens);
+
+  // // 1. VALIDASI & SET CREDENTIALS
+  // // Library google-auth akan otomatis menggunakan refresh_token
+  // // jika access_token expired, asalkan refresh_token disediakan.
+  // if (tokens && tokens.refresh_token) {
+  //   oauth2Client.setCredentials({
+  //     access_token: tokens.access_token,
+  //     refresh_token: tokens.refresh_token,
+  //   });
+  // } else if (typeof tokens === "string") {
+  //   // Fallback lama (rawan error 401 jika expired)
+  //   oauth2Client.setCredentials({ access_token: tokens });
+  // } else {
+  //   throw new AppError("Token YouTube tidak valid.", 401);
+  // }
 
   const youtube = google.youtube({ version: "v3", auth: oauth2Client });
 
   try {
     const response = await youtube.channels.list({
       part: "id,snippet",
-      forHandle: handle, // Parameter khusus untuk cari via handle
+      forHandle: handle,
     });
 
     const items = response.data.items;
@@ -581,9 +591,17 @@ const getChannelInfoByHandle = async (tokens, handle) => {
     return {
       channelId: items[0].id,
       channelName: items[0].snippet.title,
-      thumbnail: items[0].snippet.thumbnails.default.url,
+      thumbnail: items[0].snippet.thumbnails?.default?.url || "",
     };
   } catch (error) {
+    // Jika error masih 401/Invalid Credentials, berarti Refresh Token juga expired/revoked
+    if (error.code === 401 || error.message.includes("Invalid Credentials")) {
+      console.error("[YouTube Service] Token Expired & Refresh Failed");
+      throw new AppError(
+        "Koneksi YouTube kedaluwarsa. Mohon hubungkan ulang akun YouTube Anda.",
+        401,
+      );
+    }
     console.error("[YouTube Service] Error resolving handle:", error);
     throw error;
   }
@@ -974,7 +992,7 @@ const moderateYoutubeComment = async (
 };
 
 module.exports = {
-  // getAuthenticatedYouTubeClient,
+  getAuthenticatedYouTubeClient,
   getClient,
   getChannelIdentity,
   getChannelVideos,

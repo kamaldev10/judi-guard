@@ -1,7 +1,7 @@
 // src/api/controllers/videoAnalysis.controller.js
 const videoAnalysisService = require("../services/videoAnalysis.service");
 const youtubeService = require("../services/youtube.service");
-const { BadRequestError, NotFoundError } = require("../../utils/errors");
+const { BadRequestError } = require("../../utils/errors");
 const AnalyzedComment = require("../models/AnalyzedComment.model");
 const VideoAnalysis = require("../models/VideoAnalysis.model");
 const generateModerationReport = require("../../utils/pdfGenerator");
@@ -35,7 +35,6 @@ const startAnalysis = async (req, res, next) => {
     });
 
     // 3. JALANKAN BACKGROUND PROCESS (Fire & Forget)
-    // Proses ini berjalan di background server.
     videoAnalysisService
       .processAnalysis({
         analysisId: analysisRecord._id,
@@ -46,10 +45,9 @@ const startAnalysis = async (req, res, next) => {
       .catch((err) => {
         // Error handling khusus background process (Log only)
         console.error("Background Analysis Failed:", err);
-        // Service sudah menghandle update status ke FAILED, jadi aman.
       });
 
-    // 4. Response Cepat ke Frontend
+    // 4. Response ke Frontend
     res.status(202).json({
       status: "success",
       message: "Permintaan analisis diterima dan sedang diproses.",
@@ -74,7 +72,6 @@ const getAnalysisStatus = async (req, res, next) => {
   try {
     const { analysisId } = req.params;
 
-    // Cari record berdasarkan ID
     const analysis = await VideoAnalysis.findById(analysisId).select(
       "status totalCommentsFetched totalCommentsAnalyzed totalSpamDetected errorMessage completedAt moderationStatus",
     );
@@ -100,8 +97,6 @@ const getAnalysisResults = async (req, res, next) => {
   try {
     const { analysisId } = req.params;
 
-    // Validasi kepemilikan (Opsional tapi recommended)
-    // Cek apakah analysisId ini milik user yang sedang login
     const analysisHeader = await VideoAnalysis.findById(analysisId);
     if (!analysisHeader) {
       throw new AppError("Data analisis tidak ditemukan.", 404);
@@ -127,7 +122,6 @@ const getAnalysisResults = async (req, res, next) => {
 const executeAction = async (req, res, next) => {
   try {
     const { analysisId } = req.params;
-    // Ambil banAuthor dari body (default false jika tidak dikirim)
     const { commentIds, action, banAuthor = false } = req.body;
     const tokens = req.youtubeTokens;
 
@@ -141,13 +135,12 @@ const executeAction = async (req, res, next) => {
       throw new AppError("Jenis aksi (action) wajib diisi.", 400);
     }
 
-    // Teruskan banAuthor ke Service
     const result = await videoAnalysisService.executeModerationAction(
       tokens,
       analysisId,
       commentIds,
       action,
-      banAuthor, // <--- Passing ke Service
+      banAuthor,
     );
 
     res.status(200).json({
@@ -229,6 +222,134 @@ const getHistory = async (req, res, next) => {
   }
 };
 
+/**
+ * 1. GET Report Preview (JSON Data)
+ * Query: ?startDate=2023-01-01&endDate=2023-01-31
+ */
+const getReportPreview = async (req, res, next) => {
+  try {
+    const { startDate, endDate } = req.query;
+    const userId = req.user.id;
+
+    if (!startDate || !endDate)
+      throw new AppError("Periode tanggal wajib diisi", 400);
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999); // Include full end day
+
+    // Query Aggregasi
+    const analyses = await VideoAnalysis.find({
+      userId,
+      requestedAt: { $gte: start, $lte: end },
+      status: "COMPLETED",
+    }).sort({ requestedAt: -1 });
+
+    // Hitung Summary
+    const summary = {
+      totalVideos: analyses.length,
+      totalComments: analyses.reduce(
+        (acc, curr) => acc + curr.totalCommentsAnalyzed,
+        0,
+      ),
+      totalSpam: analyses.reduce(
+        (acc, curr) => acc + curr.totalSpamDetected,
+        0,
+      ),
+      period: { start, end },
+    };
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        summary,
+        details: analyses, // List video untuk tabel preview
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * 2. GET Download Report (PDF Blob)
+ */
+const downloadPeriodReport = async (req, res, next) => {
+  try {
+    const { startDate, endDate } = req.query;
+    const userId = req.user.id;
+
+    if (!startDate || !endDate)
+      throw new AppError("Periode tanggal wajib diisi", 400);
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999);
+
+    // 1. Ambil Analisis (Hanya yang ada spamnya agar laporan fokus)
+    const analyses = await VideoAnalysis.find({
+      userId,
+      requestedAt: { $gte: start, $lte: end },
+      status: "COMPLETED",
+    }).sort({ requestedAt: 1 });
+
+    // 2. Deep Fetch: Ambil Detail Komentar HANYA jika ada spam
+    const detailsWithComments = await Promise.all(
+      analyses.map(async (analysis) => {
+        let spamComments = [];
+
+        // Efisiensi: Cuma fetch komentar kalau memang terdeteksi spam
+        if (analysis.totalSpamDetected > 0) {
+          spamComments = await AnalyzedComment.find({
+            analysisId: analysis._id,
+            classification: "JUDI",
+          })
+            .select(
+              "commentAuthorDisplayName commentTextDisplay riskLevel actionTaken",
+            )
+            .limit(50);
+        }
+
+        return {
+          ...analysis.toObject(),
+          spamComments,
+        };
+      }),
+    );
+
+    // 3. Hitung Global Summary
+    const summary = {
+      totalVideos: analyses.length,
+      totalComments: analyses.reduce(
+        (acc, curr) => acc + curr.totalCommentsAnalyzed,
+        0,
+      ),
+      totalSpam: analyses.reduce(
+        (acc, curr) => acc + curr.totalSpamDetected,
+        0,
+      ),
+    };
+
+    const reportData = {
+      user: { name: req.user.name || "Member" },
+      period: { start, end },
+      summary,
+      details: detailsWithComments,
+    };
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=Laporan_Detail_Spam.pdf`,
+    );
+
+    const { generatePeriodReport } = require("../../utils/pdfGenerator");
+    generatePeriodReport(reportData, res);
+  } catch (error) {
+    next(error);
+  }
+};
+
 const downloadReport = async (req, res, next) => {
   try {
     const { analysisId } = req.params;
@@ -242,6 +363,10 @@ const downloadReport = async (req, res, next) => {
       analysisId: analysisId,
       classification: "JUDI",
     }).limit(200); // Batasi 200 biar PDF generation cepat
+
+    if (!comments) {
+      throw new AppError("Gagal mengambil data komentar", 500);
+    }
 
     // 3. Set Header Response agar Browser download file
     res.setHeader("Content-Type", "application/pdf");
@@ -421,6 +546,8 @@ module.exports = {
   undoAction,
   getHistory,
   downloadReport,
+  getReportPreview,
+  downloadPeriodReport,
   submitVideoForAnalysis,
   getAnalyzedCommentsForVideo,
   batchDeleteJudiCommentsController,

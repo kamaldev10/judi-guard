@@ -2,26 +2,29 @@ const express = require("express");
 const configController = require("../controllers/configuration.controller");
 const router = express.Router();
 const isAuthenticated = require("../middlewares/isAuthenticated");
+const ensureYoutubeAccess = require("../middlewares/ensureYoutubeAccess");
+
+router.use(isAuthenticated);
 
 // Whitelist Routes
-router.post("/whitelist", isAuthenticated, configController.addWhitelist);
+router.post("/whitelist", ensureYoutubeAccess, configController.addWhitelist);
 
-router.get("/whitelist", isAuthenticated, configController.getWhitelist);
+router.get("/whitelist", configController.getWhitelist);
 
 router.delete(
   "/whitelist/:id",
-  isAuthenticated,
+
   configController.deleteWhitelist,
 );
 
 // Blacklist Routes
-router.post("/blacklist", isAuthenticated, configController.addBlacklist);
+router.post("/blacklist", configController.addBlacklist);
 
-router.get("/blacklist", isAuthenticated, configController.getBlacklist);
+router.get("/blacklist", configController.getBlacklist);
 
 router.delete(
   "/blacklist/:id",
-  isAuthenticated,
+
   configController.deleteBlacklist,
 );
 

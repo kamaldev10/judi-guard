@@ -3,13 +3,27 @@ const express = require("express");
 const router = express.Router();
 const channelController = require("../controllers/channel.controller");
 const ensureYoutubeAccess = require("../middlewares/ensureYoutubeAccess");
+const isAuthenticated = require("../middlewares/isAuthenticated");
 
-router.use(ensureYoutubeAccess);
+router.get(
+  "/",
+  isAuthenticated,
+  ensureYoutubeAccess,
+  channelController.getMyVideos,
+);
 
-router.get("/", channelController.getMyVideos);
+router.get(
+  "/search",
+  isAuthenticated,
+  ensureYoutubeAccess,
+  channelController.searchVideoById,
+);
 
-router.get("/search", channelController.searchVideoById);
-
-router.get("/:videoId/comments", channelController.getVideoComments);
+router.get(
+  "/:videoId/comments",
+  isAuthenticated,
+  ensureYoutubeAccess,
+  channelController.getVideoComments,
+);
 
 module.exports = router;

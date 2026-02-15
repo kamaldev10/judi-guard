@@ -10,7 +10,6 @@ const {
 } = require("../validators/video.validator");
 const ensureYoutubeAccess = require("../middlewares/ensureYoutubeAccess");
 
-
 const router = express.Router();
 
 //* --- NEW LOGIc ---
@@ -19,41 +18,61 @@ router.get("/history", isAuthenticated, videoAnalysisController.getHistory);
 
 router.post(
   "/:videoId",
+  isAuthenticated,
   ensureYoutubeAccess,
   videoAnalysisController.startAnalysis,
 );
 
 router.get(
   "/status/:analysisId",
+  isAuthenticated,
   ensureYoutubeAccess,
   videoAnalysisController.getAnalysisStatus,
 );
 
 router.get(
   "/:analysisId/results",
+  isAuthenticated,
   ensureYoutubeAccess,
   videoAnalysisController.getAnalysisResults,
 );
 
 router.post(
   "/:analysisId/action",
+  isAuthenticated,
   ensureYoutubeAccess,
   videoAnalysisController.executeAction,
 );
 
 router.post(
   "/:analysisId/undo",
+  isAuthenticated,
   ensureYoutubeAccess,
   videoAnalysisController.undoAction,
 );
 
 router.get(
+  "/report/preview",
+  isAuthenticated,
+  // ensureYoutubeAccess,
+  videoAnalysisController.getReportPreview,
+);
+
+router.get(
+  "/report/download",
+  isAuthenticated,
+  // ensureYoutubeAccess,
+  videoAnalysisController.downloadPeriodReport,
+);
+
+router.get(
   "/:analysisId/report/pdf",
-  ensureYoutubeAccess,
+  isAuthenticated,
+  // ensureYoutubeAccess,
   videoAnalysisController.downloadReport,
 );
 
-// -------------
+// ---------------------------
 
 // Rute untuk mengirimkan video untuk dianalisis
 // Dilindungi oleh isAuthenticated agar hanya user yang login bisa mengakses

@@ -9,7 +9,10 @@
     "dev:frontend": "npm run dev --workspace=client",
     "dev:backend": "npm run dev --workspace=server",
     "add:frontend": "npm install --workspace=client",
-    "add:backend": "npm install --workspace=server"
+    "add:backend": "npm install --workspace=server",
+    "cy:open": "cypress open",
+    "cy:run": "cypress run",
+    "cy:run:chrome": "cypress run --browser chrome"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"

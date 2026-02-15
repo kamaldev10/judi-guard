@@ -6,8 +6,8 @@ import {
   Home,
   Info,
   BarChart3,
-  UserRound,
   IdCard,
+  LayoutDashboard,
 } from "lucide-react";
 
 import { toast } from "react-toastify";
@@ -117,6 +117,8 @@ const Header = () => {
         return <Info size={18} className="mr-2" />;
       case "/analysis":
         return <BarChart3 size={18} className="mr-2" />;
+      case "/dashboard":
+        return <LayoutDashboard size={18} className="mr-2" />;
       case "/profile":
         return <IdCard size={18} className="mr-2" />;
       default:
@@ -136,10 +138,7 @@ const Header = () => {
         <div className="container mx-auto px-4  sm:px-6 md:px-1 lg:px-8 ">
           <div className="flex items-center justify-between h-18">
             <div className="flex shrink-0">
-              <Link
-                to="/about-us"
-                className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition-colors"
-              >
+              <Link to="/about-us">
                 <img
                   src={Logo}
                   alt="Logo Judi Guard"
@@ -152,8 +151,8 @@ const Header = () => {
               <Link to="/" className={navLinkClasses("/#hero-section")}>
                 {getNavIcon("/")} Beranda
               </Link>
-              <Link to="/about-us" className={navLinkClasses("/about-us")}>
-                {getNavIcon("/about-us")} Tentang Kami
+              <Link to="/dashboard" className={navLinkClasses("/dashboard")}>
+                {getNavIcon("/dashboard")} Dashboard
               </Link>
               <Link to="/analysis" className={navLinkClasses("/analysis")}>
                 {getNavIcon("/analysis")} Analisis
@@ -161,13 +160,15 @@ const Header = () => {
               <Link to="/profile" className={navLinkClasses("/profile")}>
                 {getNavIcon("/profile")} Profil
               </Link>
+              <Link to="/about-us" className={navLinkClasses("/about-us")}>
+                {getNavIcon("/about-us")} Tentang Kami
+              </Link>
               {isAuthenticated && currentUser && (
                 <span
                   data-cy="user-profile-name"
                   className="text-sm text-[#06786F] ml-4 pl-4  font-semibold border-gray-200 inline-flex items-center"
                 >
-                  <UserRound size={18} className="mr-2 text-amber-700" />
-                  {currentUser.username || currentUser.name || "Pengguna"}
+                  Halo, {currentUser.username || currentUser.name || "Pengguna"}
                 </span>
               )}
               <div className="ml-4 hidden md:block">{renderAuthButtons()}</div>
@@ -203,8 +204,7 @@ const Header = () => {
             <div className="flex justify-between py-2 px-5 border-t border-gray-200 bg-[#B9E6FD]">
               {isAuthenticated && currentUser && (
                 <span className="text-sm text-[#06786F] font-bold  inline-flex items-center p-1">
-                  <UserRound size={18} className="mr-2 text-amber-700" />
-                  {currentUser.username || currentUser.name || "Pengguna"}
+                  Halo, {currentUser.username || currentUser.name || "Pengguna"}
                 </span>
               )}
               <div className="flex items-center gap-3">
@@ -221,11 +221,11 @@ const Header = () => {
                 {getNavIcon("/")} Beranda
               </Link>
               <Link
-                to="/about-us"
-                className={navLinkClasses("/about-us", true)}
+                to="/dashboard"
+                className={navLinkClasses("/dashboard", true)}
                 onClick={toggleMobileMenu}
               >
-                {getNavIcon("/about-us")} Tentang Kami
+                {getNavIcon("/analysis")} Dashboard
               </Link>
               <Link
                 to="/analysis"
@@ -234,12 +234,20 @@ const Header = () => {
               >
                 {getNavIcon("/analysis")} Analisis
               </Link>
+
               <Link
                 to="/profile"
                 className={navLinkClasses("/profile", true)}
                 onClick={toggleMobileMenu}
               >
                 {getNavIcon("/profile")} Profil
+              </Link>
+              <Link
+                to="/about-us"
+                className={navLinkClasses("/about-us", true)}
+                onClick={toggleMobileMenu}
+              >
+                {getNavIcon("/about-us")} Tentang Kami
               </Link>
             </div>
           </div>

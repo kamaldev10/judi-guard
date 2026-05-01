@@ -552,32 +552,37 @@ const setModerationStatus = async (
  * Contoh: input '@gadgetin' -> output { id: 'UC...', title: 'GadgetIn' }
  */
 const getChannelInfoByHandle = async (tokens, handle) => {
+  // Debugging: Pastikan handle tidak undefined
+  console.log("[YouTube Service] Mencoba mencari handle:", handle);
+
+  if (!handle) {
+    throw new Error(
+      "Parameter handle kosong atau undefined saat memanggil service.",
+    );
+  }
+
   const oauth2Client = new google.auth.OAuth2(
     config.googleClientId,
     config.googleClientSecret,
   );
 
-  // // 1. VALIDASI & SET CREDENTIALS
-  // // Library google-auth akan otomatis menggunakan refresh_token
-  // // jika access_token expired, asalkan refresh_token disediakan.
-  // if (tokens && tokens.refresh_token) {
-  //   oauth2Client.setCredentials({
-  //     access_token: tokens.access_token,
-  //     refresh_token: tokens.refresh_token,
-  //   });
-  // } else if (typeof tokens === "string") {
-  //   // Fallback lama (rawan error 401 jika expired)
-  //   oauth2Client.setCredentials({ access_token: tokens });
-  // } else {
-  //   throw new AppError("Token YouTube tidak valid.", 401);
-  // }
+  if (tokens && tokens.refresh_token) {
+    oauth2Client.setCredentials({
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
+    });
+  } else if (typeof tokens === "string") {
+    oauth2Client.setCredentials({ access_token: tokens });
+  } else {
+    throw new AppError("Token YouTube tidak valid.", 401);
+  }
 
   const youtube = google.youtube({ version: "v3", auth: oauth2Client });
 
   try {
     const response = await youtube.channels.list({
       part: "id,snippet",
-      forHandle: handle,
+      forHandle: handle, // <--- PASTIKAN BARIS INI ADA
     });
 
     const items = response.data.items;
@@ -594,15 +599,7 @@ const getChannelInfoByHandle = async (tokens, handle) => {
       thumbnail: items[0].snippet.thumbnails?.default?.url || "",
     };
   } catch (error) {
-    // Jika error masih 401/Invalid Credentials, berarti Refresh Token juga expired/revoked
-    if (error.code === 401 || error.message.includes("Invalid Credentials")) {
-      console.error("[YouTube Service] Token Expired & Refresh Failed");
-      throw new AppError(
-        "Koneksi YouTube kedaluwarsa. Mohon hubungkan ulang akun YouTube Anda.",
-        401,
-      );
-    }
-    console.error("[YouTube Service] Error resolving handle:", error);
+    console.error("[YouTube Service] Error resolving handle:", error.message);
     throw error;
   }
 };

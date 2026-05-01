@@ -9,11 +9,12 @@ const DEFAULT_GAMBLING_KEYWORDS = require("../constants/spamKeywords");
 const addToWhitelist = async (userId, data) => {
   let { channelId, channelName, note } = data;
 
-  // --- LOGIKA BARU: DETEKSI HANDLE ---
   // Jika user input "@sesuatu", kita cari ID aslinya dulu
   if (channelId.startsWith("@")) {
     // 1. Ambil Token User dari DB (karena config.service dipanggil via 'protect' yg tdk bawa token)
-    const user = await User.findById(userId).select("+youtubeAccessToken");
+    const user = await User.findById(userId).select(
+      "+youtubeAccessToken +youtubeRefreshToken",
+    );
 
     if (!user || !user.youtubeAccessToken) {
       throw new AppError(
@@ -22,22 +23,22 @@ const addToWhitelist = async (userId, data) => {
       );
     }
 
-    // 2. Panggil YouTube API
+    const tokens = {
+      access_token: user.youtubeAccessToken,
+      refresh_token: user.youtubeRefreshToken,
+    };
+
     const channelInfo = await youtubeService.getChannelInfoByHandle(
-      user.youtubeAccessToken,
-      user.youtubeRefreshToken,
+      tokens,
       channelId,
     );
 
-    // 3. Update data dengan hasil pencarian
-    channelId = channelInfo.channelId; // ID Asli (UC...)
-    channelName = channelInfo.channelName; // Nama Asli (Misal: GadgetIn)
-
-    // Tambahkan note otomatis jika kosong
+    channelId = channelInfo.channelId;
+    channelName = channelInfo.channelName;
     if (!note) note = `Resolved from handle: ${data.channelId}`;
   }
 
-  // --- LANJUT SIMPAN KE DB (Logika Lama) ---
+  // --- SIMPAN KE DB ---
   try {
     const newItem = await Whitelist.create({
       userId,

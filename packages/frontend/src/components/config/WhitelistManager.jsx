@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useConfigStore } from "@/stores/configStore";
-import { Button } from "@/components/ui/button"; // Pastikan path benar (huruf kecil 'button')
+import { Button } from "@/components/ui/button";
 import {
   Trash2,
   ShieldCheck,
@@ -31,7 +31,7 @@ export default function WhitelistManager() {
     note: "",
   });
 
-  const [showOptions, setShowOptions] = useState(false); // Toggle opsi tambahan
+  const [showOptions, setShowOptions] = useState(false);
   const [localError, setLocalError] = useState(null);
 
   useEffect(() => {
@@ -61,7 +61,7 @@ export default function WhitelistManager() {
 
       // Reset Form
       setFormData({ channelId: "", channelName: "", note: "" });
-      setShowOptions(false); // Tutup opsi setelah sukses
+      setShowOptions(false);
     } catch (error) {
       setLocalError(error.message);
       toast.error(error.message);
@@ -87,10 +87,10 @@ export default function WhitelistManager() {
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Whitelist Channel
+              Whitelist Channel/Akun
             </h3>
             <p className="text-sm text-gray-500">
-              Channel ini aman dari deteksi spam.
+              Channel/Akun ini akan aman dari deteksi spam.
             </p>
           </div>
         </div>
@@ -104,7 +104,7 @@ export default function WhitelistManager() {
             <input
               type="text"
               name="channelId"
-              placeholder="Wajib: @gadgetin atau Channel ID..."
+              placeholder="@gadgetin(username) atau Id Channel/Akun"
               value={formData.channelId}
               onChange={handleChange}
               className={`flex-1 rounded-lg border px-4 py-2 focus:outline-none dark:bg-gray-900 dark:text-white ${

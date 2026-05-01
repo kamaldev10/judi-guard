@@ -209,7 +209,7 @@ export default function ReportDialog() {
           {!reportPreview && !isLoadingPreview && (
             <div className="flex flex-col items-center justify-center py-8 text-center text-gray-400 border-2 border-dashed rounded-lg">
               <FileBarChart className="h-10 w-10 mb-2 opacity-20" />
-              <p className="text-sm">Silakan pilih tanggal dan klik Preview</p>
+              <p className="text-sm">Silahkan pilih tanggal dan klik Preview</p>
             </div>
           )}
         </div>

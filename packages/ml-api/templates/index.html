@@ -1,23 +1,505 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Prediksi Komentar</title>
-</head>
-<body>
-    <h2>Masukkan Komentar</h2>
-    <form action="/predict" method="post">
-        <textarea name="input_text" rows="5" cols="50" placeholder="Tulis komentar di sini...">{{ input_text or '' }}</textarea><br><br>
-        <input type="submit" value="Prediksi">
-    </form>
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pemindai Komentar &middot; Deteksi Judi Online</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0a121c;
+        --bg-grid: rgba(148, 178, 204, 0.055);
+        --card: #101c29;
+        --card-border: rgba(157, 189, 216, 0.14);
+        --text: #e7edf3;
+        --text-muted: #7d93a8;
+        --amber: #f0a63a;
+        --amber-dim: rgba(240, 166, 58, 0.16);
+        --danger: #e8543e;
+        --danger-dim: rgba(232, 84, 62, 0.14);
+        --safe: #2bd6a3;
+        --safe-dim: rgba(43, 214, 163, 0.14);
+        --neutral: #8494a6;
+        --neutral-dim: rgba(132, 148, 166, 0.14);
+        --verdict-color: var(--neutral);
+        --verdict-dim: var(--neutral-dim);
+        --font-display: 'Space Grotesk', sans-serif;
+        --font-mono: 'IBM Plex Mono', monospace;
+      }
 
-    {% if prediction %}
-    <div style="margin-top: 20px;">
-        <h3>Hasil Prediksi:</h3>
-        <p><strong>Komentar:</strong> {{ input_text }}</p>
-        <p><strong>Kategori:</strong> {{ prediction }}</p>
-        <p><strong>Kepercayaan:</strong> {{ confidence }}</p>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          linear-gradient(var(--bg-grid) 1px, transparent 1px) 0 0/ 100% 42px,
+          linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px) 0 0/ 42px
+            100%,
+          radial-gradient(
+            ellipse 900px 500px at 50% -10%,
+            rgba(240, 166, 58, 0.08),
+            transparent 60%
+          ),
+          var(--bg);
+        color: var(--text);
+        font-family: var(--font-mono);
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        padding: 56px 20px;
+      }
+
+      .stage {
+        width: 100%;
+        max-width: 620px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--amber);
+        margin-bottom: 14px;
+      }
+      .eyebrow::before {
+        content: '';
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--amber);
+        box-shadow: 0 0 0 4px var(--amber-dim);
+      }
+
+      h1 {
+        font-family: var(--font-display);
+        font-weight: 700;
+        font-size: clamp(28px, 5vw, 38px);
+        line-height: 1.1;
+        margin: 0 0 10px;
+        letter-spacing: -0.01em;
+      }
+
+      .lede {
+        color: var(--text-muted);
+        font-size: 14.5px;
+        line-height: 1.6;
+        margin: 0 0 32px;
+        max-width: 46ch;
+      }
+
+      form {
+        background: var(--card);
+        border: 1px solid var(--card-border);
+        border-radius: 14px;
+        padding: 22px;
+      }
+
+      label.field-label {
+        display: block;
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-bottom: 10px;
+      }
+
+      textarea {
+        width: 100%;
+        background: #0a1420;
+        border: 1px solid var(--card-border);
+        border-radius: 10px;
+        color: var(--text);
+        font-family: var(--font-mono);
+        font-size: 14px;
+        line-height: 1.6;
+        padding: 14px 16px;
+        resize: vertical;
+        min-height: 120px;
+      }
+      textarea::placeholder {
+        color: #4d6070;
+      }
+      textarea:focus {
+        outline: none;
+        border-color: var(--amber);
+        box-shadow: 0 0 0 3px var(--amber-dim);
+      }
+
+      .row-bottom {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 16px;
+      }
+
+      .hint {
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+
+      button {
+        appearance: none;
+        border: none;
+        cursor: pointer;
+        background: var(--amber);
+        color: #1a1206;
+        font-family: var(--font-display);
+        font-weight: 700;
+        font-size: 14px;
+        padding: 12px 22px;
+        border-radius: 9px;
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        transition:
+          transform 0.15s ease,
+          box-shadow 0.15s ease;
+      }
+      button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 20px -8px rgba(240, 166, 58, 0.55);
+      }
+      button:active {
+        transform: translateY(0);
+      }
+      button:focus-visible {
+        outline: 2px solid var(--text);
+        outline-offset: 2px;
+      }
+      button svg {
+        width: 15px;
+        height: 15px;
+      }
+
+      /* ---- Result panel ---- */
+      .result {
+        margin-top: 20px;
+        background: var(--card);
+        border: 1px solid var(--card-border);
+        border-radius: 14px;
+        padding: 22px;
+        animation: rise 0.45s ease both;
+      }
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .result-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+
+      .verdict {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .verdict-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: var(--verdict-dim);
+        color: var(--verdict-color);
+        display: grid;
+        place-items: center;
+        flex: none;
+      }
+      .verdict-icon svg {
+        width: 19px;
+        height: 19px;
+      }
+
+      .verdict-label {
+        font-size: 10.5px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-bottom: 3px;
+      }
+
+      .verdict-value {
+        font-family: var(--font-display);
+        font-weight: 700;
+        font-size: 19px;
+        color: var(--verdict-color);
+      }
+
+      .gauge {
+        --pct: 0;
+        width: 96px;
+        height: 96px;
+        border-radius: 50%;
+        background: conic-gradient(
+          var(--verdict-color) calc(var(--pct) * 1%),
+          rgba(255, 255, 255, 0.07) 0
+        );
+        display: grid;
+        place-items: center;
+        flex: none;
+        position: relative;
+      }
+      .gauge::before {
+        content: '';
+        position: absolute;
+        inset: 9px;
+        background: var(--card);
+        border-radius: 50%;
+      }
+      .gauge-readout {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+      }
+      .gauge-num {
+        display: block;
+        font-family: var(--font-mono);
+        font-weight: 600;
+        font-size: 15px;
+        color: var(--text);
+      }
+      .gauge-cap {
+        display: block;
+        font-size: 8.5px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-top: 2px;
+      }
+
+      .echo {
+        margin-top: 18px;
+        padding-top: 16px;
+        border-top: 1px dashed var(--card-border);
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--text-muted);
+      }
+      .echo span {
+        color: var(--text);
+      }
+
+      footer {
+        margin-top: 28px;
+        font-size: 11.5px;
+        color: #445468;
+        text-align: center;
+      }
+
+      @media (max-width: 480px) {
+        .result-top {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .gauge {
+          align-self: center;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .result {
+          animation: none;
+        }
+        button {
+          transition: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage">
+      <div class="eyebrow">Sistem Deteksi &middot; Komentar Judi Online</div>
+      <h1>Pemindai Komentar</h1>
+      <p class="lede">
+        Tempel satu komentar untuk memeriksa apakah isinya mengandung ajakan
+        atau promosi judi online. Model akan memberi label dan tingkat
+        keyakinannya.
+      </p>
+
+      <form action="/predict" method="post">
+        <label class="field-label" for="input_text">Teks komentar</label>
+        <textarea
+          id="input_text"
+          name="input_text"
+          rows="5"
+          placeholder="Contoh: Menangkan hadiah besar di situs slot terpercaya, klik link di bio..."
+        >
+{{ input_text or '' }}</textarea
+        >
+        <div class="row-bottom">
+          <span class="hint"
+            >Hasil ditampilkan di bawah setelah diperiksa.</span
+          >
+          <button type="submit">
+            Pindai Komentar
+            <svg
+              viewBox="0 0 20 20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M4 10h11M11 5l5 5-5 5"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
+      </form>
+
+      {% if prediction %} {% set is_judi = prediction == 'JUDI' %} {% set
+      is_non_judi = prediction == 'NON_JUDI' %}
+      <div
+        class="result"
+        style="--verdict-color: {{ '#e8543e' if is_judi else ('#2bd6a3' if is_non_judi else '#8494a6') }}; --verdict-dim: {{ 'rgba(232,84,62,0.14)' if is_judi else ('rgba(43,214,163,0.14)' if is_non_judi else 'rgba(132,148,166,0.14)') }};"
+      >
+        <div class="result-top">
+          <div class="verdict">
+            <div class="verdict-icon">
+              {% if is_judi %}
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12 3.5 21.5 20h-19L12 3.5Z"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M12 9.5v4.5"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  stroke-linecap="round"
+                />
+                <circle cx="12" cy="17" r="0.9" fill="currentColor" />
+              </svg>
+              {% elif is_non_judi %}
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M5 12.5 10 17l9-10"
+                  stroke="currentColor"
+                  stroke-width="1.9"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              {% else %}
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="8.5"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                />
+                <path
+                  d="M12 16v.01M12 8.5a2 2 0 1 1 2 2c-1 .4-2 1-2 2.4"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  stroke-linecap="round"
+                />
+              </svg>
+              {% endif %}
+            </div>
+            <div>
+              <div class="verdict-label">Klasifikasi</div>
+              <div class="verdict-value">
+                {% if is_judi %}Terdeteksi judi{% elif is_non_judi %}Bukan
+                judi{% else %}Tidak diketahui{% endif %}
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="gauge"
+            id="gauge"
+            data-target="{{ (confidence * 100) | round(1) }}"
+          >
+            <div class="gauge-readout">
+              <span class="gauge-num" id="gaugeNum">0%</span>
+              <span class="gauge-cap">Keyakinan</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="echo">
+          Komentar yang diperiksa: <span>&ldquo;{{ input_text }}&rdquo;</span>
+        </div>
+      </div>
+      {% endif %}
+
+      <footer>
+        Klasifikasi otomatis, gunakan sebagai bantuan tinjauan &mdash; bukan
+        keputusan final.
+      </footer>
     </div>
-    {% endif %}
-</body>
-</html>
 
+    <script>
+      (function () {
+        var gauge = document.getElementById('gauge');
+        if (!gauge) return;
+        var target = parseFloat(gauge.dataset.target) || 0;
+        var numEl = document.getElementById('gaugeNum');
+        var reduceMotion = window.matchMedia(
+          '(prefers-reduced-motion: reduce)',
+        ).matches;
+
+        if (reduceMotion) {
+          gauge.style.setProperty('--pct', target);
+          numEl.textContent = target.toFixed(1) + '%';
+          return;
+        }
+
+        var duration = 800;
+        var start = null;
+        function easeOutCubic(t) {
+          return 1 - Math.pow(1 - t, 3);
+        }
+        function step(ts) {
+          if (!start) start = ts;
+          var progress = Math.min((ts - start) / duration, 1);
+          var eased = easeOutCubic(progress);
+          var current = target * eased;
+          gauge.style.setProperty('--pct', current);
+          numEl.textContent = current.toFixed(1) + '%';
+          if (progress < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      })();
+    </script>
+  </body>
+</html>

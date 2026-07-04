@@ -1,5 +1,12 @@
-# app.py
-from flask import Flask, render_template, request, jsonify 
+import os
+import sys
+
+# Paksa TensorFlow memakai Keras 2 (legacy) — mencegah konflik dengan
+# Keras 3 yang sejak TF 2.16 menjadi default dan belum didukung penuh
+# oleh class TF... di library transformers.
+os.environ.setdefault("TF_USE_LEGACY_KERAS", "1")
+
+from flask import Flask, render_template, request, jsonify
 from transformers import TFDistilBertForSequenceClassification, DistilBertTokenizerFast
 import tensorflow as tf
 
@@ -13,18 +20,31 @@ try:
     print("✅ Model dan tokenizer berhasil dimuat.")
 except Exception as e:
     print(f"❌ Error memuat model: {e}")
-    # Opsional: exit() jika model wajib ada
+    print("Aplikasi dihentikan karena model wajib tersedia.")
+    sys.exit(1)
 
-# --- Endpoint Lama ---
+
+@app.route('/health')
+def health():
+    return jsonify({"status": "ok", "model_loaded": model is not None}), 200
+
+
 @app.route('/')
 def index():
     return render_template('index.html')
+
 
 @app.route('/predict', methods=['POST'])
 def predict_for_web():
     text = request.form['input_text']
     res = get_prediction(text)
-    return render_template('index.html', prediction=res['classification'], confidence=res['confidenceScore'], input_text=text)
+    return render_template(
+        'index.html',
+        prediction=res['classification'],
+        confidence=res['confidenceScore'],
+        input_text=text
+    )
+
 
 @app.route('/api/predict', methods=['POST'])
 def predict_for_api_single():
@@ -33,9 +53,8 @@ def predict_for_api_single():
         return jsonify({"error": "Input JSON harus berisi key 'text'"}), 400
     return jsonify(get_prediction(json_data['text']))
 
-# ==========================================
-#  Batch Analysis
-# ==========================================
+
+# Batch Analysis
 @app.route('/api/analyze', methods=['POST'])
 def analyze_batch():
     """
@@ -50,11 +69,11 @@ def analyze_batch():
     """
     try:
         json_data = request.get_json()
-        
+
         # Validasi Input
         if not json_data or 'comments' not in json_data:
             return jsonify({"status": "error", "message": "Input harus memiliki array 'comments'"}), 400
-        
+
         comments = json_data['comments']
         if not isinstance(comments, list):
             return jsonify({"status": "error", "message": "'comments' harus berupa list/array"}), 400
@@ -66,7 +85,7 @@ def analyze_batch():
             mongo_id = item.get('id')
             text = item.get('text', '')
 
-            if not mongo_id: 
+            if not mongo_id:
                 continue
 
             prediction = get_prediction(text)
@@ -87,11 +106,12 @@ def analyze_batch():
         print(f"Error di /api/analyze: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
-# --- Helper Function  ---
+
+# --- Helper Function ---
 def get_prediction(text: str) -> dict:
     # Handle text kosong/error
     if not text or not isinstance(text, str):
-         return {"classification": "UNKNOWN", "confidenceScore": 0.0}
+        return {"classification": "UNKNOWN", "confidenceScore": 0.0}
 
     # Tokenisasi
     inputs = tokenizer(text, return_tensors="tf", truncation=True, padding='max_length', max_length=128)
@@ -105,11 +125,16 @@ def get_prediction(text: str) -> dict:
     # Label mapping
     label_map = {0: "NON_JUDI", 1: "JUDI"}
     predicted_label = label_map.get(pred_index, "Tidak Dikenal")
-    
+
     return {
         "classification": predicted_label,
         "confidenceScore": round(float(confidence), 4)
     }
 
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    # Hugging Face Spaces (Docker SDK) hanya mengekspos port 7860.
+    # PORT bisa dioverride lewat environment variable untuk fleksibilitas.
+    port = int(os.environ.get('PORT', 7860))
+    debug_mode = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
+    app.run(host='0.0.0.0', port=port, debug=debug_mode)

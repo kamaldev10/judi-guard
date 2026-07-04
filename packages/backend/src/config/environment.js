@@ -4,7 +4,7 @@ require('dotenv').config();
 const config = {
   appName: process.env.APP_NAME || 'Judi Guard Application',
   port: process.env.PORT || 3001,
-  appUrl: process.env.APP_URL,
+  apiUrl: process.env.API_URL,
   mongodbUri: process.env.MONGODB_URI,
   frontendUrl: process.env.FRONTEND_URL,
   jwt: {

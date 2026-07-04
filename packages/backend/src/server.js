@@ -17,9 +17,8 @@ const startServer = async () => {
         console.log(`🌍 Environment : ${process.env.NODE_ENV}`);
         console.log(`🔌 Port        : ${config.port}`);
 
-        // Opsional jika memiliki APP_URL di .env
-        if (process.env.APP_URL) {
-          console.log(`🔗 URL         : ${process.env.APP_URL}`);
+        if (config.apiUrl) {
+          console.log(`🔗 URL         : ${process.env.apiUrl}`);
         }
       } else {
         console.log('🚀 Server started successfully!');

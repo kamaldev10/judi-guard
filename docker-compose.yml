@@ -1,0 +1,59 @@
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: judiguard_mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - judiguard_network
+
+  ml-api:
+    build:
+      context: ./packages/ml-api
+    container_name: judiguard_ml_api
+    ports:
+      - "5000:5000"
+    networks:
+      - judiguard_network
+
+  backend:
+    build:
+      context: ./packages/backend
+    container_name: judiguard_backend
+    ports:
+      - "3001:3001"
+    depends_on:
+      - mongodb
+      - ml-api
+    env_file:
+      - ./packages/backend/.env
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/judiguard
+      - ML_API_URL=http://ml-api:5000
+    networks:
+      - judiguard_network
+
+  frontend:
+    build:
+      context: ./packages/frontend
+    container_name: judiguard_frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    env_file:
+      - ./packages/frontend/.env
+    environment:
+      # PENTING: Frontend berjalan di browser pengguna, jadi harus tetap menunjuk ke localhost
+      - VITE_API_URL=http://localhost:3001
+    networks:
+      - judiguard_network
+
+networks:
+  judiguard_network:
+    driver: bridge
+
+volumes:
+  mongo_data:

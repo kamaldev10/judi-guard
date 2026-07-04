@@ -1,16 +1,15 @@
-// Termasuk YouTube API Key, Quota Limits, AI Service URL
-
 // src/config/environment.js
-require("dotenv").config();
+require('dotenv').config();
 
 const config = {
-  appName: process.env.APP_NAME || "Judi Guard Application",
+  appName: process.env.APP_NAME || 'Judi Guard Application',
   port: process.env.PORT || 3001,
+  appUrl: process.env.APP_URL,
   mongodbUri: process.env.MONGODB_URI,
   frontendUrl: process.env.FRONTEND_URL,
   jwt: {
     secret: process.env.JWT_SECRET,
-    expiresIn: process.env.JWT_EXPIRES_IN || "24h",
+    expiresIn: process.env.JWT_EXPIRES_IN || '24h',
   },
   googleSignIn: {
     clientId: process.env.GOOGLE_SIGN_IN_CLIENT_ID,
@@ -26,7 +25,7 @@ const config = {
   email: {
     host: process.env.EMAIL_HOST,
     port: parseInt(process.env.EMAIL_PORT, 10),
-    secure: process.env.EMAIL_SECURE === "true",
+    secure: process.env.EMAIL_SECURE === 'true',
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
     from: process.env.EMAIL_FROM,
@@ -37,7 +36,7 @@ const config = {
     domain: process.env.MAILGUN_DOMAIN,
     senderEmail:
       process.env.MAILGUN_SENDER_EMAIL ||
-      `"${process.env.APP_NAME || "Judi Guard"}" <no-reply@${
+      `"${process.env.APP_NAME || 'Judi Guard'}" <no-reply@${
         process.env.MAILGUN_DOMAIN
       }>`,
   },
@@ -46,31 +45,31 @@ const config = {
     apiToken: process.env.POSTMARK_API_TOKEN,
     senderEmail:
       process.env.POSTMARK_SENDER_EMAIL ||
-      `"${process.env.POSTMARK_SENDER_NAME || process.env.APP_NAME || "Judi Guard"}" <no-reply@yourdomain.com>`,
+      `"${process.env.POSTMARK_SENDER_NAME || process.env.APP_NAME || 'Judi Guard'}" <no-reply@yourdomain.com>`,
   },
 
-  aiModelVersion: process.env.AI_MODEL_VERSION || "distilbert-flask-v1-hybrid",
+  aiModelVersion: process.env.AI_MODEL_VERSION || 'distilbert-flask-v1-hybrid',
   //maksimal top level comment dan replies per comment
   MAX_TOP_LEVEL_COMMENTS: 50,
   MAX_REPLIES_PER_COMMENT: 20,
 };
 
 if (
-  process.env.NODE_ENV === "production" &&
+  process.env.NODE_ENV === 'production' &&
   (!config.mailgun.apiKey || !config.mailgun.domain)
 ) {
   console.warn(
-    "WARNING: Mailgun API Key or Domain is not defined for production. Email sending might fail or use fallback.",
+    'WARNING: Mailgun API Key or Domain is not defined for production. Email sending might fail or use fallback.',
   );
 }
 
 // Validasi variabel penting
 if (!config.mongodbUri) {
-  console.error("FATAL ERROR: MONGODB_URI is not defined in .env file");
+  console.error('FATAL ERROR: MONGODB_URI is not defined in .env file');
   process.exit(1);
 }
 if (!config.jwt.secret) {
-  console.error("FATAL ERROR: JWT_SECRET is not defined in .env file");
+  console.error('FATAL ERROR: JWT_SECRET is not defined in .env file');
   process.exit(1);
 }
 
@@ -80,7 +79,7 @@ if (
   !config.youtube.redirectUri
 ) {
   console.warn(
-    "WARNING: YouTube OAuth Client ID, Secret, or Redirect URI is not defined in .env file. YouTube integration might fail.",
+    'WARNING: YouTube OAuth Client ID, Secret, or Redirect URI is not defined in .env file. YouTube integration might fail.',
   );
   process.exit(1);
 }

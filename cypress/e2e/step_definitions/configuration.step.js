@@ -9,9 +9,9 @@ Given("User is on the configuration page", () => {
       data: [
         {
           _id: "wl_123",
-          channelId: "@OldChannel",
-          channelName: "OldChannel",
-          note: "Legacy data",
+          channelId: "@UCbX_TueacKEifdw8lAjARNQ",
+          channelName: "Nadia Omara",
+          note: "Horror Podcast",
         },
       ],
     },
@@ -26,6 +26,11 @@ Given("User is on the configuration page", () => {
   }).as("getBlacklist");
   cy.visit("/dashboard/config");
   cy.wait(["@getWhitelist", "@getBlacklist"]);
+});
+
+// ===== Whitelist Steps =====
+Given("The whitelist table contains {string}", (channelName) => {
+  cy.contains(channelName).should("be.visible");
 });
 
 When("User adds {string} to whitelist", (channelInput) => {
@@ -70,21 +75,25 @@ When(
   },
 );
 
-Then("System displays {string} in the whitelist table", (text) => {
-  cy.contains(text).should("be.visible");
-});
+When(
+  "User attempts to add a duplicate {string} to whitelist",
+  (channelInput) => {
+    cy.intercept("POST", "**/api/config/whitelist", {
+      statusCode: 409,
+      body: {
+        status: "error",
+        message: "Channel ini sudah ada di whitelist Anda.",
+      },
+    }).as("postDuplicateWhitelist");
 
-Then(
-  "The whitelist item {string} contains note {string}",
-  (itemId, noteText) => {
-    cy.contains(itemId)
-      .parents('div[name="whitelist-item"]')
-      .should("contain", noteText);
+    cy.get('input[name="channelId"]').clear().type(channelInput);
+    cy.contains("button", "Tambah").click();
+    cy.wait("@postDuplicateWhitelist");
   },
 );
 
-Given("The whitelist table contains {string}", (channelName) => {
-  cy.contains(channelName).should("be.visible");
+When("User submits an empty input for whitelist", () => {
+  cy.get('input[name="channelId"]').clear();
 });
 
 When("User deletes {string} from whitelist", (channelName) => {
@@ -100,8 +109,35 @@ When("User deletes {string} from whitelist", (channelName) => {
   cy.wait("@deleteWhitelist");
 });
 
+Then("System displays {string} in the whitelist table", (text) => {
+  cy.contains(text).should("be.visible");
+});
+
+Then(
+  "The whitelist item {string} contains note {string}",
+  (itemId, noteText) => {
+    cy.contains(itemId)
+      .parents('div[name="whitelist-item"]')
+      .should("contain", noteText);
+  },
+);
+
+Then("System displays a warning {string}", (message) => {
+  cy.contains(message, { matchCase: false }).should("be.visible");
+});
+
+Then("System prevents submission and disables the add button", () => {
+  cy.get('input[name="channelId"]').should("have.value", "");
+  cy.contains("button", "Tambah").should("be.disabled");
+});
+
 Then("System removes {string} from the whitelist table", (channelName) => {
   cy.contains(channelName).should("not.exist");
+});
+
+// ===== Blacklist Steps =====
+Given("The blacklist table contains {string}", (keyword) => {
+  cy.contains("span", keyword).should("be.visible");
 });
 
 When("User adds {string} to blacklist", (keyword) => {
@@ -136,14 +172,6 @@ When("User adds {string} to blacklist", (keyword) => {
   cy.wait("@getBlacklistUpdated");
 });
 
-Then("System displays {string} in the blacklist table", (keyword) => {
-  cy.contains("span", keyword).should("be.visible");
-});
-
-Given("The blacklist table contains {string}", (keyword) => {
-  cy.contains("span", keyword).should("be.visible");
-});
-
 When("User deletes {string} from blacklist", (keyword) => {
   cy.intercept("DELETE", "**/api/config/blacklist/*", {
     statusCode: 204,
@@ -153,6 +181,26 @@ When("User deletes {string} from blacklist", (keyword) => {
   cy.wait("@deleteBlacklist");
 });
 
+When(
+  "User types {string} in the blacklist input and presses Enter",
+  (keyword) => {
+    cy.intercept("POST", "**/api/config/blacklist", {
+      statusCode: 409,
+      body: { status: "error", message: "Kata kunci sudah ada di daftar" },
+    }).as("postDuplicate");
+    cy.get('input[name="keyword"]').clear().type(`${keyword}{enter}`);
+  },
+);
+
+Then("System displays {string} in the blacklist table", (keyword) => {
+  cy.contains("span", keyword).should("be.visible");
+});
+
 Then("System removes {string} from the blacklist table", (keyword) => {
   cy.contains("span", keyword).should("not.exist");
+});
+
+Then("System rejects the input and displays a warning {string}", (message) => {
+  cy.wait("@postDuplicate");
+  cy.contains(message, { matchCase: false }).should("be.visible");
 });

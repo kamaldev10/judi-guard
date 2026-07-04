@@ -19,3 +19,10 @@ Feature: History and Reporting
         Then System displays the report summary statistics
         When User clicks download PDF
         Then System generates and downloads the report file
+
+    # non-happy path scenarios
+    Scenario: Generate report for a period with no data
+        Given User is on the analysis history page
+        When User opens the report dialog
+        Then The preview button should be disabled
+        And System displays a message "Silahkan pilih tanggal dan klik Preview"

@@ -26,78 +26,8 @@ Given("User is on the analysis results page with comments", () => {
   );
   cy.get('[data-cy="btn-search"]').click();
   cy.contains("button", "Mulai Analisis AI").click();
-  cy.wait("@getResultsInitial");
+  cy.wait("@getResultsInitial", { timeout: 10000 });
   cy.contains("Hasil Analisis Video").should("be.visible");
-});
-
-When("User selects comment from {string}", (authorName) => {
-  cy.contains(authorName).parents("tr").find("input[type='checkbox']").check();
-});
-
-When("User selects all comments in the list", () => {
-  cy.get("thead input[type='checkbox']").check();
-});
-
-When("User clicks delete button", () => {
-  cy.contains("button", "Hapus Komentar").click();
-});
-
-When("User confirms deletion with {string} option enabled", (optionLabel) => {
-  cy.intercept("POST", "**/api/analysis/*/action", {
-    fixture: "action_success.json",
-  }).as("postActionDelete");
-  cy.intercept("GET", "**/api/analysis/*/results*", {
-    fixture: "results_deleted.json",
-  }).as("getResultsDeleted");
-  cy.contains("label", "Blokir Penulis Juga").click();
-  cy.get("div[role='alertdialog']")
-    .contains("button", "Ya, Hapus Sekarang")
-    .click();
-  cy.wait("@postActionDelete");
-  cy.wait("@getResultsDeleted");
-});
-
-When("User confirms deletion without Ban Author", () => {
-  cy.intercept("POST", "**/api/analysis/*/action", {
-    fixture: "action_success.json",
-  }).as("postActionDelete");
-  cy.intercept("GET", "**/api/analysis/*/results*", {
-    fixture: "results_deleted.json",
-  }).as("getResultsDeleted");
-  cy.get("div[role='alertdialog']")
-    .contains("button", "Ya, Hapus Sekarang")
-    .click();
-  cy.wait("@postActionDelete");
-  cy.wait("@getResultsDeleted");
-});
-
-Then("System updates the comment status to {string}", (statusLabel) => {
-  cy.contains("span", statusLabel).should("be.visible");
-  cy.contains("Spammer Fixture")
-    .parents("tr")
-    .find("input[type='checkbox']")
-    .should("not.be.checked");
-});
-
-Then(
-  "System updates all selected comments status to {string}",
-  (statusLabel) => {
-    cy.contains("Spammer Fixture")
-      .parents("tr")
-      .within(() => {
-        cy.contains("span", statusLabel).should("be.visible");
-      });
-    cy.contains("Good User")
-      .parents("tr")
-      .within(() => {
-        cy.contains("span", statusLabel).should("not.exist");
-      });
-  },
-);
-
-Then("System displays a success notification with Undo option", () => {
-  cy.contains("Berhasil menghapus").should("be.visible");
-  cy.contains("button", "UNDO SEKARANG").should("be.visible");
 });
 
 Given("A comment has been deleted recently", () => {
@@ -147,6 +77,47 @@ Given("A comment has been deleted recently", () => {
   cy.contains("button", "UNDO SEKARANG").should("be.visible");
 });
 
+When("User selects comment from {string}", (authorName) => {
+  cy.contains(authorName).parents("tr").find("input[type='checkbox']").check();
+});
+
+When("User selects all comments in the list", () => {
+  cy.get("thead input[type='checkbox']").check();
+});
+
+When("User clicks delete button", () => {
+  cy.contains("button", "Hapus Komentar").click();
+});
+
+When("User confirms deletion with {string} option enabled", (optionLabel) => {
+  cy.intercept("POST", "**/api/analysis/*/action", {
+    fixture: "action_success.json",
+  }).as("postActionDelete");
+  cy.intercept("GET", "**/api/analysis/*/results*", {
+    fixture: "results_deleted.json",
+  }).as("getResultsDeleted");
+  cy.contains("label", "Blokir Penulis Juga").click();
+  cy.get("div[role='alertdialog']")
+    .contains("button", "Ya, Hapus Sekarang")
+    .click();
+  cy.wait("@postActionDelete");
+  cy.wait("@getResultsDeleted");
+});
+
+When("User confirms deletion without Ban Author", () => {
+  cy.intercept("POST", "**/api/analysis/*/action", {
+    fixture: "action_success.json",
+  }).as("postActionDelete");
+  cy.intercept("GET", "**/api/analysis/*/results*", {
+    fixture: "results_deleted.json",
+  }).as("getResultsDeleted");
+  cy.get("div[role='alertdialog']")
+    .contains("button", "Ya, Hapus Sekarang")
+    .click();
+  cy.wait("@postActionDelete");
+  cy.wait("@getResultsDeleted");
+});
+
 When("User clicks {string} on the notification", (btnText) => {
   cy.intercept("POST", "**/api/analysis/*/undo", {
     statusCode: 200,
@@ -160,7 +131,87 @@ When("User clicks {string} on the notification", (btnText) => {
   cy.wait("@getResultsRestored");
 });
 
+When("User clears all comment selections", () => {
+  cy.get("input[type='checkbox']").uncheck({ force: true });
+});
+
+When("User confirms deletion but the server returns an error", () => {
+  cy.intercept("POST", "**/api/analysis/*/action", {
+    statusCode: 500,
+    body: { status: "error", message: "Internal Server Error" },
+  }).as("postActionError");
+  cy.get("div[role='alertdialog']")
+    .contains("button", "Ya, Hapus Sekarang")
+    .click();
+  cy.wait("@postActionError");
+});
+
+When(
+  "User clicks {string} on the notification but the server returns an error",
+  (btnText) => {
+    cy.intercept("POST", "**/api/analysis/*/undo", {
+      statusCode: 500,
+      body: { status: "error", message: "Gagal mengembalikan komentar" },
+    }).as("postUndoError");
+    cy.contains("button", btnText).click();
+    cy.wait("@postUndoError");
+  },
+);
+
+Then("System updates the comment status to {string}", (statusLabel) => {
+  cy.contains("span", statusLabel).should("be.visible");
+  cy.contains("Spammer Fixture")
+    .parents("tr")
+    .find("input[type='checkbox']")
+    .should("not.be.checked");
+});
+
+Then(
+  "System updates all selected comments status to {string}",
+  (statusLabel) => {
+    cy.contains("Spammer Fixture")
+      .parents("tr")
+      .within(() => {
+        cy.contains("span", statusLabel).should("be.visible");
+      });
+    cy.contains("Good User")
+      .parents("tr")
+      .within(() => {
+        cy.contains("span", statusLabel).should("not.exist");
+      });
+  },
+);
+
+Then("System displays a success notification with Undo option", () => {
+  cy.contains("Berhasil menghapus").should("be.visible");
+  cy.contains("button", "UNDO SEKARANG").should("be.visible");
+});
+
 Then("System restores the comment status to Active", () => {
   cy.contains("span", "Dihapus").should("not.exist");
   cy.contains("Komentar berhasil dikembalikan").should("be.visible");
+});
+
+Then("System does not display the delete button", () => {
+  cy.contains("button", "Hapus Komentar").should("not.exist");
+});
+
+Then("System displays an error notification", () => {
+  cy.contains("[data-sonner-toast]", "Internal Server Error", {
+    matchCase: false,
+  }).should("be.visible");
+});
+
+Then("The comment status remains unchanged", () => {
+  cy.contains("Spammer Fixture")
+    .parents("tr")
+    .within(() => {
+      cy.contains("span", "Dihapus").should("not.exist");
+    });
+});
+
+Then("System displays an error toast {string}", (errorMessage) => {
+  cy.contains("[data-sonner-toast]", errorMessage, { matchCase: false }).should(
+    "be.visible",
+  );
 });

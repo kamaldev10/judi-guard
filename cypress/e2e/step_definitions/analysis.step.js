@@ -9,7 +9,6 @@ Given("User is on the analysis selection page", () => {
   cy.contains("Pilih Video untuk Dianalisis").should("be.visible");
 });
 
-// Step Shortcut: Menjalankan Flow Lengkap dari Awal sampai Akhir
 Given("Analysis results are available for {string}", (videoId) => {
   cy.intercept("GET", "**/api/videos*", {
     fixture: "video_list.json",
@@ -51,21 +50,6 @@ When("Each comment displays a confidence score", () => {
   cy.contains("%").should("be.visible");
 });
 
-Then("Each comment displays a risk label that are High, Medium, or Low", () => {
-  cy.contains("TINGGI")
-    .should("be.visible")
-    .should("have.class", "text-red-700");
-  cy.contains("RENDAH")
-    .should("be.visible")
-    .should("have.class", "text-yellow-700");
-});
-
-Then("System displays the detected keywords as analysis reasons", () => {
-  cy.contains("gacor").should("be.visible");
-  cy.contains("profit").should("be.visible");
-  cy.contains("zeus").should("be.visible");
-});
-
 When("User selects the filter for {string}", (filterLabel) => {
   const riskMap = {
     "HIGH Risk": "HIGH",
@@ -96,19 +80,6 @@ When("User selects the filter for {string}", (filterLabel) => {
   });
   cy.contains("button", filterLabel).click();
   cy.wait("@getFilteredResults");
-});
-
-Then("System displays only comments matching {string} Risk", (riskLevel) => {
-  if (riskLevel === "HIGH") {
-    cy.contains("Spammer Fixture").should("be.visible");
-    cy.contains("User Fixture 1").should("not.exist");
-    cy.get('[data-cy="spam-label"]').each(($el) => {
-      cy.wrap($el).should("contain", "TINGGI");
-      cy.wrap($el).should("contain", "AI:");
-      cy.wrap($el).should("contain", "%");
-      cy.wrap($el).find("span").first().should("have.class", "bg-red-100");
-    });
-  }
 });
 
 When("User searches for a video with link {string}", (url) => {
@@ -145,13 +116,6 @@ When("User initiates the analysis process from preview", () => {
   cy.wait("@startAnalysis");
 });
 
-Then("System displays the scanning progress screen", () => {
-  cy.wait("@pollProcessing");
-  cy.contains("h2", "Sedang Memindai Video").should("be.visible");
-  cy.contains("Menganalisis dengan AI").should("be.visible"); // Dari getStatusText() logic FE
-  cy.get(".animate-ping").should("exist"); // Animasi radar
-});
-
 When("The analysis process completes", () => {
   cy.intercept("GET", "**/api/analysis/status/*", {
     fixture: "status_completed.json",
@@ -160,6 +124,98 @@ When("The analysis process completes", () => {
     fixture: "analysis_result.json",
   }).as("getResults");
   cy.wait("@pollCompleted", { timeout: 10000 });
+});
+
+When("User initiates the analysis process but server returns an error", () => {
+  cy.intercept("POST", "**/api/analysis/*", {
+    statusCode: 500,
+    body: { status: "error", message: "Gagal memulai analisis" },
+  }).as("startAnalysisError");
+
+  cy.contains("button", "Mulai Analisis AI").click();
+  cy.wait("@startAnalysisError");
+});
+
+When("The analysis process encounters an error", () => {
+  cy.intercept("GET", "**/api/analysis/status/*", {
+    statusCode: 200,
+    body: {
+      status: "success",
+      data: {
+        _id: "analysis_123_abc",
+        status: "FAILED",
+        message: "Analisis Gagal",
+      },
+    },
+  }).as("pollFailed");
+
+  cy.wait("@pollFailed", { timeout: 10000 });
+});
+
+When("User clicks the cancel button during scanning", () => {
+  cy.intercept("GET", "**/api/analysis/status/*").as("polling");
+  cy.contains("button", "Batalkan Proses").click();
+});
+
+When(
+  "User selects the filter for {string} but no comments match",
+  (filterLabel) => {
+    const riskMap = {
+      "HIGH Risk": "HIGH",
+      "MEDIUM Risk": "MEDIUM",
+      "LOW Risk": "LOW",
+    };
+    const targetLevel = riskMap[filterLabel];
+
+    cy.intercept("GET", `**/api/analysis/*/results*riskLevel=${targetLevel}*`, {
+      statusCode: 200,
+      body: {
+        status: "success",
+        data: {
+          comments: [],
+          pagination: { currentPage: 1, totalPages: 1, totalItems: 0 },
+        },
+      },
+    }).as("getEmptyFilteredResults");
+
+    cy.contains("button", filterLabel).click();
+    cy.wait("@getEmptyFilteredResults");
+  },
+);
+
+Then("Each comment displays a risk label that are High, Medium, or Low", () => {
+  cy.contains("TINGGI")
+    .should("be.visible")
+    .should("have.class", "text-red-700");
+  cy.contains("RENDAH")
+    .should("be.visible")
+    .should("have.class", "text-yellow-700");
+});
+
+Then("System displays the detected keywords as analysis reasons", () => {
+  cy.contains("gacor").should("be.visible");
+  cy.contains("profit").should("be.visible");
+  cy.contains("zeus").should("be.visible");
+});
+
+Then("System displays only comments matching {string} Risk", (riskLevel) => {
+  if (riskLevel === "HIGH") {
+    cy.contains("Spammer Fixture").should("be.visible");
+    cy.contains("User Fixture 1").should("not.exist");
+    cy.get('[data-cy="spam-label"]').each(($el) => {
+      cy.wrap($el).should("contain", "TINGGI");
+      cy.wrap($el).should("contain", "AI:");
+      cy.wrap($el).should("contain", "%");
+      cy.wrap($el).find("span").first().should("have.class", "bg-red-100");
+    });
+  }
+});
+
+Then("System displays the scanning progress screen", () => {
+  cy.wait("@pollProcessing");
+  cy.contains("h2", "Sedang Memindai Video").should("be.visible");
+  cy.contains("Menganalisis dengan AI").should("be.visible");
+  cy.get(".animate-ping").should("exist"); // Animasi radar
 });
 
 Then("System displays the analysis results page", () => {
@@ -175,4 +231,21 @@ Then("System classifies comments as gambling spam or non-spam", () => {
       // cy.contains("JUDI").should("exist");
       cy.contains("TINGGI").should("exist");
     });
+});
+
+Then("System displays an error notification {string}", (errorMessage) => {
+  cy.contains(errorMessage, { matchCase: false }).should("be.visible");
+});
+
+Then("System displays a failure message {string}", (failMessage) => {
+  cy.contains(failMessage, { matchCase: false }).should("be.visible");
+});
+
+Then("System stops the scanning process", () => {
+  cy.contains("button", "Mulai Analisis AI").should("be.visible");
+  cy.contains("Preview Komentar Terbaru").should("be.visible");
+});
+
+Then("System displays the empty filter message {string}", (message) => {
+  cy.contains(message, { matchCase: false }).should("be.visible");
 });

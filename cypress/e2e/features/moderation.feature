@@ -24,3 +24,20 @@ Feature: Comment Moderation
         Given A comment has been deleted recently
         When User clicks "UNDO SEKARANG" on the notification
         Then System restores the comment status to Active
+
+    # non-happy path scenarios
+    Scenario: User attempts to moderate comments without selecting any item
+        When User clears all comment selections
+        Then System does not display the delete button
+
+    Scenario: System fails to delete comments due to server error
+        When User selects comment from "Spammer Fixture"
+        And User clicks delete button
+        And User confirms deletion but the server returns an error
+        Then System displays an error notification
+        And The comment status remains unchanged
+
+    Scenario: System fails to undo moderation due to server error
+        Given A comment has been deleted recently
+        When User clicks "UNDO SEKARANG" on the notification but the server returns an error
+        Then System displays an error toast "Gagal melakukan undo"

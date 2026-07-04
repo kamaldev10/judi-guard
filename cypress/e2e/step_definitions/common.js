@@ -1,4 +1,4 @@
-import { Given, When } from "@badeball/cypress-cucumber-preprocessor";
+import { Given, When, Then } from "@badeball/cypress-cucumber-preprocessor";
 
 Given("User is logged in", () => {
   cy.fixture("member_unconnected.json").then((authData) => {

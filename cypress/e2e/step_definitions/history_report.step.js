@@ -18,19 +18,6 @@ When("User opens the analysis history page", () => {
   cy.visit("/dashboard/history");
 });
 
-Then("System displays analysis and moderation records in a table", () => {
-  cy.wait("@getHistory");
-  cy.contains("h1", "Riwayat Analisis").should("be.visible");
-  cy.contains("Tutorial Cara Menang Slot").should("be.visible");
-  cy.contains("Belajar React untuk Pemula").should("be.visible");
-  cy.contains("span", "Bersih")
-    .should("be.visible")
-    .and("have.class", "text-green-800");
-  cy.contains("span", "Sebagian")
-    .should("be.visible")
-    .and("have.class", "text-yellow-800");
-});
-
 When("User opens the report dialog", () => {
   cy.contains("button", "Laporan Periode").click();
   cy.contains("h2", "Cetak Laporan Aktivitas").should("be.visible");
@@ -57,14 +44,6 @@ When("User generates the preview", () => {
   cy.wait("@getReportPreview");
 });
 
-Then("System displays the report summary statistics", () => {
-  cy.contains("Total Video").parent().should("contain", "5");
-  cy.contains("Total Komentar").parent().should("contain", "500");
-  cy.contains("Spam Ditemukan").parent().should("contain", "50");
-  cy.contains("Tutorial Cara Menang Slot").should("be.visible");
-  cy.contains("45 Spam").should("be.visible");
-});
-
 When("User clicks download PDF", () => {
   cy.intercept("GET", "**/api/analysis/report/download*", {
     statusCode: 200,
@@ -76,8 +55,37 @@ When("User clicks download PDF", () => {
     .click();
 });
 
+Then("System displays analysis and moderation records in a table", () => {
+  cy.wait("@getHistory");
+  cy.contains("h1", "Riwayat Analisis").should("be.visible");
+  cy.contains("Tutorial Cara Menang Slot").should("be.visible");
+  cy.contains("Belajar React untuk Pemula").should("be.visible");
+  cy.contains("span", "Bersih")
+    .should("be.visible")
+    .and("have.class", "text-green-800");
+  cy.contains("span", "Sebagian")
+    .should("be.visible")
+    .and("have.class", "text-yellow-800");
+});
+
+Then("System displays the report summary statistics", () => {
+  cy.contains("Total Video").parent().should("contain", "5");
+  cy.contains("Total Komentar").parent().should("contain", "500");
+  cy.contains("Spam Ditemukan").parent().should("contain", "50");
+  cy.contains("Tutorial Cara Menang Slot").should("be.visible");
+  cy.contains("45 Spam").should("be.visible");
+});
+
 Then("System generates and downloads the report file", () => {
   cy.wait("@downloadReport");
   cy.get("body").type("{esc}");
   cy.contains("Laporan berhasil diunduh").should("be.visible");
+});
+
+Then("The preview button should be disabled", () => {
+  cy.contains("button", "Preview").should("be.disabled");
+});
+
+Then("System displays a message {string}", (message) => {
+  cy.contains(message, { matchCase: false }).should("be.visible");
 });

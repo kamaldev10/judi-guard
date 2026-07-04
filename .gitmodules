@@ -1,0 +1,3 @@
+[submodule "packages/ml-api/_hf-ml-api/judiguard-ml-ap"]
+	path = packages/ml-api/_hf-ml-api/judiguard-ml-ap
+	url = https://huggingface.co/spaces/kamaldev10/judiguard-ml-api

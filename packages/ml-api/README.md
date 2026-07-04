@@ -64,10 +64,10 @@ File ini sudah tersedia di proyek dan berisi:
 
 ```
 flask
-transformers
-tensorflow-cpu
-tf-keras
+transformers==4.41.2
+tensorflow-cpu==2.15.0
 python-dotenv
+gunicorn
 ```
 
 ### 4. Buat dan Aktifkan Virtual Environment

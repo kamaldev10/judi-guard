@@ -1,0 +1,39 @@
+# --- Python Virtual Environment ---
+.venv/
+venv/
+env/
+*.env
+*.egg-info/
+dist/
+build/
+
+
+# --- Python Bytecode & Cache ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+
+# --- Environment Variables ---
+.env.*
+
+
+# --- IDE & Editor-specific files ---
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+
+# --- OS-generated files ---
+.DS_Store
+Thumbs.db
+._*
+
+
+# --- Log Files ---
+*.log
+logs/

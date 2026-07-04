@@ -1,6 +1,5 @@
 flask
-transformers
-tensorflow
-torch
+transformers==4.41.2
+tensorflow-cpu==2.15.0
 python-dotenv
-tf-keras 
+gunicorn

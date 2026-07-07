@@ -6,8 +6,8 @@ const { BadRequestError, UnauthorizedError } = require("../../utils/errors"); //
 const google = require("googleapis");
 const config = require("../../config/environment");
 
-const GUEST_CALLBACK_URL = `${process.env.API_URL || "http://localhost:3001"}/api/auth/guest/callback`;
-const USER_CALLBACK_URL = `${process.env.API_URL || "http://localhost:3001"}/api/auth/youtube/callback`;
+const GUEST_CALLBACK_URL = `${config.apiUrl || "http://localhost:3001"}/api/auth/guest/callback`;
+const USER_CALLBACK_URL = `${config.apiUrl || "http://localhost:3001"}/api/auth/youtube/callback`;
 
 /**
  * Menangani registrasi pengguna baru.

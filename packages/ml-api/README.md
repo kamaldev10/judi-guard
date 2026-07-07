@@ -79,7 +79,7 @@ Sangat disarankan untuk menggunakan lingkungan virtual agar dependensi proyek te
 python -m venv .venv
 
 # Aktifkan di Windows (PowerShell)
-.\.venv\Scripts\activate
+.\.venv\Scripts\Activate.ps1
 
 # Aktifkan di Linux/macOS
 source .venv/bin/activate

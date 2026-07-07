@@ -1,12 +1,12 @@
 // src/main.jsx
-import React from "react";
-import ReactDOM from "react-dom/client";
-import "./style.css";
-import App from "./App";
-import { BrowserRouter as Router } from "react-router-dom";
-import { ThemeProvider } from "@/components/layout/ThemeProvider";
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import './style.css';
+import App from './App';
+import { BrowserRouter as Router } from 'react-router-dom';
+import { ThemeProvider } from '@/components/provider/ThemeProvider';
 
-const rootElement = document.getElementById("root");
+const rootElement = document.getElementById('root');
 
 if (rootElement) {
   ReactDOM.createRoot(rootElement).render(
@@ -16,7 +16,7 @@ if (rootElement) {
           <App />
         </Router>
       </ThemeProvider>
-    </React.StrictMode>
+    </React.StrictMode>,
   );
 } else {
   console.error('Root element with id "root" not found.');

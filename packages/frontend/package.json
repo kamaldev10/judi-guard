@@ -87,7 +87,7 @@
     "baseline-browser-mapping": "^2.9.18",
     "cypress": "^15.4.0",
     "cypress-mochawesome-reporter": "^4.0.2",
-    "eslint": "^9.25.0",
+    "eslint": "^9.39.4",
     "eslint-plugin-cypress": "^5.2.0",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",

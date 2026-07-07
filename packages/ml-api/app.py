@@ -4,29 +4,31 @@ import sys
 # Paksa TensorFlow memakai Keras 2 (legacy) — mencegah konflik dengan
 # Keras 3 yang sejak TF 2.16 menjadi default dan belum didukung penuh
 # oleh class TF... di library transformers.
-os.environ.setdefault("TF_USE_LEGACY_KERAS", "1")
+os.environ.setdefault('TF_USE_LEGACY_KERAS', '1')
 
+# pyrefly: ignore [missing-import]
 from flask import Flask, render_template, request, jsonify
+# pyrefly: ignore [missing-import]
 from transformers import TFDistilBertForSequenceClassification, DistilBertTokenizerFast
 import tensorflow as tf
 
 app = Flask(__name__)
 
 # --- Load Model ---
-print("Memuat model dan tokenizer...")
+print('Memuat model dan tokenizer...')
 try:
-    model = TFDistilBertForSequenceClassification.from_pretrained("saved_model")
-    tokenizer = DistilBertTokenizerFast.from_pretrained("saved_model")
-    print("✅ Model dan tokenizer berhasil dimuat.")
+    model = TFDistilBertForSequenceClassification.from_pretrained('saved_model')
+    tokenizer = DistilBertTokenizerFast.from_pretrained('saved_model')
+    print('✅ Model dan tokenizer berhasil dimuat.')
 except Exception as e:
-    print(f"❌ Error memuat model: {e}")
-    print("Aplikasi dihentikan karena model wajib tersedia.")
+    print(f'❌ Error memuat model: {e}')
+    print('Aplikasi dihentikan karena model wajib tersedia.')
     sys.exit(1)
 
 
 @app.route('/health')
 def health():
-    return jsonify({"status": "ok", "model_loaded": model is not None}), 200
+    return jsonify({'status': 'ok', 'model_loaded': model is not None}), 200
 
 
 @app.route('/')
@@ -42,7 +44,7 @@ def predict_for_web():
         'index.html',
         prediction=res['classification'],
         confidence=res['confidenceScore'],
-        input_text=text
+        input_text=text,
     )
 
 
@@ -50,7 +52,7 @@ def predict_for_web():
 def predict_for_api_single():
     json_data = request.get_json()
     if not json_data or 'text' not in json_data:
-        return jsonify({"error": "Input JSON harus berisi key 'text'"}), 400
+        return jsonify({'error': "Input JSON harus berisi key 'text'"}), 400
     return jsonify(get_prediction(json_data['text']))
 
 
@@ -72,11 +74,15 @@ def analyze_batch():
 
         # Validasi Input
         if not json_data or 'comments' not in json_data:
-            return jsonify({"status": "error", "message": "Input harus memiliki array 'comments'"}), 400
+            return jsonify(
+                {'status': 'error', 'message': "Input harus memiliki array 'comments'"}
+            ), 400
 
         comments = json_data['comments']
         if not isinstance(comments, list):
-            return jsonify({"status": "error", "message": "'comments' harus berupa list/array"}), 400
+            return jsonify(
+                {'status': 'error', 'message': "'comments' harus berupa list/array"}
+            ), 400
 
         results = []
 
@@ -90,31 +96,35 @@ def analyze_batch():
 
             prediction = get_prediction(text)
 
-            results.append({
-                "id": mongo_id,
-                "classification": prediction['classification'],   # "JUDI" / "NON_JUDI"
-                "confidenceScore": prediction['confidenceScore']
-            })
+            results.append(
+                {
+                    'id': mongo_id,
+                    'classification': prediction[
+                        'classification'
+                    ],  # "JUDI" / "NON_JUDI"
+                    'confidenceScore': prediction['confidenceScore'],
+                }
+            )
 
-        return jsonify({
-            "status": "success",
-            "total_processed": len(results),
-            "results": results
-        }), 200
+        return jsonify(
+            {'status': 'success', 'total_processed': len(results), 'results': results}
+        ), 200
 
     except Exception as e:
-        print(f"Error di /api/analyze: {e}")
-        return jsonify({"status": "error", "message": str(e)}), 500
+        print(f'Error di /api/analyze: {e}')
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
 # --- Helper Function ---
 def get_prediction(text: str) -> dict:
     # Handle text kosong/error
     if not text or not isinstance(text, str):
-        return {"classification": "UNKNOWN", "confidenceScore": 0.0}
+        return {'classification': 'UNKNOWN', 'confidenceScore': 0.0}
 
     # Tokenisasi
-    inputs = tokenizer(text, return_tensors="tf", truncation=True, padding='max_length', max_length=128)
+    inputs = tokenizer(
+        text, return_tensors='tf', truncation=True, padding='max_length', max_length=128
+    )
 
     # Prediksi
     outputs = model(inputs)
@@ -123,12 +133,12 @@ def get_prediction(text: str) -> dict:
     confidence = tf.reduce_max(probs).numpy()
 
     # Label mapping
-    label_map = {0: "NON_JUDI", 1: "JUDI"}
-    predicted_label = label_map.get(pred_index, "Tidak Dikenal")
+    label_map = {0: 'NON_JUDI', 1: 'JUDI'}
+    predicted_label = label_map.get(pred_index, 'Tidak Dikenal')
 
     return {
-        "classification": predicted_label,
-        "confidenceScore": round(float(confidence), 4)
+        'classification': predicted_label,
+        'confidenceScore': round(float(confidence), 4),
     }
 
 

@@ -1,0 +1,8 @@
+node_modules/
+dist/
+coverage/
+packages/ml-api/.venv/
+packages/ml-api/__pycache__/
+packages/ml-api/saved_model/
+
+.env

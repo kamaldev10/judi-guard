@@ -145,19 +145,19 @@ src/
 [Fase 1: Persiapan & Konfigurasi ESM]  <-- Selesai ✅
          │
          ▼
-[Fase 2: Migrasi Kode CJS ke ESM secara Bertahap]
+[Fase 2: Migrasi Kode CJS ke ESM secara Bertahap] ✅
          │
          ▼
-[Fase 3: Pemisahan Data Access ke Repository & Model]
+[Fase 3: Pemisahan Data Access ke Repository & Model] ✅
          │
          ▼
-[Fase 4: Restrukturisasi Folder & Renaming ke Kebab-Case]
+[Fase 4: Restrukturisasi Folder & Renaming ke Kebab-Case] ✅
          │
          ▼
-[Fase 5: Penyesuaian Impor Path & Subpath]
+[Fase 5: Penyesuaian Impor Path & Subpath] ✅
          │
          ▼
-[Fase 6: Validasi & Testing]
+[Fase 6: Validasi & Testing] ✅
 ```
 
 ### Fase 1: Persiapan & Konfigurasi ESM (Selesai ✅)
@@ -167,54 +167,41 @@ src/
 3. Mengubah eslint (`eslint.config.mjs`) untuk menyadari sintaks ESM (`sourceType: 'module'`).
 4. Membuat `jsconfig.json` agar auto-complete import alias dapat terbaca di IDE.
 
-### Fase 2: Migrasi Kode CJS ke ESM secara Bertahap (Sedang Berjalan ⏳)
+### Fase 2: Migrasi Kode CJS ke ESM secara Bertahap (Selesai ✅)
 
 1. [x] Migrasikan file utilitas dasar (`shared/utils/*`) ke ESM:
    - `errors.js` (Selesai ✅)
    - `jwt.js` (Selesai ✅)
    - `youtube-helper.js` (Selesai ✅)
    - `email-sender.js` (Selesai ✅)
-   - `pdf-generator.js` (Sudah ESM ✅)
-2. [ ] Ganti semua `require` menjadi `import` di seluruh file sisa (modules, controllers, routes, config).
-3. [ ] Tambahkan `.js` di akhir setiap import lokal/file internal.
-4. [ ] Ubah semua `module.exports = ...` menjadi `export default ...` atau named `export const ...`.
+   - `pdf-generator.js` (Selesai ✅)
+2. [x] Ganti semua `require` menjadi `import` di seluruh file sisa (modules, controllers, routes, config) (Selesai ✅).
+3. [x] Tambahkan `.js` di akhir setiap import lokal/file internal (Selesai ✅).
+4. [x] Ubah semua `module.exports = ...` menjadi `export default ...` atau named `export const ...` (Selesai ✅).
 
-### Fase 3: Pemisahan Data Access ke Repository
+### Fase 3: Pemisahan Data Access ke Repository (Selesai ✅)
 
-1. Buat class Repository baru untuk mengemas query database Mongoose.
-2. Pindahkan query Mongoose langsung dari Service ke Repository masing-masing.
-3. Contoh pola di `auth.repository.js`:
-   ```javascript
-   import User from './user.model.js';
+1. [x] Buat class Repository baru untuk mengemas query database Mongoose (Selesai ✅).
+2. [x] Pindahkan query Mongoose langsung dari Service ke Repository masing-masing (Selesai ✅).
 
-   export class UserRepository {
-     static async findByEmail(email) {
-       return User.findOne({ email });
-     }
-     // ...
-   }
-   ```
-
-### Fase 4: Restrukturisasi Folder & Renaming ke Kebab-Case (Sedang Berjalan ⏳)
+### Fase 4: Restrukturisasi Folder & Renaming ke Kebab-Case (Selesai ✅)
 
 1. [x] Re-organisasi & migrasi model / validator:
    - `AnalyzedComment.model.js` -> `src/modules/video-analysis/analyzed-comment.model.js` (Selesai ✅)
    - `video.validator.js` -> `src/modules/video-analysis/video-analysis.validator.js` (Selesai ✅)
    - `comment.model.js` (Dihapus karena tidak digunakan / YAGNI 🗑️)
    - `video.model.js` (Dihapus karena tidak digunakan / YAGNI 🗑️)
-2. [ ] Buat folder sub-fitur lainnya di bawah `src/modules/` dan `src/shared/`.
-3. [ ] Pindahkan dan ganti nama file sisa menjadi kebab-case.
+2. [x] Buat folder sub-fitur lainnya di bawah `src/modules/` dan `src/shared/` (Selesai ✅).
+3. [x] Pindahkan dan ganti nama file sisa menjadi kebab-case (Selesai ✅).
 
-### Fase 5: Penyesuaian Impor Path & Subpath
+### Fase 5: Penyesuaian Impor Path & Subpath (Selesai ✅)
 
-1. Ganti semua relative import yang panjang menjadi subpath imports yang clean:
-   - Dari: `import config from '../../config/environment.js';`
-   - Menjadi: `import config from '#config/environment.js';`
-2. Sesuaikan semua impor relatif internal yang rusak akibat pemindahan file.
+1. [x] Ganti semua relative import yang panjang menjadi subpath imports yang clean (Selesai ✅).
+2. [x] Sesuaikan semua impor relatif internal yang rusak akibat pemindahan file (Selesai ✅).
 
-### Fase 6: Validasi & Testing
+### Fase 6: Validasi & Testing (Selesai ✅)
 
-1. Jalankan linter (`npm run lint`) untuk mendeteksi error sintaks atau referensi.
-2. Jalankan unit test (`npm run test`) dan server dev (`npm run dev`) untuk memverifikasi fungsionalitas aplikasi.
+1. [x] Jalankan linter (`npm run lint`) untuk mendeteksi error sintaks atau referensi (Selesai ✅).
+2. [x] Jalankan unit test (`npm run test`) dan server dev (`npm run dev`) untuk memverifikasi fungsionalitas aplikasi (Selesai ✅).
 
 ---

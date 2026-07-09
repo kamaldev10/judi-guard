@@ -2,17 +2,27 @@
   "name": "judi-guard-monorepo",
   "private": true,
   "workspaces": [
-    "packages/*"
+    "packages/frontend",
+    "packages/backend"
   ],
   "scripts": {
     "dev": "concurrently \"npm run dev --workspace=client\" \"npm run dev --workspace=server\"",
     "dev:frontend": "npm run dev --workspace=client",
     "dev:backend": "npm run dev --workspace=server",
+    "dev:ml": "packages\\ml-api\\.venv\\Scripts\\python packages/ml-api/app.py",
     "add:frontend": "npm install --workspace=client",
     "add:backend": "npm install --workspace=server",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
-    "cy:run:chrome": "cypress run --browser chrome"
+    "cy:run:chrome": "cypress run --browser chrome",
+    "lint": "npm run lint --workspaces --if-present && npm run lint:ml",
+    "lint:fe": "npm run lint --workspace=client",
+    "lint:be": "npm run lint --workspace=server",
+    "lint:ml": "packages\\ml-api\\.venv\\Scripts\\ruff check packages/ml-api",
+    "format": "npm run format --workspaces --if-present && npm run format:ml",
+    "format:fe": "npm run format --workspace=client",
+    "format:be": "npm run format --workspace=server",
+    "format:ml": "packages\\ml-api\\.venv\\Scripts\\ruff format packages/ml-api"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"

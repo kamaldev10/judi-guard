@@ -1,6 +1,5 @@
-// src/config/database.js
-const mongoose = require('mongoose');
-const config = require('./environment');
+import config from '#config/environment.js';
+import mongoose from 'mongoose';
 
 const connectDB = async () => {
   try {
@@ -13,4 +12,4 @@ const connectDB = async () => {
   }
 };
 
-module.exports = connectDB;
+export default connectDB;

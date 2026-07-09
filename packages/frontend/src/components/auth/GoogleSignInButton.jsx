@@ -1,21 +1,21 @@
-import React from "react";
-import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
-import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
-import { Icon } from "@iconify/react";
-import PropTypes from "prop-types";
-import { useAuthStore } from "@/stores/authStore";
+import React from 'react';
+import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { Icon } from '@iconify/react';
+import PropTypes from 'prop-types';
+import { useAuthStore } from '@/stores/authStore';
 
 const googleClientId = import.meta.env.VITE_GOOGLE_SIGNIN_CLIENT_ID;
 
 if (!googleClientId) {
   console.error(
-    "Error: VITE_GOOGLE_SIGNIN_CLIENT_ID tidak terdefinisi. Fitur Google Sign-In tidak akan berfungsi."
+    'Error: VITE_GOOGLE_SIGNIN_CLIENT_ID tidak terdefinisi. Fitur Google Sign-In tidak akan berfungsi.',
   );
 }
 
 const GoogleSignInButton = ({
-  buttonText = "Masuk dengan Google",
+  buttonText = 'Masuk dengan Google',
   disabled = false,
   onSuccessCustom,
   onErrorCustom,
@@ -28,13 +28,13 @@ const GoogleSignInButton = ({
 
   const handleGoogleSuccess = async (credentialResponse) => {
     const idToken = credentialResponse?.credential;
-    console.log("🔐 ID Token diterima:", idToken ? "✓" : "✗");
+    console.log('🔐 ID Token diterima:', idToken ? '✓' : '✗');
 
     if (!idToken) {
-      toast.error("Google ID Token tidak diterima", {
-        position: "bottom-right",
+      toast.error('Google ID Token tidak diterima', {
+        position: 'bottom-right',
       });
-      onErrorCustom?.(new Error("Google ID Token tidak diterima"));
+      onErrorCustom?.(new Error('Google ID Token tidak diterima'));
       return;
     }
 
@@ -42,16 +42,16 @@ const GoogleSignInButton = ({
       setLoading(true);
 
       const response = await signInWithGoogle(idToken);
-      console.log("✅ Respons dari backend:", response);
+      console.log('✅ Respons dari backend:', response);
 
       if (response?.data?.user) {
         setUser(response.data.user);
       }
 
-      toast.success("Login dengan Google berhasil!", {
-        position: "bottom-right",
+      toast.success('Login dengan Google berhasil!', {
+        position: 'bottom-right',
         duration: 2000,
-        toastId: "toast-login-success",
+        toastId: 'toast-login-success',
       });
 
       if (onSuccessCustom) {
@@ -59,13 +59,13 @@ const GoogleSignInButton = ({
       }
 
       setTimeout(() => {
-        navigate("/");
+        navigate('/');
       }, 500);
     } catch (error) {
-      console.error("❌ Error login Google:", error);
-      console.error("Error details:", error.response?.data);
-      toast.error(error.message || "Gagal login Google", {
-        position: "bottom-right",
+      console.error('❌ Error login Google:', error);
+      console.error('Error details:', error.response?.data);
+      toast.error(error.message || 'Gagal login Google', {
+        position: 'bottom-right',
       });
       onErrorCustom?.(error);
     } finally {
@@ -75,10 +75,10 @@ const GoogleSignInButton = ({
 
   const handleGoogleFailure = (errorResponse) => {
     const message =
-      errorResponse?.error === "popup_closed_by_user"
-        ? "Proses login Google dibatalkan."
-        : "Login dengan Google gagal. Silakan coba lagi.";
-    toast.error(message, { position: "bottom-right" });
+      errorResponse?.error === 'popup_closed_by_user'
+        ? 'Proses login Google dibatalkan.'
+        : 'Login dengan Google gagal. Silakan coba lagi.';
+    toast.error(message, { position: 'bottom-right' });
     onErrorCustom?.(errorResponse || new Error(message));
   };
 
@@ -87,10 +87,8 @@ const GoogleSignInButton = ({
       {window.Cypress && (
         <button
           data-cy="google-login-mock-btn"
-          onClick={() =>
-            handleGoogleSuccess({ credential: "mock-google-token-123" })
-          }
-          style={{ position: "absolute", opacity: 0, height: 0, width: 0 }} // Tidak terlihat user
+          onClick={() => handleGoogleSuccess({ credential: 'mock-google-token-123' })}
+          style={{ position: 'absolute', opacity: 0, height: 0, width: 0 }} // Tidak terlihat user
         >
           Test Google Login
         </button>

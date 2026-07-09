@@ -1,9 +1,9 @@
-import React, { useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
-import { Title } from "react-head";
-import { LogoWithSlogan } from "@/assets/images";
-import OtpForm from "@/components/auth/OtpForm";
+import React, { useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { Title } from 'react-head';
+import { LogoWithSlogan } from '@/assets/images';
+import OtpForm from '@/components/auth/OtpForm';
 
 const OtpPage = () => {
   const location = useLocation();
@@ -12,10 +12,10 @@ const OtpPage = () => {
 
   useEffect(() => {
     if (!email) {
-      toast.error("Email tidak ditemukan, harap registrasi ulang.", {
-        position: "bottom-right",
+      toast.error('Email tidak ditemukan, harap registrasi ulang.', {
+        position: 'bottom-right',
       });
-      navigate("/register");
+      navigate('/register');
     }
   }, [email, navigate]);
 

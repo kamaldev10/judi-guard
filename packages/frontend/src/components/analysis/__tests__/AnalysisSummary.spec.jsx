@@ -1,26 +1,24 @@
-import React from "react";
-import { render, screen, within } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { describe, it, expect, vi, beforeEach, beforeAll } from "vitest";
-import AnalysisSummary from "../AnalysisSummary";
-import { Pie, Cell, Tooltip } from "recharts"; // Impor untuk akses mock
+import React from 'react';
+import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
+import AnalysisSummary from '../AnalysisSummary';
+import { Pie, Cell, Tooltip } from 'recharts'; // Impor untuk akses mock
 
 // --- Mocking Dependencies ---
 const { mockColors } = vi.hoisted(() => {
   return {
-    mockColors: { JUDI: "#FF0000", NON_JUDI: "#00FF00" },
+    mockColors: { JUDI: '#FF0000', NON_JUDI: '#00FF00' },
   };
 });
 
 // 2. Mock 'recharts'
 //    Kita buat mock sederhana yang hanya merender children atau teks placeholder
-vi.mock("recharts", () => ({
+vi.mock('recharts', () => ({
   ResponsiveContainer: ({ children }) => (
     <div data-testid="mock-responsive-container">{children}</div>
   ),
-  PieChart: ({ children }) => (
-    <div data-testid="mock-pie-chart">{children}</div>
-  ),
+  PieChart: ({ children }) => <div data-testid="mock-pie-chart">{children}</div>,
   Pie: vi.fn(({ data, label, children }) => (
     <div data-testid="mock-pie" data-datacount={data.length}>
       {label && <div data-testid="mock-pie-label">Label Rendered</div>}
@@ -29,84 +27,79 @@ vi.mock("recharts", () => ({
       {children}
     </div>
   )),
-  Cell: vi.fn(({ fill }) => (
-    <div data-testid="mock-cell" style={{ backgroundColor: fill }} />
-  )), // Mock Cell untuk cek warna
+  Cell: vi.fn(({ fill }) => <div data-testid="mock-cell" style={{ backgroundColor: fill }} />), // Mock Cell untuk cek warna
   Tooltip: vi.fn(
     (
-      { content } // Mock Tooltip untuk cek content prop
-    ) => <div data-testid="mock-tooltip">{content}</div>
+      { content }, // Mock Tooltip untuk cek content prop
+    ) => <div data-testid="mock-tooltip">{content}</div>,
   ),
 }));
 
 // 3. Mock ikon 'lucide-react'
-vi.mock("lucide-react", () => ({
+vi.mock('lucide-react', () => ({
   Bolt: (props) => <svg data-testid="bolt-icon" {...props} />,
   Loader2: (props) => <svg data-testid="loader-icon" {...props} />, // Tambahkan jika digunakan di StatBox
   Trash2: (props) => <svg data-testid="trash-icon" {...props} />, // Tambahkan jika digunakan di CommentList (jika relevan)
 }));
 
 // 4. Mock Komponen Anak
-vi.mock("../StatBox", () => ({
+vi.mock('../StatBox', () => ({
   // <-- Sesuaikan path
   default: vi.fn(({ label, value }) => (
-    <div data-testid={`mock-statbox-${label.toLowerCase().replace(" ", "-")}`}>
+    <div data-testid={`mock-statbox-${label.toLowerCase().replace(' ', '-')}`}>
       <span>{label}</span>: <span>{value}</span>
     </div>
   )),
 }));
 
-vi.mock("../AnalysisLegend", () => ({
+vi.mock('../AnalysisLegend', () => ({
   // <-- Sesuaikan path
   default: vi.fn(({ payload }) => (
     <div data-testid="mock-legend" data-payloadcount={payload.length}>
-      Mock Legend (Items: {payload.length})
-      {payload[0] && <span>First: {payload[0].value}</span>}
+      Mock Legend (Items: {payload.length}){payload[0] && <span>First: {payload[0].value}</span>}
     </div>
   )),
 }));
 
-vi.mock("../AnalysisTooltip", () => ({
+vi.mock('../AnalysisTooltip', () => ({
   // <-- Sesuaikan path
-  default: vi.fn(() => (
-    <div data-testid="mock-analysis-tooltip">Mock Tooltip Content</div>
-  )),
+  default: vi.fn(() => <div data-testid="mock-analysis-tooltip">Mock Tooltip Content</div>),
 }));
 
 // 5. Mock Konstanta (opsional tapi disarankan)
 //    Pastikan warna konsisten terlepas dari file constants
-vi.mock("@/constants", () => ({
+vi.mock('@/constants', () => ({
   PIE_CHART_COLORS: mockColors, // Sekarang merujuk ke mockColors di atas
 }));
 
 // --- Mock Data & Props ---
 const mockPieData = [
-  { name: "JUDI", value: 30, percent: 0.6 }, // Gunakan key asli (JUDI/NON_JUDI)
-  { name: "NON_JUDI", value: 20, percent: 0.4 },
+  { name: 'JUDI', value: 30, percent: 0.6 }, // Gunakan key asli (JUDI/NON_JUDI)
+  { name: 'NON_JUDI', value: 20, percent: 0.4 },
 ];
 const mockStats = { total: 50, JUDI: 30, NON_JUDI: 20 };
 const mockStatsNoJudi = { total: 20, JUDI: 0, NON_JUDI: 20 };
 const mockStatsEmpty = { total: 0, JUDI: 0, NON_JUDI: 0 };
 const mockPieEmpty = [];
 const mockPieZeroValues = [
-  { name: "JUDI", value: 0, percent: 0 },
-  { name: "NON_JUDI", value: 0, percent: 0 },
+  { name: 'JUDI', value: 0, percent: 0 },
+  { name: 'NON_JUDI', value: 0, percent: 0 },
 ];
 
 const mockOnManageComments = vi.fn();
 
 // --- Test Suite ---
 
-describe("Analysis Summary Component Testing", () => {
+describe('Analysis Summary Component Testing', () => {
   const user = userEvent.setup();
 
   let MockStatBox, MockAnalysisLegend, MockAnalysisTooltip;
   beforeAll(async () => {
-    const statBoxModule = await import("../StatBox"); // <-- Sesuaikan path
+    const statBoxModule = await import('../StatBox'); // <-- Sesuaikan path
     MockStatBox = statBoxModule.default;
-    const legendModule = await import("../AnalysisLegend"); // <-- Sesuaikan path
+    const legendModule = await import('../AnalysisLegend'); // <-- Sesuaikan path
     MockAnalysisLegend = legendModule.default;
-    const tooltipModule = await import("../AnalysisTooltip"); // <-- Sesuaikan path
+    const tooltipModule = await import('../AnalysisTooltip'); // <-- Sesuaikan path
     MockAnalysisTooltip = tooltipModule.default;
   });
 
@@ -122,7 +115,7 @@ describe("Analysis Summary Component Testing", () => {
   });
 
   // Tes 1: Render dengan Data Normal
-  describe("when rendered with data", () => {
+  describe('when rendered with data', () => {
     beforeEach(() => {
       render(
         <AnalysisSummary
@@ -130,7 +123,7 @@ describe("Analysis Summary Component Testing", () => {
           stats={mockStats}
           onManageComments={mockOnManageComments}
           isActionInProgress={false}
-        />
+        />,
       );
     });
 
@@ -163,17 +156,15 @@ describe("Analysis Summary Component Testing", () => {
     //   );
     // });
 
-    it("should render Recharts components (mocks) and pass data", () => {
-      expect(
-        screen.getByTestId("mock-responsive-container")
-      ).toBeInTheDocument();
-      expect(screen.getByTestId("mock-pie-chart")).toBeInTheDocument();
+    it('should render Recharts components (mocks) and pass data', () => {
+      expect(screen.getByTestId('mock-responsive-container')).toBeInTheDocument();
+      expect(screen.getByTestId('mock-pie-chart')).toBeInTheDocument();
 
       // Cek props Pie
       expect(Pie).toHaveBeenCalledTimes(1);
       const pieProps = Pie.mock.calls[0][0];
       expect(pieProps.data).toEqual(mockPieData);
-      expect(pieProps.dataKey).toBe("value");
+      expect(pieProps.dataKey).toBe('value');
       expect(pieProps.label).toBeInstanceOf(Function); // Cek label adalah fungsi
 
       // Cek jumlah Cell sesuai data
@@ -184,12 +175,12 @@ describe("Analysis Summary Component Testing", () => {
 
       // Cek Tooltip dirender dengan konten kustom
       expect(Tooltip).toHaveBeenCalledTimes(1);
-      expect(screen.getByTestId("mock-tooltip")).toBeInTheDocument();
+      expect(screen.getByTestId('mock-tooltip')).toBeInTheDocument();
       // Cek bahwa konten tooltip adalah instance dari AnalysisTooltip
       expect(Tooltip.mock.calls[0][0].content.type).toBe(MockAnalysisTooltip);
     });
 
-    it("should render AnalysisLegend (mock) with correct payload", () => {
+    it('should render AnalysisLegend (mock) with correct payload', () => {
       expect(MockAnalysisLegend).toHaveBeenCalledTimes(1);
       const legendProps = MockAnalysisLegend.mock.calls[0][0];
       // Payload harus difilter (tidak ada isEmpty) dan ditransformasi
@@ -199,16 +190,16 @@ describe("Analysis Summary Component Testing", () => {
     });
 
     it("should render and enable the 'Kelola Komentar' button", () => {
-      const manageButton = screen.getByRole("button", {
+      const manageButton = screen.getByRole('button', {
         name: /kelola komentar/i,
       });
       expect(manageButton).toBeInTheDocument();
       expect(manageButton).toBeEnabled();
-      expect(within(manageButton).getByTestId("bolt-icon")).toBeInTheDocument();
+      expect(within(manageButton).getByTestId('bolt-icon')).toBeInTheDocument();
     });
 
     it("should call onManageComments when 'Kelola Komentar' button is clicked", async () => {
-      const manageButton = screen.getByRole("button", {
+      const manageButton = screen.getByRole('button', {
         name: /kelola komentar/i,
       });
       await user.click(manageButton);
@@ -217,15 +208,15 @@ describe("Analysis Summary Component Testing", () => {
   }); // End describe 'when rendered with data'
 
   // Tes 2: State Data Kosong / Nol
-  describe("when rendered with empty or zero data", () => {
-    it("should render placeholder chart data when pieChartData is empty", () => {
+  describe('when rendered with empty or zero data', () => {
+    it('should render placeholder chart data when pieChartData is empty', () => {
       render(
         <AnalysisSummary
           pieChartData={mockPieEmpty} // Data kosong
           stats={mockStatsEmpty}
           onManageComments={mockOnManageComments}
           isActionInProgress={false}
-        />
+        />,
       );
 
       // Cek Pie dirender dengan data placeholder
@@ -233,14 +224,14 @@ describe("Analysis Summary Component Testing", () => {
       const pieProps = Pie.mock.calls[0][0];
       expect(pieProps.data).toHaveLength(1);
       expect(pieProps.data[0]).toEqual({
-        name: "Tidak ada data",
+        name: 'Tidak ada data',
         value: 1,
         isEmpty: true,
       });
 
       // Cek Cell dirender dengan warna placeholder
       expect(Cell).toHaveBeenCalledTimes(1); // Hanya 1 cell placeholder
-      expect(Cell.mock.calls[0][0].fill).toBe("#d1d5db");
+      expect(Cell.mock.calls[0][0].fill).toBe('#d1d5db');
 
       // Cek Legenda dirender dengan payload kosong
       expect(MockAnalysisLegend).toHaveBeenCalledTimes(1);
@@ -248,19 +239,17 @@ describe("Analysis Summary Component Testing", () => {
       expect(legendProps.payload).toHaveLength(0);
 
       // Tombol kelola tidak muncul
-      expect(
-        screen.queryByRole("button", { name: /kelola komentar/i })
-      ).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /kelola komentar/i })).not.toBeInTheDocument();
     });
 
-    it("should render placeholder chart data when all pieChartData values are zero", () => {
+    it('should render placeholder chart data when all pieChartData values are zero', () => {
       render(
         <AnalysisSummary
           pieChartData={mockPieZeroValues} // Semua value 0
           stats={mockStatsEmpty}
           onManageComments={mockOnManageComments}
           isActionInProgress={false}
-        />
+        />,
       );
       // Assertions sama seperti test case data kosong
       expect(Pie).toHaveBeenCalledTimes(1);
@@ -268,26 +257,22 @@ describe("Analysis Summary Component Testing", () => {
       expect(pieProps.data).toHaveLength(1); // Tetap render placeholder
       expect(pieProps.data[0].isEmpty).toBe(true);
       expect(Cell).toHaveBeenCalledTimes(1);
-      expect(Cell.mock.calls[0][0].fill).toBe("#d1d5db");
+      expect(Cell.mock.calls[0][0].fill).toBe('#d1d5db');
       expect(MockAnalysisLegend).toHaveBeenCalledTimes(1);
       expect(MockAnalysisLegend.mock.calls[0][0].payload).toHaveLength(0);
-      expect(
-        screen.queryByRole("button", { name: /kelola komentar/i })
-      ).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /kelola komentar/i })).not.toBeInTheDocument();
     });
 
     it("should not render 'Kelola Komentar' button if stats.JUDI is 0", () => {
       render(
         <AnalysisSummary
-          pieChartData={[{ name: "NON_JUDI", value: 20 }]} // Hanya data non-judi
+          pieChartData={[{ name: 'NON_JUDI', value: 20 }]} // Hanya data non-judi
           stats={mockStatsNoJudi} // stats.JUDI = 0
           onManageComments={mockOnManageComments}
           isActionInProgress={false}
-        />
+        />,
       );
-      expect(
-        screen.queryByRole("button", { name: /kelola komentar/i })
-      ).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /kelola komentar/i })).not.toBeInTheDocument();
     });
   }); // End describe 'when rendered with empty or zero data'
 
@@ -299,9 +284,9 @@ describe("Analysis Summary Component Testing", () => {
         stats={mockStats} // stats.JUDI > 0
         onManageComments={mockOnManageComments}
         isActionInProgress={true} // <-- Aksi berjalan
-      />
+      />,
     );
-    const manageButton = screen.getByRole("button", {
+    const manageButton = screen.getByRole('button', {
       name: /kelola komentar/i,
     });
     expect(manageButton).toBeInTheDocument();

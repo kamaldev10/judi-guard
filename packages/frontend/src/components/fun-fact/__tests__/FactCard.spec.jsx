@@ -1,12 +1,12 @@
-import React from "react";
-import { render, screen } from "@testing-library/react";
-import { describe, it, expect, vi } from "vitest";
-import { FactCard } from "../FactCard";
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { FactCard } from '../FactCard';
 
 // --- Mocking Dependencies ---
 
 // 1. Mock 'framer-motion'
-vi.mock("framer-motion", () => ({
+vi.mock('framer-motion', () => ({
   motion: {
     // Ganti semua elemen motion dengan elemen HTML biasa
     div: React.forwardRef(({ children, ...props }, ref) => (
@@ -36,52 +36,52 @@ vi.mock("framer-motion", () => ({
 
 // 2. Buat data 'fact' tiruan
 const mockFact = {
-  icon: "💡",
-  title: "Judul Fakta",
-  text: "Ini adalah teks penjelasan fakta.",
-  image: "gambar-fakta.jpg",
+  icon: '💡',
+  title: 'Judul Fakta',
+  text: 'Ini adalah teks penjelasan fakta.',
+  image: 'gambar-fakta.jpg',
 };
 
 // --- Test Suite ---
 
-describe("FactCard Component", () => {
+describe('FactCard Component', () => {
   // Render komponen sebelum setiap tes
   beforeEach(() => {
     render(<FactCard fact={mockFact} />);
   });
 
-  it("should render the fact image correctly", () => {
+  it('should render the fact image correctly', () => {
     // Cari gambar berdasarkan alt text (yang sama dengan title)
     const image = screen.getByAltText(mockFact.title);
     expect(image).toBeInTheDocument();
     // Pastikan src benar
-    expect(image).toHaveAttribute("src", mockFact.image);
+    expect(image).toHaveAttribute('src', mockFact.image);
     // Pastikan tag-nya <img>
-    expect(image.tagName).toBe("IMG");
+    expect(image.tagName).toBe('IMG');
   });
 
-  it("should render the fact icon correctly", () => {
+  it('should render the fact icon correctly', () => {
     // Cari elemen span yang berisi ikon
     const iconElement = screen.getByText(mockFact.icon);
     expect(iconElement).toBeInTheDocument();
     // Pastikan tag-nya <span>
-    expect(iconElement.tagName).toBe("SPAN");
+    expect(iconElement.tagName).toBe('SPAN');
   });
 
-  it("should render the fact title correctly", () => {
+  it('should render the fact title correctly', () => {
     // Cari heading level 3 berdasarkan teks title
-    const titleElement = screen.getByRole("heading", {
+    const titleElement = screen.getByRole('heading', {
       level: 3,
       name: mockFact.title,
     });
     expect(titleElement).toBeInTheDocument();
   });
 
-  it("should render the fact text correctly", () => {
+  it('should render the fact text correctly', () => {
     // Cari paragraf berdasarkan teksnya
     const textElement = screen.getByText(mockFact.text);
     expect(textElement).toBeInTheDocument();
     // Pastikan tag-nya <p>
-    expect(textElement.tagName).toBe("P");
+    expect(textElement.tagName).toBe('P');
   });
 });

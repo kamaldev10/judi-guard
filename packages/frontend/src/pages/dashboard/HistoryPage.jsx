@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { useHistoryStore } from "@/stores/historyStore";
+import { useEffect } from 'react';
+import { useHistoryStore } from '@/stores/historyStore';
 import {
   FileText,
   Calendar,
@@ -10,9 +10,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader2,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import ReportDialog from "@/components/history/ReportDialog";
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import ReportDialog from '@/components/history/ReportDialog';
 
 export default function HistoryPage() {
   const { history, pagination, fetchHistory, isLoading } = useHistoryStore();
@@ -23,12 +23,12 @@ export default function HistoryPage() {
 
   // Helper: Format Tanggal (Contoh: 28 Jan 2025, 14:30)
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString("id-ID", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
+    return new Date(dateString).toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
     });
   };
 
@@ -36,9 +36,7 @@ export default function HistoryPage() {
     <div className="space-y-6 pb-20 animate-in fade-in duration-500">
       {/* HEADER */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Riwayat Analisis
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Riwayat Analisis</h1>
         <p className="text-sm text-gray-500 mt-1">
           Daftar video yang pernah Anda analisis beserta laporan moderasi.
         </p>
@@ -65,9 +63,7 @@ export default function HistoryPage() {
               <tr>
                 <th className="px-6 py-3 font-medium">Waktu Request</th>
                 <th className="px-6 py-3 font-medium w-[40%]">Video Info</th>
-                <th className="px-6 py-3 font-medium text-center">
-                  Spam / Total
-                </th>
+                <th className="px-6 py-3 font-medium text-center">Spam / Total</th>
                 <th className="px-6 py-3 font-medium text-center">Status</th>
               </tr>
             </thead>
@@ -133,23 +129,18 @@ export default function HistoryPage() {
                     <td className="px-6 py-4 text-center">
                       <div className="inline-flex flex-col items-center">
                         <span className="text-sm font-bold text-gray-900 dark:text-white">
-                          {item.totalSpamDetected}{" "}
+                          {item.totalSpamDetected}{' '}
                           <span className="text-gray-400 font-normal">
                             / {item.totalCommentsAnalyzed}
                           </span>
                         </span>
-                        <span className="text-[10px] text-red-500 font-medium">
-                          SPAM
-                        </span>
+                        <span className="text-[10px] text-red-500 font-medium">SPAM</span>
                       </div>
                     </td>
 
                     {/* STATUS BADGE */}
                     <td className="px-6 py-4 text-center">
-                      <StatusBadge
-                        status={item.moderationStatus}
-                        processStatus={item.status}
-                      />
+                      <StatusBadge status={item.moderationStatus} processStatus={item.status} />
                     </td>
                   </tr>
                 ))
@@ -193,14 +184,14 @@ export default function HistoryPage() {
 
 function StatusBadge({ status, processStatus }) {
   // Jika proses analisis belum selesai/gagal
-  if (processStatus === "PROCESSING") {
+  if (processStatus === 'PROCESSING') {
     return (
       <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 animate-pulse">
         Memproses
       </span>
     );
   }
-  if (processStatus === "FAILED") {
+  if (processStatus === 'FAILED') {
     return (
       <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800">
         Gagal
@@ -210,13 +201,13 @@ function StatusBadge({ status, processStatus }) {
 
   // Jika sukses, cek status moderasinya
   switch (status) {
-    case "CLEANED":
+    case 'CLEANED':
       return (
         <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800 border border-green-200">
           <ShieldCheck size={10} /> Bersih
         </span>
       );
-    case "PARTIAL":
+    case 'PARTIAL':
       return (
         <span className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800 border border-yellow-200">
           <AlertTriangle size={10} /> Sebagian

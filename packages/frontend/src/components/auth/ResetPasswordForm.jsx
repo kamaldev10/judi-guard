@@ -1,15 +1,15 @@
-import React, { useState } from "react";
-import { toast } from "react-toastify";
-import { Link, useNavigate } from "react-router-dom";
-import { PasswordInput } from "@/components/ui/PasswordInput";
-import { useManagePasswordStore } from "@/stores/managePasswordStore";
+import React, { useState } from 'react';
+import { toast } from 'react-toastify';
+import { Link, useNavigate } from 'react-router-dom';
+import { PasswordInput } from '@/components/ui/PasswordInput';
+import { useManagePasswordStore } from '@/stores/managePasswordStore';
 
 const ResetPasswordForm = ({ token, onInvalidToken }) => {
   const navigate = useNavigate();
   const { resetPassword } = useManagePasswordStore();
   // state untuk nilai input
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   // state untuk toggle show/hide password
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -20,15 +20,15 @@ const ResetPasswordForm = ({ token, onInvalidToken }) => {
     e.preventDefault();
 
     if (password.length < 6) {
-      toast.error("Kata sandi baru minimal harus 6 karakter.", {
-        position: "bottom-right",
+      toast.error('Kata sandi baru minimal harus 6 karakter.', {
+        position: 'bottom-right',
       });
       return;
     }
 
     if (password !== confirmPassword) {
-      toast.error("Kata sandi baru dan konfirmasi tidak cocok.", {
-        position: "bottom-right",
+      toast.error('Kata sandi baru dan konfirmasi tidak cocok.', {
+        position: 'bottom-right',
       });
       return;
     }
@@ -39,27 +39,24 @@ const ResetPasswordForm = ({ token, onInvalidToken }) => {
         password,
         confirmPassword,
       });
-      toast.success(response.message || "Kata sandi berhasil direset!", {
-        position: "bottom-right",
-        toastId: "reset-password-success",
+      toast.success(response.message || 'Kata sandi berhasil direset!', {
+        position: 'bottom-right',
+        toastId: 'reset-password-success',
       });
-      setTimeout(() => navigate("/login"), 2000);
+      setTimeout(() => navigate('/login'), 2000);
     } catch (error) {
-      console.error("Reset password error:", error);
+      console.error('Reset password error:', error);
       const errorMessage =
         error.response?.data?.message ||
         error.message ||
-        "Gagal mereset kata sandi. Token mungkin tidak valid atau sudah kedaluwarsa.";
+        'Gagal mereset kata sandi. Token mungkin tidak valid atau sudah kedaluwarsa.';
 
       toast.error(errorMessage, {
-        position: "bottom-right",
-        toastId: "reset-password-error",
+        position: 'bottom-right',
+        toastId: 'reset-password-error',
       });
 
-      if (
-        error.response &&
-        (error.response.status === 400 || error.response.status === 401)
-      ) {
+      if (error.response && (error.response.status === 400 || error.response.status === 401)) {
         onInvalidToken?.(); // notify parent
       }
     } finally {
@@ -69,12 +66,8 @@ const ResetPasswordForm = ({ token, onInvalidToken }) => {
 
   return (
     <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
-      <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">
-        Reset Kata Sandi
-      </h2>
-      <p className="text-center text-gray-600 mb-8">
-        Masukkan kata sandi baru Anda di bawah ini.
-      </p>
+      <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Reset Kata Sandi</h2>
+      <p className="text-center text-gray-600 mb-8">Masukkan kata sandi baru Anda di bawah ini.</p>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <PasswordInput
@@ -105,7 +98,7 @@ const ResetPasswordForm = ({ token, onInvalidToken }) => {
           className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-300 ease-in-out disabled:opacity-70 disabled:cursor-not-allowed font-semibold"
           disabled={isLoading}
         >
-          {isLoading ? "Sedang Memproses..." : "Reset Kata Sandi"}
+          {isLoading ? 'Sedang Memproses...' : 'Reset Kata Sandi'}
         </button>
       </form>
 

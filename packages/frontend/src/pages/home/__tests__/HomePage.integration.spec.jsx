@@ -1,39 +1,29 @@
-import React from "react";
-import { render, screen, act } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { MemoryRouter } from "react-router-dom";
-import HomePage from "../HomePage";
+import React from 'react';
+import { render, screen, act } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { MemoryRouter } from 'react-router-dom';
+import HomePage from '../HomePage';
 
 // --- 2. Mocking Dependencies ---
 
 // Mock all child components
-vi.mock("@/components/homepage/HeroSection", () => ({
+vi.mock('@/components/homepage/HeroSection', () => ({
   default: vi.fn(() => <div data-testid="mock-hero-section">Hero Section</div>),
 }));
-vi.mock("@/components/homepage/ContactSection", () => ({
-  default: vi.fn(() => (
-    <div data-testid="mock-contact-section">Contact Section</div>
-  )),
+vi.mock('@/components/homepage/ContactSection', () => ({
+  default: vi.fn(() => <div data-testid="mock-contact-section">Contact Section</div>),
 }));
-vi.mock("@/components/homepage/ConnectSection", () => ({
-  default: vi.fn(() => (
-    <div data-testid="mock-connect-section">Connect Section</div>
-  )),
+vi.mock('@/components/homepage/ConnectSection', () => ({
+  default: vi.fn(() => <div data-testid="mock-connect-section">Connect Section</div>),
 }));
-vi.mock("@/components/homepage/TextPredictSection", () => ({
-  default: vi.fn(() => (
-    <div data-testid="mock-text-predict-section">Text Predict Section</div>
-  )),
+vi.mock('@/components/homepage/TextPredictSection', () => ({
+  default: vi.fn(() => <div data-testid="mock-text-predict-section">Text Predict Section</div>),
 }));
-vi.mock("@/components/fun-fact/FunFactsSection", () => ({
-  default: vi.fn(() => (
-    <div data-testid="mock-fun-facts-section">Fun Facts Section</div>
-  )),
+vi.mock('@/components/fun-fact/FunFactsSection', () => ({
+  default: vi.fn(() => <div data-testid="mock-fun-facts-section">Fun Facts Section</div>),
 }));
-vi.mock("@/components/homepage/TestimonialsSection", () => ({
-  default: vi.fn(() => (
-    <div data-testid="mock-testimonials-section">Testimonials Section</div>
-  )),
+vi.mock('@/components/homepage/TestimonialsSection', () => ({
+  default: vi.fn(() => <div data-testid="mock-testimonials-section">Testimonials Section</div>),
 }));
 
 // --- 3. Mock Browser APIs ---
@@ -47,13 +37,13 @@ const originalGetElementById = document.getElementById; // Store original
 document.getElementById = mockGetElementById;
 
 // --- Test Suite ---
-describe("HomePage Integration Test", () => {
+describe('HomePage Integration Test', () => {
   // Helper render
-  const renderPage = (route = "/") => {
+  const renderPage = (route = '/') => {
     return render(
       <MemoryRouter initialEntries={[route]}>
         <HomePage />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
   };
 
@@ -67,21 +57,21 @@ describe("HomePage Integration Test", () => {
   });
 
   // Test 1: Initial Render
-  it("should render all section components correctly", () => {
+  it('should render all section components correctly', () => {
     renderPage();
 
     // Check that all 6 mock sections are rendered
-    expect(screen.getByTestId("mock-hero-section")).toBeInTheDocument();
-    expect(screen.getByTestId("mock-text-predict-section")).toBeInTheDocument();
-    expect(screen.getByTestId("mock-fun-facts-section")).toBeInTheDocument();
-    expect(screen.getByTestId("mock-connect-section")).toBeInTheDocument();
-    expect(screen.getByTestId("mock-testimonials-section")).toBeInTheDocument();
-    expect(screen.getByTestId("mock-contact-section")).toBeInTheDocument();
+    expect(screen.getByTestId('mock-hero-section')).toBeInTheDocument();
+    expect(screen.getByTestId('mock-text-predict-section')).toBeInTheDocument();
+    expect(screen.getByTestId('mock-fun-facts-section')).toBeInTheDocument();
+    expect(screen.getByTestId('mock-connect-section')).toBeInTheDocument();
+    expect(screen.getByTestId('mock-testimonials-section')).toBeInTheDocument();
+    expect(screen.getByTestId('mock-contact-section')).toBeInTheDocument();
   });
 
   // Test 2: Default Scrolling (to hero-section)
   it("should scroll to the 'hero-section' by default on load (no hash)", () => {
-    renderPage("/"); // Render without a hash
+    renderPage('/'); // Render without a hash
 
     // Advance the timer by 100ms
     act(() => {
@@ -90,7 +80,7 @@ describe("HomePage Integration Test", () => {
 
     // Check if scrollIntoView was called (by the ref logic)
     expect(mockScrollIntoView).toHaveBeenCalledTimes(1);
-    expect(mockScrollIntoView).toHaveBeenCalledWith({ behavior: "smooth" });
+    expect(mockScrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth' });
 
     // Check that getElementById was NOT called
     expect(mockGetElementById).not.toHaveBeenCalled();
@@ -102,7 +92,7 @@ describe("HomePage Integration Test", () => {
     const fakeElement = { scrollIntoView: mockScrollIntoView };
     mockGetElementById.mockReturnValue(fakeElement);
 
-    renderPage("/#contact-section"); // Render *with* a hash
+    renderPage('/#contact-section'); // Render *with* a hash
 
     // Advance the timer by 100ms
     act(() => {
@@ -111,20 +101,20 @@ describe("HomePage Integration Test", () => {
 
     // Check if getElementById was called with the correct ID
     expect(mockGetElementById).toHaveBeenCalledTimes(1);
-    expect(mockGetElementById).toHaveBeenCalledWith("contact-section");
+    expect(mockGetElementById).toHaveBeenCalledWith('contact-section');
 
     // Check if scrollIntoView was called (by the getElementById logic)
     expect(mockScrollIntoView).toHaveBeenCalledTimes(1);
-    expect(mockScrollIntoView).toHaveBeenCalledWith({ behavior: "smooth" });
+    expect(mockScrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth' });
   });
 
   // Test 4: Hash logic overrides default scroll
-  it("should only scroll to hash, not to hero-section, if hash is present", () => {
+  it('should only scroll to hash, not to hero-section, if hash is present', () => {
     // Arrange
     const fakeElement = { scrollIntoView: mockScrollIntoView };
     mockGetElementById.mockReturnValue(fakeElement);
 
-    renderPage("/#contact-section");
+    renderPage('/#contact-section');
 
     act(() => {
       vi.advanceTimersByTime(100);
@@ -138,11 +128,11 @@ describe("HomePage Integration Test", () => {
   });
 
   // Test 5: No Scroll on Invalid Hash
-  it("should not scroll if hash is present but element does not exist", () => {
+  it('should not scroll if hash is present but element does not exist', () => {
     // Arrange: Mock getElementById to return null
     mockGetElementById.mockReturnValue(null);
 
-    renderPage("/#invalid-id");
+    renderPage('/#invalid-id');
 
     // Advance the timer
     act(() => {
@@ -150,7 +140,7 @@ describe("HomePage Integration Test", () => {
     });
 
     // Assert: getElementById was called
-    expect(mockGetElementById).toHaveBeenCalledWith("invalid-id");
+    expect(mockGetElementById).toHaveBeenCalledWith('invalid-id');
 
     // Assert: scrollIntoView was NOT called
     expect(mockScrollIntoView).not.toHaveBeenCalled();

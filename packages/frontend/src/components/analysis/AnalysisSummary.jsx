@@ -1,21 +1,16 @@
-import React from "react";
-import PropTypes from "prop-types";
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
-import StatBox from "./StatBox";
-import AnalysisLegend from "./AnalysisLegend";
-import AnalysisTooltip from "./AnalysisTooltip";
-import { Bolt } from "lucide-react";
-import { PIE_CHART_COLORS } from "@/constants";
+import React from 'react';
+import PropTypes from 'prop-types';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
+import StatBox from './StatBox';
+import AnalysisLegend from './AnalysisLegend';
+import AnalysisTooltip from './AnalysisTooltip';
+import { Bolt } from 'lucide-react';
+import { PIE_CHART_COLORS } from '@/constants';
 
 /**
  * Komponen utama yang menampilkan ringkasan analisis visual.
  */
-const AnalysisSummary = ({
-  pieChartData,
-  stats,
-  onManageComments,
-  isActionInProgress,
-}) => {
+const AnalysisSummary = ({ pieChartData, stats, onManageComments, isActionInProgress }) => {
   /**
    * Mendapatkan warna slice berdasarkan nama kategori.
    * Fungsi ini memetakan nama tampilan (misal, "Clean") ke kunci di konstanta warna (misal, "CLEAN").
@@ -24,19 +19,19 @@ const AnalysisSummary = ({
    */
   const getPieSliceColor = (displayName) => {
     const keyMap = {
-      CLEAN: "NON_JUDI", // Jika data Anda menggunakan 'Clean' tapi konstanta 'NON_JUDI'
-      SPAM: "JUDI",
+      CLEAN: 'NON_JUDI', // Jika data Anda menggunakan 'Clean' tapi konstanta 'NON_JUDI'
+      SPAM: 'JUDI',
     };
     const normalizedKey = displayName?.toUpperCase();
     const finalKey = keyMap[normalizedKey] || normalizedKey;
-    return PIE_CHART_COLORS[finalKey] || "#BBBBBB"; // Warna fallback
+    return PIE_CHART_COLORS[finalKey] || '#BBBBBB'; // Warna fallback
   };
 
   // Data placeholder jika pieChartData kosong atau semua value 0
   const chartData =
     pieChartData && pieChartData.some((d) => d.value > 0)
       ? pieChartData
-      : [{ name: "Tidak ada data", value: 1, isEmpty: true }];
+      : [{ name: 'Tidak ada data', value: 1, isEmpty: true }];
 
   // Fungsi kustom untuk merender label persentase di dalam slice PieChart
   const renderCustomizedLabel = ({
@@ -90,16 +85,14 @@ const AnalysisSummary = ({
                 {chartData.map((entry, index) => (
                   <Cell
                     key={`cell-${index}`}
-                    fill={
-                      entry.isEmpty ? "#d1d5db" : getPieSliceColor(entry.name)
-                    }
+                    fill={entry.isEmpty ? '#d1d5db' : getPieSliceColor(entry.name)}
                   />
                 ))}
               </Pie>
               {/* Gunakan komponen tooltip kustom */}
               <Tooltip
                 content={<AnalysisTooltip />}
-                cursor={{ fill: "rgba(255, 255, 255, 0.2)" }}
+                cursor={{ fill: 'rgba(255, 255, 255, 0.2)' }}
               />
             </PieChart>
           </ResponsiveContainer>

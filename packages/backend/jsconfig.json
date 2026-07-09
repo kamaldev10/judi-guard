@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "baseUrl": ".",
+    "paths": {
+      "#app/*": ["./src/app/*"],
+      "#config/*": ["./src/config/*"],
+      "#middlewares/*": ["./src/middlewares/*"],
+      "#modules/*": ["./src/modules/*"],
+      "#shared/*": ["./src/shared/*"]
+    }
+  },
+  "exclude": ["node_modules", "dist"]
+}

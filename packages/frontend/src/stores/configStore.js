@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 import {
   getWhitelistApi,
   addWhitelistApi,
@@ -6,7 +6,7 @@ import {
   getBlacklistApi,
   addBlacklistApi,
   deleteBlacklistApi,
-} from "@/lib/services/configApi";
+} from '@/lib/services/configApi';
 
 export const useConfigStore = create((set, get) => ({
   whitelist: [],
@@ -53,7 +53,7 @@ export const useConfigStore = create((set, get) => ({
       set((state) => ({ whitelist: [newItem, ...state.whitelist] }));
       return newItem;
     } catch (err) {
-      const msg = err.response?.data?.message || "Gagal menambahkan whitelist";
+      const msg = err.response?.data?.message || 'Gagal menambahkan whitelist';
       set({ error: msg });
       throw new Error(msg);
     } finally {
@@ -105,7 +105,7 @@ export const useConfigStore = create((set, get) => ({
 
       return report;
     } catch (err) {
-      const msg = err.response?.data?.message || "Gagal menambahkan blacklist";
+      const msg = err.response?.data?.message || 'Gagal menambahkan blacklist';
       set({ error: msg });
       throw new Error(msg);
     } finally {

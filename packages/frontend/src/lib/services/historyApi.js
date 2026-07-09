@@ -1,7 +1,7 @@
-import { apiClient } from "./apiClient";
+import { apiClient } from './apiClient';
 
 export const getHistoryApi = async (page = 1, limit = 10) => {
-  const response = await apiClient.get("/analysis/history", {
+  const response = await apiClient.get('/analysis/history', {
     params: {
       page,
       limit,
@@ -13,7 +13,7 @@ export const getHistoryApi = async (page = 1, limit = 10) => {
 
 // API Baru: Preview JSON
 export const getReportPreviewApi = async (startDate, endDate) => {
-  const response = await apiClient.get("/analysis/report/preview", {
+  const response = await apiClient.get('/analysis/report/preview', {
     params: { startDate, endDate },
   });
   return response.data.data;
@@ -21,9 +21,9 @@ export const getReportPreviewApi = async (startDate, endDate) => {
 
 // API Baru: Download PDF
 export const downloadPeriodReportApi = async (startDate, endDate) => {
-  const response = await apiClient.get("/analysis/report/download", {
+  const response = await apiClient.get('/analysis/report/download', {
     params: { startDate, endDate },
-    responseType: "blob",
+    responseType: 'blob',
   });
   return response.data;
 };
@@ -31,7 +31,7 @@ export const downloadPeriodReportApi = async (startDate, endDate) => {
 // API lama: download laporan PDF per analysisId
 export const downloadReportApi = async (analysisId) => {
   const response = await apiClient.get(`/analysis/${analysisId}/report/pdf`, {
-    responseType: "blob",
+    responseType: 'blob',
   });
   return response.data;
 };

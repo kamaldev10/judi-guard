@@ -1,17 +1,17 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { useAuthStore } from "../authStore";
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { useAuthStore } from '../authStore';
 import {
   loginUserApi,
   registerUserApi,
   signInWithGoogleApi,
   verifyOtpApi,
   resendOtpApi,
-} from "@/lib/services/authApi";
+} from '@/lib/services/authApi';
 
 // --- 1. Mock External Dependencies ---
 
 // Mock all imported API services
-vi.mock("@/lib/services/authApi", () => ({
+vi.mock('@/lib/services/authApi', () => ({
   loginUserApi: vi.fn(),
   registerUserApi: vi.fn(),
   signInWithGoogleApi: vi.fn(),
@@ -21,10 +21,10 @@ vi.mock("@/lib/services/authApi", () => ({
 
 // --- Test Suite ---
 
-describe("Auth Store Unit Testing", () => {
-  const mockUser = { id: 1, username: "testuser", password: "somepassword" };
-  const mockUserStored = { id: 1, username: "testuser" }; // User without password
-  const mockToken = "fake-token-123";
+describe('Auth Store Unit Testing', () => {
+  const mockUser = { id: 1, username: 'testuser', password: 'somepassword' };
+  const mockUserStored = { id: 1, username: 'testuser' }; // User without password
+  const mockToken = 'fake-token-123';
 
   // Reset store state and mock history before each test
   beforeEach(() => {
@@ -51,7 +51,7 @@ describe("Auth Store Unit Testing", () => {
     };
 
     // 4. 🔥 Stub the global *inside* beforeEach
-    vi.stubGlobal("localStorage", mockLocalStorage);
+    vi.stubGlobal('localStorage', mockLocalStorage);
   });
 
   afterEach(() => {
@@ -59,8 +59,8 @@ describe("Auth Store Unit Testing", () => {
   });
 
   // --- Test Helpers ---
-  describe("Helpers (setSession, clearSession, setUser, isAuthenticated)", () => {
-    it("setSession should update state, localStorage, and clean password", () => {
+  describe('Helpers (setSession, clearSession, setUser, isAuthenticated)', () => {
+    it('setSession should update state, localStorage, and clean password', () => {
       useAuthStore.getState().setSession(mockUser, mockToken);
       const state = useAuthStore.getState();
 
@@ -68,16 +68,13 @@ describe("Auth Store Unit Testing", () => {
       expect(state.token).toBe(mockToken);
       expect(state.isAuthenticated).toBe(true);
       expect(localStorage.setItem).toHaveBeenCalledWith(
-        "judiGuardUser",
-        JSON.stringify(mockUserStored)
+        'judiGuardUser',
+        JSON.stringify(mockUserStored),
       );
-      expect(localStorage.setItem).toHaveBeenCalledWith(
-        "judiGuardToken",
-        mockToken
-      );
+      expect(localStorage.setItem).toHaveBeenCalledWith('judiGuardToken', mockToken);
     });
 
-    it("clearSession should clear state and localStorage", () => {
+    it('clearSession should clear state and localStorage', () => {
       useAuthStore.getState().setSession(mockUser, mockToken); // Atur dulu
       useAuthStore.getState().clearSession(); // Hapus
       const state = useAuthStore.getState();
@@ -85,12 +82,12 @@ describe("Auth Store Unit Testing", () => {
       expect(state.currentUser).toBeNull();
       expect(state.isAuthenticated).toBe(false);
       // Spy sekarang akan mendeteksi panggilan
-      expect(localStorage.removeItem).toHaveBeenCalledWith("judiGuardToken");
-      expect(localStorage.removeItem).toHaveBeenCalledWith("judiGuardUser");
+      expect(localStorage.removeItem).toHaveBeenCalledWith('judiGuardToken');
+      expect(localStorage.removeItem).toHaveBeenCalledWith('judiGuardUser');
     });
 
-    it("setUser should update currentUser", () => {
-      const newUser = { id: 2, username: "new", password: "bad" };
+    it('setUser should update currentUser', () => {
+      const newUser = { id: 2, username: 'new', password: 'bad' };
 
       useAuthStore.getState().setUser(newUser);
       const state = useAuthStore.getState();
@@ -100,15 +97,15 @@ describe("Auth Store Unit Testing", () => {
   });
 
   // --- Test register action ---
-  describe("register", () => {
+  describe('register', () => {
     const userData = {
-      userName: "new",
-      email: "new@example.com",
-      password: "123",
+      userName: 'new',
+      email: 'new@example.com',
+      password: '123',
     };
 
-    it("should set loading, call register API, and return data on success", async () => {
-      const mockResponse = { data: { message: "Success" } };
+    it('should set loading, call register API, and return data on success', async () => {
+      const mockResponse = { data: { message: 'Success' } };
       registerUserApi.mockResolvedValue(mockResponse.data);
       const store = useAuthStore.getState();
 
@@ -124,8 +121,8 @@ describe("Auth Store Unit Testing", () => {
       expect(useAuthStore.getState().currentUser).toBeNull(); // No session set
     });
 
-    it("should set error and stop loading on failure", async () => {
-      const mockError = new Error("Email exists");
+    it('should set error and stop loading on failure', async () => {
+      const mockError = new Error('Email exists');
       registerUserApi.mockRejectedValue(mockError);
       const store = useAuthStore.getState();
 
@@ -137,11 +134,11 @@ describe("Auth Store Unit Testing", () => {
   });
 
   // --- Test login action ---
-  describe("login", () => {
-    const credentials = { email: "test@example.com", password: "123" };
+  describe('login', () => {
+    const credentials = { email: 'test@example.com', password: '123' };
     const mockResponse = { data: { user: mockUser, token: mockToken } };
 
-    it("should set loading, call login API, and set session on success", async () => {
+    it('should set loading, call login API, and set session on success', async () => {
       loginUserApi.mockResolvedValue(mockResponse); // API returns full response
       const store = useAuthStore.getState();
 
@@ -157,8 +154,8 @@ describe("Auth Store Unit Testing", () => {
       expect(loginUserApi).toHaveBeenCalledWith(credentials);
     });
 
-    it("should set error and stop loading on failure", async () => {
-      const mockError = new Error("Invalid credentials");
+    it('should set error and stop loading on failure', async () => {
+      const mockError = new Error('Invalid credentials');
       loginUserApi.mockRejectedValue(mockError);
       const store = useAuthStore.getState();
 
@@ -172,11 +169,11 @@ describe("Auth Store Unit Testing", () => {
   });
 
   // --- Test signInWithGoogle action ---
-  describe("signInWithGoogle", () => {
-    const idToken = "google-id-token";
+  describe('signInWithGoogle', () => {
+    const idToken = 'google-id-token';
     const mockResponse = { user: mockUser, token: mockToken };
 
-    it("should set loading, call API, and set session on success", async () => {
+    it('should set loading, call API, and set session on success', async () => {
       signInWithGoogleApi.mockResolvedValue(mockResponse); // API returns data directly
       const store = useAuthStore.getState();
 
@@ -192,8 +189,8 @@ describe("Auth Store Unit Testing", () => {
       expect(signInWithGoogleApi).toHaveBeenCalledWith(idToken);
     });
 
-    it("should set error and stop loading on failure", async () => {
-      const mockError = new Error("Google Sign-In Failed");
+    it('should set error and stop loading on failure', async () => {
+      const mockError = new Error('Google Sign-In Failed');
       signInWithGoogleApi.mockRejectedValue(mockError);
       const store = useAuthStore.getState();
 
@@ -207,8 +204,8 @@ describe("Auth Store Unit Testing", () => {
   });
 
   // --- Test logout action ---
-  describe("logout", () => {
-    it("should call clearSession", () => {
+  describe('logout', () => {
+    it('should call clearSession', () => {
       // Arrange
       useAuthStore.getState().setSession(mockUser, mockToken);
       expect(useAuthStore.getState().currentUser).toEqual(mockUserStored);
@@ -225,12 +222,12 @@ describe("Auth Store Unit Testing", () => {
   });
 
   // --- Test verifyOtp action ---
-  describe("verifyOtp", () => {
-    const email = "test@example.com";
-    const otp = "123456";
-    const mockResponse = { data: { message: "Success" } };
+  describe('verifyOtp', () => {
+    const email = 'test@example.com';
+    const otp = '123456';
+    const mockResponse = { data: { message: 'Success' } };
 
-    it("should set loading, call API, return data, and not set session", async () => {
+    it('should set loading, call API, return data, and not set session', async () => {
       verifyOtpApi.mockResolvedValue(mockResponse.data);
       const store = useAuthStore.getState();
 
@@ -246,8 +243,8 @@ describe("Auth Store Unit Testing", () => {
       expect(useAuthStore.getState().currentUser).toBeNull(); // No session set
     });
 
-    it("should set error and stop loading on failure", async () => {
-      const mockError = new Error("Invalid OTP");
+    it('should set error and stop loading on failure', async () => {
+      const mockError = new Error('Invalid OTP');
       verifyOtpApi.mockRejectedValue(mockError);
       const store = useAuthStore.getState();
 
@@ -260,11 +257,11 @@ describe("Auth Store Unit Testing", () => {
   });
 
   // --- Test resendOtp action ---
-  describe("resendOtp", () => {
-    const email = "test@example.com";
-    const mockResponse = { data: { message: "Resent" } };
+  describe('resendOtp', () => {
+    const email = 'test@example.com';
+    const mockResponse = { data: { message: 'Resent' } };
 
-    it("should set loading, call API, return data, and not set session", async () => {
+    it('should set loading, call API, return data, and not set session', async () => {
       resendOtpApi.mockResolvedValue(mockResponse.data);
       const store = useAuthStore.getState();
 
@@ -280,8 +277,8 @@ describe("Auth Store Unit Testing", () => {
       expect(useAuthStore.getState().currentUser).toBeNull(); // No session set
     });
 
-    it("should set error and stop loading on failure", async () => {
-      const mockError = new Error("Limit exceeded");
+    it('should set error and stop loading on failure', async () => {
+      const mockError = new Error('Limit exceeded');
       resendOtpApi.mockRejectedValue(mockError);
       const store = useAuthStore.getState();
 

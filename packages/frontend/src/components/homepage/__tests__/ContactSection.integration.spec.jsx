@@ -1,18 +1,18 @@
-import React from "react";
-import { render, screen, act } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import ContactSection from "../ContactSection"; // <-- Adjust path
-import ContactInfoList from "@/components/contact/ContactInfoList"; // Import for mocking
-import ContactForm from "@/components/contact/ContactForm"; // Import for mocking
-import { useForm } from "@formspree/react";
-import { toast } from "react-toastify";
-import * as LucideReact from "lucide-react";
+import React from 'react';
+import { render, screen, act } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import ContactSection from '../ContactSection'; // <-- Adjust path
+import ContactInfoList from '@/components/contact/ContactInfoList'; // Import for mocking
+import ContactForm from '@/components/contact/ContactForm'; // Import for mocking
+import { useForm } from '@formspree/react';
+import { toast } from 'react-toastify';
+import * as LucideReact from 'lucide-react';
 
 // --- 1. Mock Dependencies ---
 
 // Mock 'framer-motion'
-vi.mock("framer-motion", () => ({
+vi.mock('framer-motion', () => ({
   motion: {
     div: React.forwardRef(({ children, ...props }, ref) => (
       <div ref={ref} {...props}>
@@ -28,7 +28,7 @@ vi.mock("framer-motion", () => ({
 }));
 
 // Mock 'lucide-react' icons (used in ContactInfoList)
-vi.mock("lucide-react", () => ({
+vi.mock('lucide-react', () => ({
   Mail: (props) => <svg data-testid="mail-icon" {...props} />,
   Phone: (props) => <svg data-testid="phone-icon" {...props} />,
   MapPin: (props) => <svg data-testid="map-pin-icon" {...props} />,
@@ -36,33 +36,23 @@ vi.mock("lucide-react", () => ({
 }));
 
 // Mock 'react-toastify'
-vi.mock("react-toastify", () => ({
+vi.mock('react-toastify', () => ({
   toast: {
     success: vi.fn(),
   },
 }));
 
 // Mock Child Components
-vi.mock("@/components/contact/ContactInfoList", () => ({
+vi.mock('@/components/contact/ContactInfoList', () => ({
   default: vi.fn(() => <div data-testid="mock-contact-info">Info List</div>),
 }));
 
 // Mock ContactForm (interactive)
-vi.mock("@/components/contact/ContactForm", () => ({
+vi.mock('@/components/contact/ContactForm', () => ({
   default: vi.fn(({ formData, isSubmitting, onChange, onSubmit }) => (
     <form data-testid="mock-contact-form" onSubmit={onSubmit}>
-      <input
-        aria-label="name-input"
-        name="name"
-        value={formData.name}
-        onChange={onChange}
-      />
-      <input
-        aria-label="email-input"
-        name="email"
-        value={formData.email}
-        onChange={onChange}
-      />
+      <input aria-label="name-input" name="name" value={formData.name} onChange={onChange} />
+      <input aria-label="email-input" name="email" value={formData.email} onChange={onChange} />
       {/* Add other inputs if needed for testing */}
       <button type="submit" disabled={isSubmitting}>
         Submit Mock
@@ -78,7 +68,7 @@ let mockFormspreeState = {
   succeeded: false,
   errors: null,
 };
-vi.mock("@formspree/react", () => ({
+vi.mock('@formspree/react', () => ({
   useForm: vi.fn(() => [mockFormspreeState, mockFormspreeHandleSubmit]),
 }));
 
@@ -89,7 +79,7 @@ const MockContactForm = ContactForm;
 const MockContactInfoList = ContactInfoList;
 
 // --- 3. Test Suite ---
-describe("Contact Section Integration Testing", () => {
+describe('Contact Section Integration Testing', () => {
   const user = userEvent.setup();
 
   beforeEach(() => {
@@ -101,10 +91,7 @@ describe("Contact Section Integration Testing", () => {
       errors: null,
     };
     // Ensure the mock implementation uses the reset state
-    vi.mocked(useForm).mockReturnValue([
-      mockFormspreeState,
-      mockFormspreeHandleSubmit,
-    ]);
+    vi.mocked(useForm).mockReturnValue([mockFormspreeState, mockFormspreeHandleSubmit]);
   });
 
   // Test 1: Initial Render
@@ -141,27 +128,26 @@ describe("Contact Section Integration Testing", () => {
   // });
 
   // Test 2: Input Change (State managed by ContactSection)
-  it("should update formData state when onChange is triggered", async () => {
+  it('should update formData state when onChange is triggered', async () => {
     render(<ContactSection />);
 
-    const nameInput = screen.getByLabelText("name-input");
+    const nameInput = screen.getByLabelText('name-input');
 
     // Simulate typing
-    await user.type(nameInput, "Budi");
+    await user.type(nameInput, 'Budi');
 
     // Check the *last* props received by the mock form
-    const lastProps =
-      MockContactForm.mock.calls[MockContactForm.mock.calls.length - 1][0];
+    const lastProps = MockContactForm.mock.calls[MockContactForm.mock.calls.length - 1][0];
 
     // Verify the formData state in ContactSection was updated
-    expect(lastProps.formData.name).toBe("Budi");
+    expect(lastProps.formData.name).toBe('Budi');
   });
 
   // Test 3: Form Submit (Managed by Formspree)
-  it("should call the handleSubmit from useForm when form is submitted", async () => {
+  it('should call the handleSubmit from useForm when form is submitted', async () => {
     render(<ContactSection />);
 
-    const submitButton = screen.getByRole("button", { name: "Submit Mock" });
+    const submitButton = screen.getByRole('button', { name: 'Submit Mock' });
 
     await user.click(submitButton);
 

@@ -1,15 +1,15 @@
-import { Given, When, Then } from "@badeball/cypress-cucumber-preprocessor";
+import { Given, When, Then } from '@badeball/cypress-cucumber-preprocessor';
 
 let regData;
 
 beforeEach(() => {
-  cy.fixture("registrationData").then((data) => {
+  cy.fixture('registrationData').then((data) => {
     regData = data;
   });
 });
 
-Given("I am on the registration page", () => {
-  cy.intercept("POST", "**/api/auth/register", (req) => {
+Given('I am on the registration page', () => {
+  cy.intercept('POST', '**/api/auth/register', (req) => {
     const { email, username } = req.body;
 
     if (email === regData.existingEmailUser.email) {
@@ -31,13 +31,13 @@ Given("I am on the registration page", () => {
         },
       });
     }
-  }).as("registerApi");
+  }).as('registerApi');
 
-  cy.visit("/register");
+  cy.visit('/register');
 });
 
-Given("a valid OTP code has been sent to {string}", (email) => {
-  cy.intercept("POST", "**/api/auth/verify-otp", (req) => {
+Given('a valid OTP code has been sent to {string}', (email) => {
+  cy.intercept('POST', '**/api/auth/verify-otp', (req) => {
     const { otpCode } = req.body;
 
     if (otpCode === regData.otp.invalidCode) {
@@ -52,27 +52,27 @@ Given("a valid OTP code has been sent to {string}", (email) => {
           message: regData.responses.otpSuccess.message,
           token: regData.responses.otpSuccess.token,
           user: {
-            id: "123",
+            id: '123',
             email: email,
-            username: "testuser",
+            username: 'testuser',
             isVerified: true,
           },
         },
       });
     }
-  }).as("verifyOtpApi");
+  }).as('verifyOtpApi');
 
-  cy.intercept("POST", "**/api/auth/resend-otp", (req) => {
+  cy.intercept('POST', '**/api/auth/resend-otp', (req) => {
     const targetEmail = req.body.email || email;
     req.reply({
       statusCode: 200,
 
       body: { message: regData.responses.resendSuccess.message },
     });
-  }).as("resendOtpApi");
+  }).as('resendOtpApi');
 });
 
-When("I enter the valid OTP", () => {
+When('I enter the valid OTP', () => {
   const validOtp = regData.otp.validCode;
 
   cy.get('[data-cy^="otp-input-"]').each(($el, index) => {
@@ -80,7 +80,7 @@ When("I enter the valid OTP", () => {
   });
 });
 
-When("I enter {string} as the OTP", (otp) => {
+When('I enter {string} as the OTP', (otp) => {
   cy.get('[data-cy^="otp-input-"]').each(($el, index) => {
     if (otp[index]) {
       cy.wrap($el).type(otp[index]);
@@ -88,16 +88,16 @@ When("I enter {string} as the OTP", (otp) => {
   });
 });
 
-Given("the OTP resend timer has expired", () => {
+Given('the OTP resend timer has expired', () => {
   const now = new Date().getTime();
   cy.clock(now);
 
-  cy.getBySel("otp-timer", { timeout: 60000 }).should("be.visible");
+  cy.getBySel('otp-timer', { timeout: 60000 }).should('be.visible');
 
   cy.tick(122000);
 });
 
-Then("the OTP resend timer should restart", () => {
-  cy.getBySel("otp-timer").should("be.visible");
-  cy.getBySel("resend-button").should("not.exist");
+Then('the OTP resend timer should restart', () => {
+  cy.getBySel('otp-timer').should('be.visible');
+  cy.getBySel('resend-button').should('not.exist');
 });

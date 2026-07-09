@@ -1,6 +1,6 @@
 // src/utils/formatters.js
-import React from "react";
-import PropTypes from "prop-types";
+import React from 'react';
+import PropTypes from 'prop-types';
 
 export const FormattedDate = ({ isoDate }) => {
   if (!isoDate) {
@@ -14,12 +14,12 @@ export const FormattedDate = ({ isoDate }) => {
   }
   return (
     <time dateTime={isoDate}>
-      {date.toLocaleDateString("id-ID", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      })}{" "}
-      {date.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}
+      {date.toLocaleDateString('id-ID', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      })}{' '}
+      {date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
     </time>
   );
 };

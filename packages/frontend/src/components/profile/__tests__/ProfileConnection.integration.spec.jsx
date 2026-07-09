@@ -1,18 +1,18 @@
-import React from "react";
-import { render, screen, within } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { ProfileConnection } from "../ProfileConnection";
+import React from 'react';
+import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { ProfileConnection } from '../ProfileConnection';
 
 // --- 1. Impor untuk Mocking ---
-import { useProfilePresenter } from "@/hooks/profile/useProfilePresenter";
-import * as FramerMotion from "framer-motion";
-import * as LucideReact from "lucide-react";
+import { useProfilePresenter } from '@/hooks/profile/useProfilePresenter';
+import * as FramerMotion from 'framer-motion';
+import * as LucideReact from 'lucide-react';
 
 // --- 2. Mocking Dependencies ---
 
 // Mock framer-motion
-vi.mock("framer-motion", () => ({
+vi.mock('framer-motion', () => ({
   motion: {
     section: React.forwardRef(({ children, ...props }, ref) => (
       <section ref={ref} {...props}>
@@ -38,7 +38,7 @@ vi.mock("framer-motion", () => ({
 }));
 
 // Mock lucide-react icons (gunakan data-testid)
-vi.mock("lucide-react", () => ({
+vi.mock('lucide-react', () => ({
   Link2Icon: (props) => <svg data-testid="link-2-icon" {...props} />,
   Loader2: (props) => <svg data-testid="loader-icon" {...props} />,
   Unlink: (props) => <svg data-testid="unlink-icon" {...props} />,
@@ -47,7 +47,7 @@ vi.mock("lucide-react", () => ({
 }));
 
 // Mock the custom hook
-vi.mock("@/hooks/profile/useProfilePresenter", () => ({
+vi.mock('@/hooks/profile/useProfilePresenter', () => ({
   useProfilePresenter: vi.fn(),
 }));
 
@@ -56,7 +56,7 @@ vi.mock("@/hooks/profile/useProfilePresenter", () => ({
 const mockedUseProfilePresenter = useProfilePresenter;
 
 // --- Test Suite ---
-describe("Profile Connection Integration Testing", () => {
+describe('Profile Connection Integration Testing', () => {
   const user = userEvent.setup();
 
   // Siapkan mock handler dari hook
@@ -139,8 +139,8 @@ describe("Profile Connection Integration Testing", () => {
   // });
 
   // Tes 2: State Terhubung
-  describe("when connected", () => {
-    const channelInfo = { name: "Test Channel", thumbnailUrl: "test.png" };
+  describe('when connected', () => {
+    const channelInfo = { name: 'Test Channel', thumbnailUrl: 'test.png' };
 
     beforeEach(() => {
       renderConnection({
@@ -183,16 +183,16 @@ describe("Profile Connection Integration Testing", () => {
     //   ).not.toBeInTheDocument();
     // });
 
-    it("should call handleConnectYouTubeAccount when update button is clicked", async () => {
-      const updateButton = screen.getByRole("button", {
+    it('should call handleConnectYouTubeAccount when update button is clicked', async () => {
+      const updateButton = screen.getByRole('button', {
         name: /perbarui izin youtube/i,
       });
       await user.click(updateButton);
       expect(mockHandleConnect).toHaveBeenCalledTimes(1);
     });
 
-    it("should call handleDisconnectYouTubeAccount when disconnect button is clicked", async () => {
-      const disconnectButton = screen.getByRole("button", {
+    it('should call handleDisconnectYouTubeAccount when disconnect button is clicked', async () => {
+      const disconnectButton = screen.getByRole('button', {
         name: /putuskan hubungan youtube/i,
       });
       await user.click(disconnectButton);
@@ -201,81 +201,69 @@ describe("Profile Connection Integration Testing", () => {
   });
 
   // Tes 3: State Loading (Menghubungkan)
-  it("should show connecting state correctly", () => {
+  it('should show connecting state correctly', () => {
     renderConnection({ isConnectingYouTube: true });
 
     // Cek tombol "Hubungkan" (merah)
-    const connectButton = screen.getByRole("button", {
+    const connectButton = screen.getByRole('button', {
       name: /mengarahkan.../i,
     });
     expect(connectButton).toBeDisabled();
-    expect(
-      within(connectButton).getByTestId("loader-icon")
-    ).toBeInTheDocument();
-    expect(
-      within(connectButton).queryByTestId("link-2-icon")
-    ).not.toBeInTheDocument();
+    expect(within(connectButton).getByTestId('loader-icon')).toBeInTheDocument();
+    expect(within(connectButton).queryByTestId('link-2-icon')).not.toBeInTheDocument();
 
     // Cek spinner utama di header
-    expect(screen.getAllByTestId("loader-icon").length).toBeGreaterThanOrEqual(
-      2
-    ); // 1 di tombol, 1 di header
+    expect(screen.getAllByTestId('loader-icon').length).toBeGreaterThanOrEqual(2); // 1 di tombol, 1 di header
   });
 
   // Tes 4: State Loading (Memutuskan)
-  it("should show disconnecting state correctly", () => {
+  it('should show disconnecting state correctly', () => {
     renderConnection({
       isYoutubeConnected: true, // Harus terhubung untuk bisa memutuskan
       isDisconnectingYouTube: true,
     });
 
     // Cek tombol "Perbarui Izin" (disabled)
-    const updateButton = screen.getByRole("button", {
+    const updateButton = screen.getByRole('button', {
       name: /perbarui izin youtube/i,
     });
     expect(updateButton).toBeDisabled();
 
     // Cek tombol "Putuskan Hubungan"
-    const disconnectButton = screen.getByRole("button", {
+    const disconnectButton = screen.getByRole('button', {
       name: /memutuskan.../i,
     });
     expect(disconnectButton).toBeDisabled();
-    expect(
-      within(disconnectButton).getByTestId("loader-icon")
-    ).toBeInTheDocument();
-    expect(
-      within(disconnectButton).queryByTestId("unlink-icon")
-    ).not.toBeInTheDocument();
+    expect(within(disconnectButton).getByTestId('loader-icon')).toBeInTheDocument();
+    expect(within(disconnectButton).queryByTestId('unlink-icon')).not.toBeInTheDocument();
 
     // Cek spinner utama di header
-    expect(screen.getAllByTestId("loader-icon").length).toBeGreaterThanOrEqual(
-      2
-    );
+    expect(screen.getAllByTestId('loader-icon').length).toBeGreaterThanOrEqual(2);
   });
 
   // Tes 5: State Status Message
-  it("should display the status message when provided", () => {
-    const statusMsg = "Berhasil terhubung!";
+  it('should display the status message when provided', () => {
+    const statusMsg = 'Berhasil terhubung!';
     renderConnection({ youtubeStatusMessage: statusMsg });
 
     expect(screen.getByText(statusMsg)).toBeInTheDocument();
     // Cek class (default/biru karena tidak mengandung sukses/gagal/terhubung)
     // Catatan: logika class Anda mungkin perlu disesuaikan jika "Berhasil" harusnya hijau
-    expect(screen.getByText(statusMsg)).toHaveClass("bg-blue-50");
+    expect(screen.getByText(statusMsg)).toHaveClass('bg-blue-50');
   });
 
-  it("should display success style for success status message", () => {
-    const statusMsg = "Akun berhasil terhubung.";
+  it('should display success style for success status message', () => {
+    const statusMsg = 'Akun berhasil terhubung.';
     renderConnection({
       isYoutubeConnected: true,
       youtubeStatusMessage: statusMsg,
     });
-    expect(screen.getByText(statusMsg)).toHaveClass("bg-green-50");
+    expect(screen.getByText(statusMsg)).toHaveClass('bg-green-50');
   });
 
-  it("should display error style for error status message", () => {
-    const statusMsg = "Gagal: Token tidak valid.";
+  it('should display error style for error status message', () => {
+    const statusMsg = 'Gagal: Token tidak valid.';
     renderConnection({ youtubeStatusMessage: statusMsg });
-    expect(screen.getByText(statusMsg)).toHaveClass("bg-red-50");
+    expect(screen.getByText(statusMsg)).toHaveClass('bg-red-50');
   });
 });

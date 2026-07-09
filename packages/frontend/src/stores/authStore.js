@@ -1,25 +1,25 @@
 // stores/authStore.js
-import { create } from "zustand";
+import { create } from 'zustand';
 import {
   loginUserApi,
   registerUserApi,
   resendOtpApi,
   signInWithGoogleApi,
   verifyOtpApi,
-} from "@/lib/services/authApi";
-import { getCurrentUserApi } from "@/lib/services/userApi";
+} from '@/lib/services/authApi';
+import { getCurrentUserApi } from '@/lib/services/userApi';
 
 // Helper: Parse Cookie secara manual (tanpa install js-cookie)
 const getCookie = (name) => {
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop().split(";").shift();
+  if (parts.length === 2) return parts.pop().split(';').shift();
   return null;
 };
 
 export const useAuthStore = create((set, get) => ({
-  token: localStorage.getItem("judiGuardToken") || null,
-  currentUser: JSON.parse(localStorage.getItem("judiGuardUser") || "null"),
+  token: localStorage.getItem('judiGuardToken') || null,
+  currentUser: JSON.parse(localStorage.getItem('judiGuardUser') || 'null'),
   isLoadingAuth: false,
   sessionType: null, // 'member' | 'guest' | null
   error: null,
@@ -29,8 +29,8 @@ export const useAuthStore = create((set, get) => ({
     set({ isLoadingAuth: true });
     try {
       // 1. Cek User Member (LocalStorage)
-      const localUserStr = localStorage.getItem("judiGuardUser");
-      const localToken = localStorage.getItem("judiGuardToken");
+      const localUserStr = localStorage.getItem('judiGuardUser');
+      const localToken = localStorage.getItem('judiGuardToken');
 
       if (localUserStr && localToken) {
         const userObj = JSON.parse(localUserStr);
@@ -40,14 +40,14 @@ export const useAuthStore = create((set, get) => ({
           currentUser: userObj,
           token: localToken,
           isAuthenticated: true,
-          sessionType: "member",
+          sessionType: 'member',
           isLoadingAuth: false,
         });
         return; // Prioritas Member ditemukan, stop di sini.
       }
 
       // 2. Cek Guest Session (Cookies)
-      const guestCookieStr = getCookie("guest_session");
+      const guestCookieStr = getCookie('guest_session');
 
       if (guestCookieStr) {
         // Decode URL encoded cookie string jika perlu (biasanya cookie raw sudah string JSON)
@@ -58,9 +58,9 @@ export const useAuthStore = create((set, get) => ({
         if (guestObj.tokens && guestObj.channel) {
           // Mapping Guest seolah-olah User agar UI konsisten
           const guestUser = {
-            _id: "guest_" + guestObj.channel.id,
-            username: guestObj.channel.title || "Guest",
-            email: "guest@judiguard.com",
+            _id: 'guest_' + guestObj.channel.id,
+            username: guestObj.channel.title || 'Guest',
+            email: 'guest@judiguard.com',
             youtubeChannelId: guestObj.channel.id,
             youtubeChannelName: guestObj.channel.title,
             avatar: guestObj.channel.thumbnail,
@@ -72,7 +72,7 @@ export const useAuthStore = create((set, get) => ({
             currentUser: guestUser,
             token: guestObj.tokens.access_token, // Pakai token YT sebagai session token sementara
             isAuthenticated: true,
-            sessionType: "guest",
+            sessionType: 'guest',
             isLoadingAuth: false,
           });
           return;
@@ -88,7 +88,7 @@ export const useAuthStore = create((set, get) => ({
         isLoadingAuth: false,
       });
     } catch (err) {
-      console.error("[AuthStore] Gagal parsing session:", err);
+      console.error('[AuthStore] Gagal parsing session:', err);
       set({
         currentUser: null,
         isAuthenticated: false,
@@ -114,11 +114,11 @@ export const useAuthStore = create((set, get) => ({
       set({ currentUser: updatedUser });
 
       // Update LocalStorage agar saat refresh page data tetap baru
-      localStorage.setItem("judiGuardUser", JSON.stringify(updatedUser));
+      localStorage.setItem('judiGuardUser', JSON.stringify(updatedUser));
 
       return updatedUser;
     } catch (err) {
-      console.error("Gagal refresh profil:", err);
+      console.error('Gagal refresh profil:', err);
     }
   },
 
@@ -126,14 +126,14 @@ export const useAuthStore = create((set, get) => ({
   setSession: (user, token) => {
     // Clean password
     const { password, ...userToStore } = user;
-    if (token) localStorage.setItem("judiGuardToken", token);
-    localStorage.setItem("judiGuardUser", JSON.stringify(userToStore));
+    if (token) localStorage.setItem('judiGuardToken', token);
+    localStorage.setItem('judiGuardUser', JSON.stringify(userToStore));
     set({ currentUser: userToStore, token, isAuthenticated: true });
   },
 
   clearSession: () => {
-    localStorage.removeItem("judiGuardToken");
-    localStorage.removeItem("judiGuardUser");
+    localStorage.removeItem('judiGuardToken');
+    localStorage.removeItem('judiGuardUser');
     set({ currentUser: null, token: null, isAuthenticated: false });
   },
 
@@ -177,7 +177,7 @@ export const useAuthStore = create((set, get) => ({
     try {
       const data = await signInWithGoogleApi(idToken);
       if (!data?.user || !data?.token) {
-        throw new Error("Respons dari server tidak lengkap");
+        throw new Error('Respons dari server tidak lengkap');
       }
       get().setSession(data.user, data.token);
       return data;
@@ -192,7 +192,7 @@ export const useAuthStore = create((set, get) => ({
 
   // Logout
   logout: () => {
-    console.log("[AuthStore] Logout dipanggil");
+    console.log('[AuthStore] Logout dipanggil');
     get().clearSession();
   },
 

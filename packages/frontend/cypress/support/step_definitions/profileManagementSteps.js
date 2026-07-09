@@ -1,9 +1,9 @@
-import { Given, When, Before } from "@badeball/cypress-cucumber-preprocessor";
+import { Given, When, Before } from '@badeball/cypress-cucumber-preprocessor';
 
 let authData;
 
 beforeEach(() => {
-  cy.fixture("authData").then((data) => {
+  cy.fixture('authData').then((data) => {
     authData = data;
   });
 });
@@ -11,83 +11,75 @@ beforeEach(() => {
 const createMockUserResponse = (userData) => ({
   statusCode: 200,
   body: {
-    status: "success",
+    status: 'success',
     data: {
       user: {
-        id: "mock-id-123",
+        id: 'mock-id-123',
         email: userData.email,
-        username: userData.username || "admin ganteng",
+        username: userData.username || 'admin ganteng',
         isVerified: true,
       },
     },
   },
 });
 
-Before({ tags: "@edit_profile" }, () => {
-  cy.fixture("authData").then((data) => {
-    cy.intercept(
-      "GET",
-      "**/api/users/me",
-      createMockUserResponse(data.validUser),
-    ).as("getUser");
+Before({ tags: '@edit_profile' }, () => {
+  cy.fixture('authData').then((data) => {
+    cy.intercept('GET', '**/api/users/me', createMockUserResponse(data.validUser)).as('getUser');
 
-    cy.intercept("PATCH", "**/api/users/updateMe", (req) => {
+    cy.intercept('PATCH', '**/api/users/updateMe', (req) => {
       const { username } = req.body;
 
-      if (username === "my-new-username") {
+      if (username === 'my-new-username') {
         req.reply({
           statusCode: 200,
           body: {
-            status: "success",
-            message: "Data profil Anda telah berhasil diperbarui.",
+            status: 'success',
+            message: 'Data profil Anda telah berhasil diperbarui.',
             data: {
               user: {
                 ...data.validUser,
-                username: "my-new-username",
+                username: 'my-new-username',
               },
             },
           },
         });
-      } else if (username === "error-user") {
+      } else if (username === 'error-user') {
         req.reply({
           statusCode: 500,
-          body: { message: "Gagal memperbarui profil." },
+          body: { message: 'Gagal memperbarui profil.' },
         });
       } else {
         req.reply({
           statusCode: 200,
-          body: { status: "success", data: { user: { ...data.validUser } } },
+          body: { status: 'success', data: { user: { ...data.validUser } } },
         });
       }
-    }).as("updateProfileApi");
+    }).as('updateProfileApi');
   });
 });
 
-Before({ tags: "@delete_account" }, () => {
-  cy.fixture("authData").then((data) => {
-    cy.intercept(
-      "GET",
-      "**/api/users/me",
-      createMockUserResponse(data.validUser),
-    ).as("getUser");
+Before({ tags: '@delete_account' }, () => {
+  cy.fixture('authData').then((data) => {
+    cy.intercept('GET', '**/api/users/me', createMockUserResponse(data.validUser)).as('getUser');
   });
 
-  cy.intercept("DELETE", "**/api/users/deleteMe", {
+  cy.intercept('DELETE', '**/api/users/deleteMe', {
     statusCode: 200,
-    body: { status: "success", message: "Akun Anda telah berhasil dihapus." },
-  }).as("deleteAccountApi");
+    body: { status: 'success', message: 'Akun Anda telah berhasil dihapus.' },
+  }).as('deleteAccountApi');
 });
 
-Given("I am on the profile page", () => {
+Given('I am on the profile page', () => {
   const mockResponse = createMockUserResponse(authData.validUser);
 
-  cy.intercept("GET", "**/api/users/me", mockResponse).as("getUser");
+  cy.intercept('GET', '**/api/users/me', mockResponse).as('getUser');
 
-  cy.visit("/profile");
+  cy.visit('/profile');
 
-  cy.getBySel("edit-profile-button").should("be.visible");
+  cy.getBySel('edit-profile-button').should('be.visible');
 });
 
-When("I press the Save Profile button without making any changes", () => {
-  cy.getBySel("save-profile-button").click();
+When('I press the Save Profile button without making any changes', () => {
+  cy.getBySel('save-profile-button').click();
 });

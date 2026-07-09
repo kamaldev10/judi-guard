@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
-import { useVideoAnalysisStore } from "@/stores/videoAnalysisStore";
-import { Search, Loader2, PlayCircle, Eye, MessageSquare } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from 'react';
+import { useVideoAnalysisStore } from '@/stores/videoAnalysisStore';
+import { Search, Loader2, PlayCircle, Eye, MessageSquare } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function AnalysisSelection() {
   const {
@@ -14,7 +14,7 @@ export default function AnalysisSelection() {
     nextPageToken,
   } = useVideoAnalysisStore();
 
-  const [inputUrl, setInputUrl] = useState("");
+  const [inputUrl, setInputUrl] = useState('');
 
   // Load awal saat komponen di-mount
   useEffect(() => {
@@ -38,8 +38,7 @@ export default function AnalysisSelection() {
             Pilih Video untuk Dianalisis
           </h1>
           <p className="max-w-xl text-gray-500 dark:text-gray-400">
-            Cari menggunakan link YouTube atau pilih langsung dari koleksi
-            channel Anda di bawah.
+            Cari menggunakan link YouTube atau pilih langsung dari koleksi channel Anda di bawah.
           </p>
         </div>
 
@@ -61,7 +60,7 @@ export default function AnalysisSelection() {
                 disabled={isSearching || !inputUrl}
                 className="h-10 rounded-xl px-6 font-semibold"
               >
-                {isSearching ? <Loader2 className="animate-spin" /> : "Cari"}
+                {isSearching ? <Loader2 className="animate-spin" /> : 'Cari'}
               </Button>
             </div>
           </div>
@@ -81,14 +80,8 @@ export default function AnalysisSelection() {
 
         {myVideos.length === 0 && !isLoadingList ? (
           <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 py-16 text-center dark:border-gray-800 dark:bg-gray-900/50">
-            <p className="text-gray-500">
-              Tidak ada video ditemukan di channel ini.
-            </p>
-            <Button
-              variant="link"
-              onClick={() => fetchMyVideos()}
-              className="mt-2"
-            >
+            <p className="text-gray-500">Tidak ada video ditemukan di channel ini.</p>
+            <Button variant="link" onClick={() => fetchMyVideos()} className="mt-2">
               Coba Refresh
             </Button>
           </div>
@@ -128,21 +121,13 @@ export default function AnalysisSelection() {
                   <div className="mt-3 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
                     <div className="flex items-center gap-1" title="Views">
                       <Eye size={14} />
-                      <span>
-                        {parseInt(video.statistics.viewCount).toLocaleString()}
-                      </span>
+                      <span>{parseInt(video.statistics.viewCount).toLocaleString()}</span>
                     </div>
                     <div className="flex items-center gap-1" title="Comments">
                       <MessageSquare size={14} />
-                      <span>
-                        {parseInt(
-                          video.statistics.commentCount,
-                        ).toLocaleString()}
-                      </span>
+                      <span>{parseInt(video.statistics.commentCount).toLocaleString()}</span>
                     </div>
-                    <span>
-                      {new Date(video.publishedAt).toLocaleDateString()}
-                    </span>
+                    <span>{new Date(video.publishedAt).toLocaleDateString()}</span>
                   </div>
                 </div>
               </div>

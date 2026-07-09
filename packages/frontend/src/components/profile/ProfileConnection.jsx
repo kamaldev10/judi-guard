@@ -1,8 +1,8 @@
-import React from "react";
-import { useProfilePresenter } from "@/hooks/profile/useProfilePresenter";
-import { sectionItemVariants } from "@/pages/profile/ProfilePage";
-import { Loader2, Unlink, RefreshCw, Youtube, Link2Icon } from "lucide-react";
-import { motion } from "framer-motion";
+import React from 'react';
+import { useProfilePresenter } from '@/hooks/profile/useProfilePresenter';
+import { sectionItemVariants } from '@/pages/profile/ProfilePage';
+import { Loader2, Unlink, RefreshCw, Youtube, Link2Icon } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export const ProfileConnection = () => {
   const {
@@ -49,13 +49,13 @@ export const ProfileConnection = () => {
               animate={{ opacity: 1 }}
               className={`text-sm mb-3 p-2.5 rounded-md border ${
                 isYoutubeConnected &&
-                (youtubeStatusMessage.toLowerCase().includes("berhasil") ||
-                  youtubeStatusMessage.toLowerCase().includes("terhubung"))
-                  ? "bg-green-50 text-green-700 border-green-300"
-                  : youtubeStatusMessage.toLowerCase().includes("gagal") ||
-                      youtubeStatusMessage.toLowerCase().includes("error")
-                    ? "bg-red-50 text-red-700 border-red-300"
-                    : "bg-blue-50 text-blue-700 border-blue-300"
+                (youtubeStatusMessage.toLowerCase().includes('berhasil') ||
+                  youtubeStatusMessage.toLowerCase().includes('terhubung'))
+                  ? 'bg-green-50 text-green-700 border-green-300'
+                  : youtubeStatusMessage.toLowerCase().includes('gagal') ||
+                      youtubeStatusMessage.toLowerCase().includes('error')
+                    ? 'bg-red-50 text-red-700 border-red-300'
+                    : 'bg-blue-50 text-blue-700 border-blue-300'
               }`}
             >
               {youtubeStatusMessage}
@@ -74,7 +74,7 @@ export const ProfileConnection = () => {
               )}
               <div className="flex-1">
                 <p className="text-sm font-semibold text-slate-800 truncate">
-                  {youtubeChannelInfo.name || "Nama Channel Tidak Diketahui"}
+                  {youtubeChannelInfo.name || 'Nama Channel Tidak Diketahui'}
                 </p>
                 <p className="text-xs text-green-600 font-medium">Terhubung</p>
               </div>
@@ -96,18 +96,14 @@ export const ProfileConnection = () => {
                 ) : (
                   <Link2Icon size={16} className="mr-2" />
                 )}
-                {isConnectingYouTube
-                  ? "Mengarahkan..."
-                  : "Hubungkan Akun YouTube"}
+                {isConnectingYouTube ? 'Mengarahkan...' : 'Hubungkan Akun YouTube'}
               </motion.button>
             ) : (
               <div className="flex flex-col sm:flex-row sm:space-x-3 space-y-3 sm:space-y-0">
                 {/* Tombol Perbarui Izin/Sinkronkan Ulang */}
                 <motion.button
                   onClick={handleConnectYouTubeAccount} // Panggil fungsi yang sama untuk re-auth dengan prompt:consent
-                  disabled={
-                    isConnectingYouTube || isDisconnectingYouTube || isLoading
-                  }
+                  disabled={isConnectingYouTube || isDisconnectingYouTube || isLoading}
                   className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 px-4 rounded-md shadow-md flex items-center justify-center text-sm disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2"
                   title="Perbarui izin atau sinkronkan ulang koneksi YouTube Anda."
                   whileHover={{ scale: 1.03 }}
@@ -118,9 +114,7 @@ export const ProfileConnection = () => {
                   ) : (
                     <RefreshCw size={16} className="mr-2" />
                   )}
-                  {isConnectingYouTube
-                    ? "Memproses..."
-                    : "Perbarui Izin YouTube"}
+                  {isConnectingYouTube ? 'Memproses...' : 'Perbarui Izin YouTube'}
                 </motion.button>
 
                 {/* Tombol Putuskan Hubungan */}
@@ -136,9 +130,7 @@ export const ProfileConnection = () => {
                   ) : (
                     <Unlink size={16} className="mr-2" />
                   )}
-                  {isDisconnectingYouTube
-                    ? "Memutuskan..."
-                    : "Putuskan Hubungan YouTube"}
+                  {isDisconnectingYouTube ? 'Memutuskan...' : 'Putuskan Hubungan YouTube'}
                 </motion.button>
               </div>
             )}

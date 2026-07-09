@@ -1,12 +1,12 @@
-import React from "react";
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { describe, it, expect, vi, beforeEach, afterAll } from "vitest";
-import AppErrorBoundary from "../AppErrorBoundary";
-import ErrorFallback from "../ErrorFallback";
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { describe, it, expect, vi, beforeEach, afterAll } from 'vitest';
+import AppErrorBoundary from '../AppErrorBoundary';
+import ErrorFallback from '../ErrorFallback';
 
 // --- Mock Dependencies ---
-vi.mock("../ErrorFallback", () => ({
+vi.mock('../ErrorFallback', () => ({
   default: vi.fn(({ error, resetErrorBoundary }) => (
     <div data-testid="mock-fallback">
       <h1>Error: {error.message}</h1>
@@ -35,51 +35,51 @@ afterAll(() => {
 const GoodChild = () => <div>This is fine.</div>;
 
 const ProblemChild = () => {
-  throw new Error("This is a test error");
+  throw new Error('This is a test error');
 };
 
 // --- Test Suite ---
-describe("App Error Boundary Integration Testing", () => {
+describe('App Error Boundary Integration Testing', () => {
   const user = userEvent.setup();
 
-  it("should render children correctly when there is no error", () => {
+  it('should render children correctly when there is no error', () => {
     render(
       <AppErrorBoundary>
         <GoodChild />
-      </AppErrorBoundary>
+      </AppErrorBoundary>,
     );
 
-    expect(screen.getByText("This is fine.")).toBeInTheDocument();
+    expect(screen.getByText('This is fine.')).toBeInTheDocument();
 
-    expect(screen.queryByTestId("mock-fallback")).not.toBeInTheDocument();
+    expect(screen.queryByTestId('mock-fallback')).not.toBeInTheDocument();
   });
 
-  it("should render the ErrorFallback when a child throws an error", () => {
+  it('should render the ErrorFallback when a child throws an error', () => {
     render(
       <AppErrorBoundary>
         <ProblemChild />
-      </AppErrorBoundary>
+      </AppErrorBoundary>,
     );
 
-    expect(screen.getByTestId("mock-fallback")).toBeInTheDocument();
+    expect(screen.getByTestId('mock-fallback')).toBeInTheDocument();
 
-    expect(screen.getByText("Error: This is a test error")).toBeInTheDocument();
+    expect(screen.getByText('Error: This is a test error')).toBeInTheDocument();
 
-    expect(screen.queryByText("This is fine.")).not.toBeInTheDocument();
+    expect(screen.queryByText('This is fine.')).not.toBeInTheDocument();
   });
 
-  it("should call console.error via the onError prop when an error is caught", () => {
+  it('should call console.error via the onError prop when an error is caught', () => {
     render(
       <AppErrorBoundary>
         <ProblemChild />
-      </AppErrorBoundary>
+      </AppErrorBoundary>,
     );
 
     expect(mockConsoleError).toHaveBeenCalledTimes(2); // react mungkin memanggil error 2 kali
     expect(mockConsoleError).toHaveBeenCalledWith(
-      "Unhandled error:",
+      'Unhandled error:',
       expect.any(Error), // The error object
-      expect.any(Object) // The componentStack info
+      expect.any(Object), // The componentStack info
     );
   });
 
@@ -87,10 +87,10 @@ describe("App Error Boundary Integration Testing", () => {
     render(
       <AppErrorBoundary>
         <ProblemChild />
-      </AppErrorBoundary>
+      </AppErrorBoundary>,
     );
 
-    const resetButton = screen.getByRole("button", { name: /reset/i });
+    const resetButton = screen.getByRole('button', { name: /reset/i });
 
     await user.click(resetButton);
 

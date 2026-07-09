@@ -91,7 +91,7 @@ judi-guard/
 ### Prasyarat
 
 ```bash
-Node.js ≥ 18.x
+Node.js ≥ 20.x
 
 npm
 

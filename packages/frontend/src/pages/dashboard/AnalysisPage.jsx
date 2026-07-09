@@ -1,9 +1,9 @@
-import { useEffect } from "react";
-import { useVideoAnalysisStore } from "@/stores/videoAnalysisStore";
-import AnalysisSelection from "@/components/analysis-dashboard/AnalysisSelection";
-import AnalysisPreview from "@/components/analysis-dashboard/AnalysisPreview";
-import AnalysisScanning from "@/components/analysis-dashboard/AnalysisScanning";
-import AnalysisResults from "@/components/analysis-dashboard/AnalysisResults";
+import { useEffect } from 'react';
+import { useVideoAnalysisStore } from '@/stores/videoAnalysisStore';
+import AnalysisSelection from '@/components/analysis-dashboard/AnalysisSelection';
+import AnalysisPreview from '@/components/analysis-dashboard/AnalysisPreview';
+import AnalysisScanning from '@/components/analysis-dashboard/AnalysisScanning';
+import AnalysisResults from '@/components/analysis-dashboard/AnalysisResults';
 
 export default function AnalysisPage() {
   const { step, fetchMyVideos } = useVideoAnalysisStore();
@@ -16,13 +16,13 @@ export default function AnalysisPage() {
   return (
     <div className="h-full w-full animate-in fade-in duration-300">
       {/* SWITCH CASE untuk UI */}
-      {step === "SELECTION" && <AnalysisSelection />}
+      {step === 'SELECTION' && <AnalysisSelection />}
 
-      {step === "PREVIEW" && <AnalysisPreview />}
+      {step === 'PREVIEW' && <AnalysisPreview />}
 
-      {step === "SCANNING" && <AnalysisScanning />}
+      {step === 'SCANNING' && <AnalysisScanning />}
 
-      {step === "RESULTS" && <AnalysisResults />}
+      {step === 'RESULTS' && <AnalysisResults />}
     </div>
   );
 }

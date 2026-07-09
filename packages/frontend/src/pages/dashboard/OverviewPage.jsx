@@ -1,7 +1,7 @@
-import { useAuthStore } from "@/stores/authStore";
-import { Link } from "react-router-dom";
-import { ArrowRight, ShieldCheck, Search, BookOpen } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useAuthStore } from '@/stores/authStore';
+import { Link } from 'react-router-dom';
+import { ArrowRight, ShieldCheck, Search, BookOpen } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function overviewPage() {
   const user = useAuthStore((state) => state.currentUser);
@@ -11,12 +11,12 @@ export default function overviewPage() {
       <div className="relative overflow-hidden rounded-2xl bg-linear-to-r from-blue-600 to-indigo-700 p-8 text-white shadow-lg sm:p-12">
         <div className="relative z-10 max-w-3xl">
           <h1 className="text-3xl font-bold sm:text-4xl">
-            Halo, {user?.username || user?.name || "Partner"}! 👋
+            Halo, {user?.username || user?.name || 'Partner'}! 👋
           </h1>
           <p className="mt-4 text-lg text-blue-100 leading-relaxed">
-            Selamat datang di pusat kendali <strong>Judi Guard</strong>. Sistem
-            kami siap membantu Anda mendeteksi dan membersihkan komentar spam
-            perjudian di channel YouTube Anda secara otomatis.
+            Selamat datang di pusat kendali <strong>Judi Guard</strong>. Sistem kami siap membantu
+            Anda mendeteksi dan membersihkan komentar spam perjudian di channel YouTube Anda secara
+            otomatis.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-4">
@@ -59,16 +59,15 @@ export default function overviewPage() {
             Analisis Komentar
           </h3>
           <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-            Tempel link video YouTube, biarkan AI memindai ribuan komentar, lalu
-            hapus spam judi dalam sekali klik.
+            Tempel link video YouTube, biarkan AI memindai ribuan komentar, lalu hapus spam judi
+            dalam sekali klik.
           </p>
           <div className="mt-4">
             <Link
               to="/dashboard/analysis"
               className="text-sm font-medium text-blue-600 hover:underline flex items-center"
             >
-              Pergi ke halaman analisis{" "}
-              <ArrowRight size={14} className="ml-1" />
+              Pergi ke halaman analisis <ArrowRight size={14} className="ml-1" />
             </Link>
           </div>
         </div>
@@ -82,9 +81,8 @@ export default function overviewPage() {
             Konfigurasi Proteksi
           </h3>
           <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-            Kelola <strong>Whitelist</strong> (Channel Aman) dan{" "}
-            <strong>Blacklist</strong> (Kata Terlarang) untuk hasil deteksi yang
-            lebih akurat.
+            Kelola <strong>Whitelist</strong> (Channel Aman) dan <strong>Blacklist</strong> (Kata
+            Terlarang) untuk hasil deteksi yang lebih akurat.
           </p>
           <div className="mt-4">
             <Link

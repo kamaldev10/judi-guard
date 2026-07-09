@@ -9,14 +9,14 @@ services:
     networks:
       - judiguard_network
 
-  ml-api:
-    build:
-      context: ./packages/ml-api
-    container_name: judiguard_ml_api
-    ports:
-      - "5000:5000"
-    networks:
-      - judiguard_network
+  # ml-api:
+  #   build:
+  #     context: ./packages/ml-api
+  #   container_name: judiguard_ml_api
+  #   ports:
+  #     - "5000:5000"
+  #   networks:
+  #     - judiguard_network
 
   backend:
     build:

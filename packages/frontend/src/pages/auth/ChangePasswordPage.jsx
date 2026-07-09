@@ -1,16 +1,16 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
-import ChangePasswordForm from "@/components/auth/ChangePasswordForm";
-import { Title } from "react-head";
-import { useAuthStore } from "@/stores/authStore";
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
+import ChangePasswordForm from '@/components/auth/ChangePasswordForm';
+import { Title } from 'react-head';
+import { useAuthStore } from '@/stores/authStore';
 
 const ChangePasswordPage = () => {
   const navigate = useNavigate();
 
   const { currentUser } = useAuthStore();
 
-  const userName = currentUser?.username || "Pengguna";
+  const userName = currentUser?.username || 'Pengguna';
 
   return (
     <>
@@ -19,7 +19,7 @@ const ChangePasswordPage = () => {
         <div className="relative bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md transform transition-all hover:scale-[1.01] duration-500">
           {/* Tombol kembali */}
           <button
-            onClick={() => navigate("/profile")}
+            onClick={() => navigate('/profile')}
             className="absolute top-4 left-4 flex items-center gap-2 text-sm text-gray-500 hover:text-indigo-600 font-medium transition-colors duration-300"
             aria-label="Kembali ke profil"
           >
@@ -45,11 +45,9 @@ const ChangePasswordPage = () => {
                 />
               </svg>
             </div>
-            <h1 className="text-2xl font-bold text-gray-800">
-              Ganti Kata Sandi
-            </h1>
+            <h1 className="text-2xl font-bold text-gray-800">Ganti Kata Sandi</h1>
             <p className="text-gray-500 mt-2">
-              Mengamankan akun untuk{" "}
+              Mengamankan akun untuk{' '}
               <span className="font-semibold text-indigo-700">{userName}</span>
             </p>
           </div>

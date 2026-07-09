@@ -1,16 +1,16 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect, useCallback } from "react";
-import Swal from "sweetalert2";
+import { useState, useEffect, useCallback } from 'react';
+import Swal from 'sweetalert2';
 import {
   submitVideoForAnalysisApi,
   getVideoAnalysisApi,
   getAnalyzedCommentsApi,
   deleteSingleCommentApi,
   getStudioLinkApi,
-} from "@/lib/services/videoAnalysisApi";
+} from '@/lib/services/videoAnalysisApi';
 
-import { getCurrentUserApi } from "@/lib/services/userApi";
-import { validateYoutubeUrl } from "@/lib/utils/formValidators";
+import { getCurrentUserApi } from '@/lib/services/userApi';
+import { validateYoutubeUrl } from '@/lib/utils/formValidators';
 
 // Interval untuk polling status analisis (dalam milidetik)
 const POLLING_INTERVAL = 5000; // 5 detik
@@ -23,7 +23,7 @@ export const useVideoAnalysis = () => {
   const [isUserLoading, setIsUserLoading] = useState(true); // Status loading data pengguna
 
   // State untuk input form dan proses analisis/aksi
-  const [videoUrl, setVideoUrl] = useState("");
+  const [videoUrl, setVideoUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false); // Indikator loading umum untuk operasi API yang singkat atau tidak spesifik
   const [isAnalyzing, setIsAnalyzing] = useState(false); // True saat proses analisis & polling utama aktif
   const [isDeleting, setIsDeleting] = useState(false); // True saat proses penghapusan (batch atau tunggal) aktif
@@ -36,7 +36,7 @@ export const useVideoAnalysis = () => {
   // State turunan untuk UI (chart dan statistik)
   const [pieChartData, setPieChartData] = useState([]);
   const [stats, setStats] = useState({ total: 0, JUDI: 0, NON_JUDI: 0 }); // Pastikan key (JUDI, NON_JUDI) konsisten dengan enum backend dan PIE_CHART_COLORS
-  const [pollingMessage, setPollingMessage] = useState(""); // Pesan yang ditampilkan selama polling atau proses panjang
+  const [pollingMessage, setPollingMessage] = useState(''); // Pesan yang ditampilkan selama polling atau proses panjang
 
   // Efek untuk mengambil data pengguna saat hook pertama kali dimuat
   useEffect(() => {
@@ -47,8 +47,7 @@ export const useVideoAnalysis = () => {
         const backendResponse = await getCurrentUserApi(); // Mengembalikan { status, message, data: { user } }
         if (
           backendResponse &&
-          (backendResponse.success === true ||
-            backendResponse.status === "success") &&
+          (backendResponse.success === true || backendResponse.status === 'success') &&
           backendResponse.data &&
           backendResponse.data.user
         ) {
@@ -57,18 +56,14 @@ export const useVideoAnalysis = () => {
           setIsYouTubeConnected(!!userObject.youtubeChannelId); // Set status koneksi berdasarkan youtubeChannelId
         } else {
           const errorMessage =
-            backendResponse?.message ||
-            "Gagal memuat data pengguna (format tidak sesuai).";
-          console.error(
-            "Format respons /users/me tidak sesuai:",
-            backendResponse
-          );
+            backendResponse?.message || 'Gagal memuat data pengguna (format tidak sesuai).';
+          console.error('Format respons /users/me tidak sesuai:', backendResponse);
           setAuthError(errorMessage);
           setCurrentUser(null);
           setIsYouTubeConnected(false);
         }
       } catch (error) {
-        console.error("Failed to fetch current user:", error);
+        console.error('Failed to fetch current user:', error);
         setAuthError(error.message); // error.message sudah diformat oleh getCurrentUserApi
         setCurrentUser(null);
         setIsYouTubeConnected(false);
@@ -82,19 +77,15 @@ export const useVideoAnalysis = () => {
   // Efek untuk mengupdate PieChart dan Statistik ketika `analyzedComments` berubah
   useEffect(() => {
     if (analyzedComments.length > 0) {
-      const judiCount = analyzedComments.filter(
-        (c) => c.classification === "JUDI"
-      ).length;
-      const nonJudiCount = analyzedComments.filter(
-        (c) => c.classification === "NON_JUDI"
-      ).length;
+      const judiCount = analyzedComments.filter((c) => c.classification === 'JUDI').length;
+      const nonJudiCount = analyzedComments.filter((c) => c.classification === 'NON_JUDI').length;
       // Jika ada kategori lain yang ingin dihitung dan ditampilkan, tambahkan di sini
       // const pendingCount = analyzedComments.filter(c => c.classification === "PENDING_ANALYSIS").length;
       const totalCount = analyzedComments.length;
 
       const newPieData = [
-        { name: "Clean", value: nonJudiCount }, // Ubah "Non-Judi" menjadi "Clean"
-        { name: "Spam", value: judiCount }, // Ubah "Judi" menjadi "Spam" atau "Judi"
+        { name: 'Clean', value: nonJudiCount }, // Ubah "Non-Judi" menjadi "Clean"
+        { name: 'Spam', value: judiCount }, // Ubah "Judi" menjadi "Spam" atau "Judi"
       ].filter((item) => item.value > 0);
 
       setPieChartData(newPieData);
@@ -121,15 +112,13 @@ export const useVideoAnalysis = () => {
       try {
         const responseData = await getAnalyzedCommentsApi(currentAnalysisId);
         // Asumsi API service mengembalikan array komentar langsung atau objek dengan properti data: { data: [comments] }
-        const comments = Array.isArray(responseData)
-          ? responseData
-          : responseData?.data || [];
+        const comments = Array.isArray(responseData) ? responseData : responseData?.data || [];
 
         // --- LOGIKA SORTING DITAMBAHKAN DI SINI ---
         comments.sort((a, b) => {
           // Kriteria Utama: Klasifikasi "JUDI" selalu di atas
-          const aIsJudi = a.classification === "JUDI";
-          const bIsJudi = b.classification === "JUDI";
+          const aIsJudi = a.classification === 'JUDI';
+          const bIsJudi = b.classification === 'JUDI';
 
           if (aIsJudi && !bIsJudi) {
             return -1; // 'a' (yang JUDI) harus berada sebelum 'b'
@@ -141,23 +130,21 @@ export const useVideoAnalysis = () => {
           // Kriteria Kedua: Jika kedua komentar memiliki klasifikasi yang sama (sama-sama JUDI atau sama-sama NON_JUDI),
           // urutkan berdasarkan yang terbaru (tanggal publikasi descending).
           // Kita konversi ke objek Date untuk perbandingan yang akurat.
-          return (
-            new Date(b.commentPublishedAt) - new Date(a.commentPublishedAt)
-          );
+          return new Date(b.commentPublishedAt) - new Date(a.commentPublishedAt);
         });
         // --- AKHIR LOGIKA SORTING ---
 
         setAnalyzedComments(comments);
         return comments; // Kembalikan komentar untuk digunakan langsung jika perlu (misal, di handleSubmitAnalysis)
       } catch (error) {
-        Swal.fire("Error Mengambil Komentar", error.message, "error");
+        Swal.fire('Error Mengambil Komentar', error.message, 'error');
         setAnalyzedComments([]); // Kosongkan jika error
         return [];
       } finally {
         setIsLoading(false); // Loading umum selesai
       }
     },
-    [currentUser]
+    [currentUser],
   ); // Tidak ada dependensi eksternal yang sering berubah, API function stabil
 
   // Efek untuk polling status analisis jika backend berjalan secara asinkron
@@ -167,11 +154,11 @@ export const useVideoAnalysis = () => {
     if (
       isAnalyzing &&
       analysisId &&
-      videoAnalysisData?.status === "PROCESSING" &&
+      videoAnalysisData?.status === 'PROCESSING' &&
       isYouTubeConnected
     ) {
       setPollingMessage(
-        `Memproses analisis (Status: ${videoAnalysisData.status}). Komentar: ${videoAnalysisData.totalCommentsAnalyzed || 0}/${videoAnalysisData.totalCommentsFetched || "N/A"}`
+        `Memproses analisis (Status: ${videoAnalysisData.status}). Komentar: ${videoAnalysisData.totalCommentsAnalyzed || 0}/${videoAnalysisData.totalCommentsFetched || 'N/A'}`,
       );
       intervalId = setInterval(async () => {
         try {
@@ -181,35 +168,33 @@ export const useVideoAnalysis = () => {
 
           setVideoAnalysisData(updatedAnalysisData); // Update seluruh data analisis
           setPollingMessage(
-            `Status: ${updatedAnalysisData.status}. Komentar terproses: ${updatedAnalysisData.totalCommentsAnalyzed || 0}/${updatedAnalysisData.totalCommentsFetched || 0}`
+            `Status: ${updatedAnalysisData.status}. Komentar terproses: ${updatedAnalysisData.totalCommentsAnalyzed || 0}/${updatedAnalysisData.totalCommentsFetched || 0}`,
           );
 
           // Cek jika proses telah selesai (COMPLETED, FAILED, atau mengandung ERROR)
           if (
-            ["COMPLETED", "FAILED"].includes(updatedAnalysisData.status) ||
-            updatedAnalysisData.status?.includes("ERROR")
+            ['COMPLETED', 'FAILED'].includes(updatedAnalysisData.status) ||
+            updatedAnalysisData.status?.includes('ERROR')
           ) {
             setIsAnalyzing(false); // Hentikan state isAnalyzing, yang akan menghentikan polling ini
             setPollingMessage(
-              updatedAnalysisData.status === "COMPLETED"
-                ? "Analisis selesai sepenuhnya."
-                : `Proses analisis selesai dengan status: ${updatedAnalysisData.status}`
+              updatedAnalysisData.status === 'COMPLETED'
+                ? 'Analisis selesai sepenuhnya.'
+                : `Proses analisis selesai dengan status: ${updatedAnalysisData.status}`,
             );
-            if (updatedAnalysisData.status === "COMPLETED") {
+            if (updatedAnalysisData.status === 'COMPLETED') {
               await fetchComments(analysisId); // Ambil komentar final setelah analisis benar-benar selesai
             }
           }
         } catch (error) {
-          console.error("Polling error:", error);
-          setPollingMessage(
-            `Error saat polling: ${error.message}. Polling dihentikan.`
-          );
+          console.error('Polling error:', error);
+          setPollingMessage(`Error saat polling: ${error.message}. Polling dihentikan.`);
           setIsAnalyzing(false); // Hentikan polling jika ada error
         }
       }, POLLING_INTERVAL);
     } else if (!isAnalyzing) {
       // Jika isAnalyzing di-set false dari luar (misal setelah submit sinkron)
-      setPollingMessage(""); // Hapus pesan polling
+      setPollingMessage(''); // Hapus pesan polling
       if (intervalId) clearInterval(intervalId); // Pastikan interval dibersihkan
     }
 
@@ -217,13 +202,7 @@ export const useVideoAnalysis = () => {
     return () => {
       if (intervalId) clearInterval(intervalId);
     };
-  }, [
-    isAnalyzing,
-    analysisId,
-    videoAnalysisData,
-    fetchComments,
-    isYouTubeConnected,
-  ]);
+  }, [isAnalyzing, analysisId, videoAnalysisData, fetchComments, isYouTubeConnected]);
 
   /**
    * Helper function untuk memeriksa prasyarat sebelum melakukan aksi (data user, koneksi YouTube).
@@ -234,9 +213,9 @@ export const useVideoAnalysis = () => {
     (actionNameForMessage) => {
       if (isUserLoading) {
         Swal.fire({
-          title: "Mohon Tunggu",
-          text: "Sedang memverifikasi status pengguna...",
-          icon: "info",
+          title: 'Mohon Tunggu',
+          text: 'Sedang memverifikasi status pengguna...',
+          icon: 'info',
           allowOutsideClick: false,
           showConfirmButton: false,
           timer: 2500,
@@ -245,24 +224,24 @@ export const useVideoAnalysis = () => {
       }
       if (authError) {
         Swal.fire(
-          "Gagal Memuat Data Pengguna",
+          'Gagal Memuat Data Pengguna',
           `Tidak dapat melanjutkan ${actionNameForMessage}. ${authError} Silakan login menggunakan akun google/youtube anda.`,
-          "error"
+          'error',
         );
         return false;
       }
       if (!isYouTubeConnected) {
         Swal.fire(
-          "Koneksi YouTube Diperlukan",
+          'Koneksi YouTube Diperlukan',
           `Untuk ${actionNameForMessage}, silakan hubungkan akun YouTube Anda di halaman profil.`,
-          "warning"
+          'warning',
         );
         // Contoh: navigate('/profil/pengaturan'); // Anda mungkin ingin fungsi navigate di sini
         return false;
       }
       return true;
     },
-    [isUserLoading, authError, isYouTubeConnected]
+    [isUserLoading, authError, isYouTubeConnected],
   ); // Dependensi untuk useCallback
 
   /**
@@ -270,24 +249,23 @@ export const useVideoAnalysis = () => {
    * @param {Error} error - Objek error yang ditangkap dari panggilan API.
    * @param {string} actionName - Nama aksi yang sedang dilakukan.
    */
-  const handleApiError = (error, actionName = "Proses") => {
+  const handleApiError = (error, actionName = 'Proses') => {
     const status = error.response?.status;
     const serverMsg =
       error.response?.data?.message ||
       error.response?.data?.errorMessage ||
       error.response?.data?.error ||
       null;
-    const message = (error.message || serverMsg || "").toLowerCase();
+    const message = (error.message || serverMsg || '').toLowerCase();
 
     // 429 — API quota exceeded
     if (status === 429) {
       return Swal.fire({
-        icon: "error",
-        title: "Kuota API YouTube Habis",
+        icon: 'error',
+        title: 'Kuota API YouTube Habis',
         text:
-          serverMsg ||
-          "Kuota penggunaan API YouTube Anda telah habis. Silakan coba lagi besok.",
-        confirmButtonText: "Mengerti",
+          serverMsg || 'Kuota penggunaan API YouTube Anda telah habis. Silakan coba lagi besok.',
+        confirmButtonText: 'Mengerti',
       });
     }
 
@@ -295,49 +273,49 @@ export const useVideoAnalysis = () => {
     if (
       status === 401 ||
       status === 403 ||
-      message.includes("insufficient") ||
-      message.includes("izin tidak cukup") ||
-      message.includes("unauthorized") ||
-      message.includes("token") ||
-      message.includes("auth")
+      message.includes('insufficient') ||
+      message.includes('izin tidak cukup') ||
+      message.includes('unauthorized') ||
+      message.includes('token') ||
+      message.includes('auth')
     ) {
       return Swal.fire({
-        icon: "warning",
-        title: "Otorisasi YouTube Bermasalah",
-        text: "Sesi YouTube Anda telah kedaluwarsa atau izin tidak valid. Silakan hubungkan ulang akun YouTube di halaman profil.",
-        confirmButtonText: "OK",
+        icon: 'warning',
+        title: 'Otorisasi YouTube Bermasalah',
+        text: 'Sesi YouTube Anda telah kedaluwarsa atau izin tidak valid. Silakan hubungkan ulang akun YouTube di halaman profil.',
+        confirmButtonText: 'OK',
       });
     }
 
     // 404 — Video or resource not found
-    if (status === 404 || message.includes("tidak dapat diakses")) {
+    if (status === 404 || message.includes('tidak dapat diakses')) {
       return Swal.fire({
-        icon: "error",
-        title: "Video Tidak Ditemukan",
+        icon: 'error',
+        title: 'Video Tidak Ditemukan',
         text:
           serverMsg ||
           error.response?.data?.errorMessage ||
-          "Video tidak ditemukan atau tidak dapat diakses.",
-        confirmButtonText: "OK",
+          'Video tidak ditemukan atau tidak dapat diakses.',
+        confirmButtonText: 'OK',
       });
     }
 
     // 500+ — Server error
     if (status >= 500) {
       return Swal.fire({
-        icon: "error",
-        title: "Gangguan Server",
-        text: "Terjadi gangguan pada server. Silakan coba beberapa saat lagi.",
-        confirmButtonText: "Baik",
+        icon: 'error',
+        title: 'Gangguan Server',
+        text: 'Terjadi gangguan pada server. Silakan coba beberapa saat lagi.',
+        confirmButtonText: 'Baik',
       });
     }
 
     // Default fallback
     return Swal.fire({
-      icon: "error",
-      title: "Terjadi Kesalahan",
+      icon: 'error',
+      title: 'Terjadi Kesalahan',
       text: serverMsg || error.message || `Gagal melakukan ${actionName}`,
-      confirmButtonText: "Tutup",
+      confirmButtonText: 'Tutup',
     });
   };
 
@@ -345,14 +323,14 @@ export const useVideoAnalysis = () => {
    * Menangani submit URL video untuk dianalisis.
    */
   const handleSubmitAnalysis = useCallback(async () => {
-    if (!checkPrerequisites("memulai analisis")) return;
+    if (!checkPrerequisites('memulai analisis')) return;
 
     const validationError = validateYoutubeUrl(videoUrl);
     if (validationError) {
       Swal.fire({
-        title: "Input Tidak Valid",
+        title: 'Input Tidak Valid',
         text: validationError,
-        icon: "warning",
+        icon: 'warning',
       });
       return;
     }
@@ -362,12 +340,12 @@ export const useVideoAnalysis = () => {
     setAnalyzedComments([]); // Reset hasil analisis sebelumnya
     setVideoAnalysisData(null);
     setAnalysisId(null);
-    setPollingMessage("Mengirim permintaan analisis ke server...");
+    setPollingMessage('Mengirim permintaan analisis ke server...');
 
     Swal.fire({
-      title: "Memulai Analisis...",
-      text: "Video Anda sedang dikirim untuk dianalisis. Ini mungkin membutuhkan beberapa saat.",
-      icon: "info",
+      title: 'Memulai Analisis...',
+      text: 'Video Anda sedang dikirim untuk dianalisis. Ini mungkin membutuhkan beberapa saat.',
+      icon: 'info',
       allowOutsideClick: false,
       didOpen: () => Swal.showLoading(),
     });
@@ -378,52 +356,48 @@ export const useVideoAnalysis = () => {
       setAnalysisId(initialAnalysisData._id);
 
       // Periksa status dari respons awal submit
-      if (initialAnalysisData.status === "COMPLETED") {
+      if (initialAnalysisData.status === 'COMPLETED') {
         Swal.update({
-          text: `Video "${initialAnalysisData.videoTitle || "YouTube"}" telah selesai diproses. Mengambil daftar komentar...`,
+          text: `Video "${initialAnalysisData.videoTitle || 'YouTube'}" telah selesai diproses. Mengambil daftar komentar...`,
         });
         const fetchedComments = await fetchComments(initialAnalysisData._id);
         // console.log("fetchedComments :", fetchedComments);
         Swal.close();
         Swal.fire(
-          "Analisis Selesai!",
+          'Analisis Selesai!',
           `Ditemukan dan diproses ${fetchedComments.length} komentar.`,
-          "success"
+          'success',
         );
         setIsAnalyzing(false); // Analisis dan pengambilan komentar selesai
-        setPollingMessage("");
-      } else if (
-        ["PENDING", "PROCESSING"].includes(initialAnalysisData.status)
-      ) {
+        setPollingMessage('');
+      } else if (['PENDING', 'PROCESSING'].includes(initialAnalysisData.status)) {
         // Jika PENDING/PROCESSING, state isAnalyzing sudah true, biarkan useEffect polling yang bekerja.
         Swal.update({
-          text: `Analisis untuk video "${initialAnalysisData.videoTitle || "YouTube"}" sedang berjalan (Status: ${initialAnalysisData.status}). Hasil akan diperbarui secara otomatis.`,
+          text: `Analisis untuk video "${initialAnalysisData.videoTitle || 'YouTube'}" sedang berjalan (Status: ${initialAnalysisData.status}). Hasil akan diperbarui secara otomatis.`,
         });
-        setPollingMessage(
-          `Status: ${initialAnalysisData.status}. Menunggu penyelesaian...`
-        );
+        setPollingMessage(`Status: ${initialAnalysisData.status}. Menunggu penyelesaian...`);
         // isLoading umum bisa di-set false di sini jika polling yang akan menangani loading UI lebih lanjut
         // setIsLoading(false); // Karena isAnalyzing akan menjaga UI tetap 'sibuk'
       } else {
         Swal.close();
         throw new Error(
           initialAnalysisData.errorMessage ||
-            `Analisis gagal dimulai dengan status: ${initialAnalysisData.status}`
+            `Analisis gagal dimulai dengan status: ${initialAnalysisData.status}`,
         );
       }
     } catch (err) {
       Swal.close();
 
       // Gunakan handler error terpusat
-      handleApiError(err, "Memulai Analisis Video");
+      handleApiError(err, 'Memulai Analisis Video');
 
       setIsAnalyzing(false);
-      setPollingMessage("");
+      setPollingMessage('');
 
       setVideoAnalysisData((prev) =>
         prev
-          ? { ...prev, status: "FAILED", errorMessage: err.message }
-          : { _id: null, status: "FAILED", errorMessage: err.message }
+          ? { ...prev, status: 'FAILED', errorMessage: err.message }
+          : { _id: null, status: 'FAILED', errorMessage: err.message },
       );
     } finally {
       if (!isAnalyzing) {
@@ -516,38 +490,32 @@ export const useVideoAnalysis = () => {
   //FITUR INI AKAN DIGUNAKAN KETIKA SUDAH DISEDIAKAN OLEH YOUTUBE DATA API
   const handleDeleteSingleComment = useCallback(
     async (analyzedCommentId, commentText) => {
-      if (!checkPrerequisites("menghapus komentar ini")) return;
+      if (!checkPrerequisites('menghapus komentar ini')) return;
 
       // Store original comments for rollback
       const originalComments = [...analyzedComments];
-      const commentToDelete = originalComments.find(
-        (c) => c._id === analyzedCommentId
-      );
+      const commentToDelete = originalComments.find((c) => c._id === analyzedCommentId);
 
       if (!commentToDelete) {
-        Swal.fire("Error", "Komentar tidak ditemukan.", "error");
+        Swal.fire('Error', 'Komentar tidak ditemukan.', 'error');
         return;
       }
 
       // Optimistic update
-      setAnalyzedComments((prev) =>
-        prev.filter((c) => c._id !== analyzedCommentId)
-      );
+      setAnalyzedComments((prev) => prev.filter((c) => c._id !== analyzedCommentId));
 
       try {
         const confirmResult = await Swal.fire({
-          title: "Konfirmasi Penghapusan",
+          title: 'Konfirmasi Penghapusan',
           html: `Yakin hapus komentar: <i>"${
-            commentText.length > 100
-              ? `${commentText.substring(0, 100)}...`
-              : commentText
+            commentText.length > 100 ? `${commentText.substring(0, 100)}...` : commentText
           }"</i>?`,
-          icon: "warning",
+          icon: 'warning',
           showCancelButton: true,
-          confirmButtonColor: "#d33",
-          cancelButtonColor: "#3085d6",
-          confirmButtonText: "Ya, Hapus",
-          cancelButtonText: "Batal",
+          confirmButtonColor: '#d33',
+          cancelButtonColor: '#3085d6',
+          confirmButtonText: 'Ya, Hapus',
+          cancelButtonText: 'Batal',
         });
 
         if (!confirmResult.isConfirmed) {
@@ -571,41 +539,41 @@ export const useVideoAnalysis = () => {
         }
 
         Swal.fire(
-          "Berhasil!",
+          'Berhasil!',
           `Komentar "${commentToDelete.youtubeCommentId}" berhasil dihapus dari YouTube.`,
-          "success"
+          'success',
         );
       } catch (error) {
         // Rollback UI
         setAnalyzedComments(originalComments);
 
-        let errorMessage = "Gagal menghapus komentar";
-        let errorDetails = "";
+        let errorMessage = 'Gagal menghapus komentar';
+        let errorDetails = '';
 
         if (error.response?.data?.error) {
           // Handle API structured errors
           errorMessage = error.response.data.error.message;
           errorDetails = error.response.data.error.details;
-        } else if (error.message.includes("Kuota")) {
-          errorMessage = "Kuota API YouTube habis, coba lagi nanti";
-        } else if (error.message.includes("tidak valid")) {
-          errorMessage = "Format komentar tidak valid";
-        } else if (error.message.includes("NOT_COMMENT_OWNER")) {
-          errorMessage = "Anda bukan pemilik komentar ini";
-        } else if (error.message.includes("COMMENT_NOT_FOUND")) {
-          errorMessage = "Komentar sudah dihapus atau tidak ditemukan";
+        } else if (error.message.includes('Kuota')) {
+          errorMessage = 'Kuota API YouTube habis, coba lagi nanti';
+        } else if (error.message.includes('tidak valid')) {
+          errorMessage = 'Format komentar tidak valid';
+        } else if (error.message.includes('NOT_COMMENT_OWNER')) {
+          errorMessage = 'Anda bukan pemilik komentar ini';
+        } else if (error.message.includes('COMMENT_NOT_FOUND')) {
+          errorMessage = 'Komentar sudah dihapus atau tidak ditemukan';
         }
 
         await Swal.fire({
-          title: "Error",
-          html: `${errorMessage}${errorDetails ? `<br><small>${errorDetails}</small>` : ""}`,
-          icon: "error",
+          title: 'Error',
+          html: `${errorMessage}${errorDetails ? `<br><small>${errorDetails}</small>` : ''}`,
+          icon: 'error',
         });
       } finally {
         setIsDeleting(false);
       }
     },
-    [analysisId, analyzedComments, checkPrerequisites, deleteSingleCommentApi]
+    [analysisId, analyzedComments, checkPrerequisites, deleteSingleCommentApi],
   );
 
   /**
@@ -613,7 +581,7 @@ export const useVideoAnalysis = () => {
    * popup edukatif dan mengarahkan pengguna ke YouTube Studio.
    */
   const handleManageComments = useCallback(async () => {
-    if (!checkPrerequisites("mengelola komentar")) return;
+    if (!checkPrerequisites('mengelola komentar')) return;
     if (!analysisId) return; // Seharusnya tidak terjadi jika tombol muncul
 
     setIsLoading(true); // Tampilkan loading sementara mengambil link
@@ -624,8 +592,8 @@ export const useVideoAnalysis = () => {
 
       // 2. Tampilkan popup SweetAlert yang LEBIH INFORMATIF
       const result = await Swal.fire({
-        title: "Anda Akan Diarahkan ke YouTube Studio",
-        icon: "info",
+        title: 'Anda Akan Diarahkan ke YouTube Studio',
+        icon: 'info',
         // <<< PERUBAHAN UTAMA DI SINI >>>
         // Beri tahu pengguna akun mana yang harus mereka gunakan
         html: `
@@ -634,24 +602,24 @@ export const useVideoAnalysis = () => {
           <br>
           <p>Pastikan Anda sudah login di browser Anda dengan akun Google yang terhubung:</p>
           <p style="background-color: #f0f0f0; border-radius: 5px; padding: 10px; margin-top: 10px; font-weight: bold;">
-            ${currentUser?.email || "Akun Google Anda"}
+            ${currentUser?.email || 'Akun Google Anda'}
           </p>
         </div>
       `,
         showCancelButton: true,
-        confirmButtonColor: "#007BFF", // Warna biru untuk aksi utama
-        cancelButtonColor: "#6e7881",
-        confirmButtonText: "Ya, Buka YouTube Studio",
-        cancelButtonText: "Batal",
+        confirmButtonColor: '#007BFF', // Warna biru untuk aksi utama
+        cancelButtonColor: '#6e7881',
+        confirmButtonText: 'Ya, Buka YouTube Studio',
+        cancelButtonText: 'Batal',
       });
 
       // 3. Jika pengguna setuju, buka link di tab baru (tidak berubah)
       if (result.isConfirmed) {
-        window.open(studioUrl, "_blank", "noopener,noreferrer");
+        window.open(studioUrl, '_blank', 'noopener,noreferrer');
       }
     } catch (err) {
       // Penanganan error Anda yang sudah ada
-      handleApiError(err, "mengambil link moderasi");
+      handleApiError(err, 'mengambil link moderasi');
     } finally {
       setIsLoading(false);
     }

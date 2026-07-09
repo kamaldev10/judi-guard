@@ -1,6 +1,6 @@
 // src/store/textPredictStore.js
-import { create } from "zustand";
-import { predictTextApi } from "@/lib/services/predictTextApi";
+import { create } from 'zustand';
+import { predictTextApi } from '@/lib/services/predictTextApi';
 
 /**
  * Mengimpor tipe dari paket bersama untuk konsistensi.
@@ -15,7 +15,7 @@ export const useTextPredictStore = create((set) => ({
       const response = await predictTextApi(text);
       set({ prediction: response.data, isLoading: false });
     } catch (err) {
-      set({ error: "Gagal terhubung ke model AI.", isLoading: false });
+      set({ error: 'Gagal terhubung ke model AI.', isLoading: false });
       console.error(err);
     }
   },

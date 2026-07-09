@@ -1,9 +1,8 @@
-import { apiClient } from "./apiClient";
+import { apiClient } from './apiClient';
 
 // Helper untuk error handling konsisten
 const handleApiError = (error, defaultMessage) => {
-  const message =
-    error.response?.data?.message || defaultMessage || "Terjadi kesalahan.";
+  const message = error.response?.data?.message || defaultMessage || 'Terjadi kesalahan.';
   throw new Error(message);
 };
 
@@ -15,11 +14,11 @@ const handleApiError = (error, defaultMessage) => {
  */
 export const getGoogleAuthUrlApi = async () => {
   try {
-    const response = await apiClient.get("/auth/guest/connect");
+    const response = await apiClient.get('/auth/guest/connect');
     // Asumsi response: { status: "success", data: { url: "https://accounts.google..." } }
     return response.data.data.url;
   } catch (error) {
-    handleApiError(error, "Gagal mendapatkan URL Login.");
+    handleApiError(error, 'Gagal mendapatkan URL Login.');
   }
 };
 
@@ -34,7 +33,7 @@ export const handleGoogleCallbackApi = async (code) => {
     // Return data user/channel info
     return response.data.data;
   } catch (error) {
-    handleApiError(error, " Gagal verifikasi akun Google.");
+    handleApiError(error, ' Gagal verifikasi akun Google.');
   }
 };
 
@@ -44,7 +43,7 @@ export const handleGoogleCallbackApi = async (code) => {
  */
 export const getConnectedChannelProfileApi = async () => {
   try {
-    const response = await apiClient.get("/auth/youtube/profile");
+    const response = await apiClient.get('/auth/youtube/profile');
     return response.data.data;
   } catch (error) {
     // Silent error (mungkin belum connect), return null
@@ -58,10 +57,10 @@ export const getConnectedChannelProfileApi = async () => {
  */
 export const disconnectYoutubeApi = async () => {
   try {
-    await apiClient.post("/auth/guest/disconnect");
+    await apiClient.post('/auth/guest/disconnect');
     return true;
   } catch (error) {
-    handleApiError(error, "Gagal memutuskan koneksi YouTube.");
+    handleApiError(error, 'Gagal memutuskan koneksi YouTube.');
   }
 };
 
@@ -71,7 +70,7 @@ export const disconnectYoutubeApi = async () => {
 export const initiateYoutubeOAuthRedirectApi = async () => {
   // console.log("[API] Memulai permintaan untuk koneksi YouTube..."); // Akan muncul di konsol sebelum RAW res
   try {
-    const response = await apiClient.get("/auth/youtube/connect");
+    const response = await apiClient.get('/auth/youtube/connect');
     return response.data;
   } catch (error) {
     // console.error(
@@ -79,10 +78,7 @@ export const initiateYoutubeOAuthRedirectApi = async () => {
     //   error.response?.data || error.message,
     //   error
     // );
-    handleApiError(
-      error,
-      "Terjadi kesalahan saat meminta untuk koneksi Youtube.",
-    );
+    handleApiError(error, 'Terjadi kesalahan saat meminta untuk koneksi Youtube.');
   }
 };
 
@@ -90,7 +86,7 @@ export const initiateYoutubeOAuthRedirectApi = async () => {
 export const disconnectYoutubeAccountApi = async () => {
   // console.log("[API] Memutus koneksi akun YouTube...");
   try {
-    const response = await apiClient.post("/auth/youtube/disconnect");
+    const response = await apiClient.post('/auth/youtube/disconnect');
 
     return response.data;
   } catch (error) {
@@ -98,9 +94,6 @@ export const disconnectYoutubeAccountApi = async () => {
     //   "[API] Error saat disconnectYoutubeAccountApi:",
     //   error.response?.data || error.message
     // );
-    handleApiError(
-      error,
-      "Gagal memutuskan koneksi akun YouTube. Silakan coba lagi.",
-    );
+    handleApiError(error, 'Gagal memutuskan koneksi akun YouTube. Silakan coba lagi.');
   }
 };

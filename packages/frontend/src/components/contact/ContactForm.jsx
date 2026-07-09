@@ -1,39 +1,25 @@
-import React from "react";
-import PropTypes from "prop-types";
-import { motion } from "framer-motion";
-import { Send } from "lucide-react";
-import { ValidationError } from "@formspree/react";
+import React from 'react';
+import PropTypes from 'prop-types';
+import { motion } from 'motion/react';
+import { Send } from 'lucide-react';
+import { ValidationError } from '@formspree/react';
+import { staggerContainer, fadeUp } from '@/lib/utils/motion';
 
-// Varian animasi
-const formContainerVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
-};
-const formInputVariants = {
-  hidden: { opacity: 0, x: -20 },
-  visible: { opacity: 1, x: 0, transition: { duration: 0.4, ease: "easeOut" } },
-};
+const fieldClass =
+  'w-full p-4 bg-background/50 border border-border rounded-xl shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 text-sm placeholder:text-muted-foreground disabled:opacity-60 transition-all duration-300 ease-out hover:bg-background/80';
 
-// 2. Tambahkan 'errors' ke dalam daftar props
-const ContactForm = ({
-  formData,
-  isSubmitting,
-  onChange,
-  onSubmit,
-  errors,
-}) => {
+const ContactForm = ({ formData, isSubmitting, onChange, onSubmit, errors = null }) => {
   return (
-    <motion.div className="w-full lg:w-3/5" variants={formContainerVariants}>
-      <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-6 lg:mb-4">
-        Kirim Pesan Langsung
+    <motion.div
+      className="w-full glass-surface rounded-[2rem] p-8 sm:p-12 border border-border/50 shadow-2xl relative overflow-hidden"
+      variants={staggerContainer(0.1)}
+    >
+      <h3 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mb-8">
+        Kirim Pesan
       </h3>
       <form onSubmit={onSubmit} className="space-y-5" noValidate>
-        {/* Input Name */}
-        <motion.div variants={formInputVariants}>
-          <label
-            htmlFor="name"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
+        <motion.div variants={fadeUp}>
+          <label htmlFor="name" className="block text-sm font-medium text-foreground mb-1">
             Nama Anda
           </label>
           <input
@@ -44,7 +30,7 @@ const ContactForm = ({
             value={formData.name}
             onChange={onChange}
             required
-            className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 text-sm"
+            className={fieldClass}
             placeholder="John Doe"
             disabled={isSubmitting}
           />
@@ -52,16 +38,12 @@ const ContactForm = ({
             prefix="Nama"
             field="name"
             errors={errors}
-            className="text-red-600 text-xs mt-1"
+            className="text-destructive text-xs mt-1"
           />
         </motion.div>
 
-        {/* Input Email */}
-        <motion.div variants={formInputVariants}>
-          <label
-            htmlFor="email"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
+        <motion.div variants={fadeUp}>
+          <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
             Email Anda
           </label>
           <input
@@ -72,7 +54,7 @@ const ContactForm = ({
             value={formData.email}
             onChange={onChange}
             required
-            className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 text-sm"
+            className={fieldClass}
             placeholder="anda@example.com"
             disabled={isSubmitting}
           />
@@ -80,16 +62,12 @@ const ContactForm = ({
             prefix="Email"
             field="email"
             errors={errors}
-            className="text-red-600 text-xs mt-1"
+            className="text-destructive text-xs mt-1"
           />
         </motion.div>
 
-        {/* Input Subject */}
-        <motion.div variants={formInputVariants}>
-          <label
-            htmlFor="subject"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
+        <motion.div variants={fadeUp}>
+          <label htmlFor="subject" className="block text-sm font-medium text-foreground mb-1">
             Subjek
           </label>
           <input
@@ -100,7 +78,7 @@ const ContactForm = ({
             value={formData.subject}
             onChange={onChange}
             required
-            className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 text-sm"
+            className={fieldClass}
             placeholder="Tentang..."
             disabled={isSubmitting}
           />
@@ -108,16 +86,12 @@ const ContactForm = ({
             prefix="Subjek"
             field="subject"
             errors={errors}
-            className="text-red-600 text-xs mt-1"
+            className="text-destructive text-xs mt-1"
           />
         </motion.div>
 
-        {/* Input Message */}
-        <motion.div variants={formInputVariants}>
-          <label
-            htmlFor="message"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
+        <motion.div variants={fadeUp}>
+          <label htmlFor="message" className="block text-sm font-medium text-foreground mb-1">
             Pesan Anda
           </label>
           <textarea
@@ -128,32 +102,36 @@ const ContactForm = ({
             value={formData.message}
             onChange={onChange}
             required
-            className="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 text-sm resize-none"
+            className={`${fieldClass} resize-none`}
             placeholder="Tulis pesan Anda di sini..."
             disabled={isSubmitting}
-          ></textarea>
+          />
           <ValidationError
             prefix="Pesan"
             field="message"
             errors={errors}
-            className="text-red-600 text-xs mt-1"
+            className="text-destructive text-xs mt-1"
           />
         </motion.div>
 
-        {/* Tombol Submit & Error Global */}
-        <motion.div
-          className="flex flex-col items-start"
-          variants={formInputVariants}
-        >
+        <motion.div className="flex flex-col items-start" variants={fadeUp}>
           <button
             data-cy="contact-submit-button"
             type="submit"
             disabled={isSubmitting}
-            className="sm:w-1/3 flex items-center justify-center gap-2 bg-teal-600 text-white font-semibold px-6 py-3 rounded-md ..."
+            className="btn-brand sm:w-1/3 px-6 py-3 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             {isSubmitting ? (
               <>
-                <motion.div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <motion.div
+                  className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
+                  animate={{ rotate: 360 }}
+                  transition={{
+                    repeat: Infinity,
+                    duration: 0.8,
+                    ease: 'linear',
+                  }}
+                />
                 Mengirim...
               </>
             ) : (
@@ -163,10 +141,7 @@ const ContactForm = ({
             )}
           </button>
 
-          <ValidationError
-            errors={errors}
-            className="text-red-600 text-sm mt-2"
-          />
+          <ValidationError errors={errors} className="text-destructive text-sm mt-2" />
         </motion.div>
       </form>
     </motion.div>
@@ -183,12 +158,7 @@ ContactForm.propTypes = {
   isSubmitting: PropTypes.bool.isRequired,
   onChange: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
-  errors: PropTypes.object, // 4. Tambahkan 'errors' ke PropTypes
-};
-
-// 5. Tambahkan default prop untuk 'errors' agar tidak crash jika 'undefined'
-ContactForm.defaultProps = {
-  errors: null,
+  errors: PropTypes.object,
 };
 
 export default ContactForm;

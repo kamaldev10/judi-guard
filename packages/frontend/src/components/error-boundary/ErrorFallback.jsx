@@ -1,5 +1,5 @@
-import React from "react";
-import { ErrorImage } from "@/assets/images";
+import React from 'react';
+import { ErrorImage } from '@/assets/images';
 
 const ErrorFallback = ({ error, resetErrorBoundary }) => {
   return (
@@ -18,13 +18,12 @@ const ErrorFallback = ({ error, resetErrorBoundary }) => {
           Oops! Ada Sesuatu yang Salah 😟
         </h1>
         <p className="text-slate-900 text-sm sm:text-base mb-8">
-          Terjadi kesalahan yang tidak terduga pada aplikasi. Tim kami telah
-          diberitahu. Silakan coba muat ulang halaman ini atau kembali ke
-          beranda.
+          Terjadi kesalahan yang tidak terduga pada aplikasi. Tim kami telah diberitahu. Silakan
+          coba muat ulang halaman ini atau kembali ke beranda.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
-            onClick={() => (window.location.href = "/")}
+            onClick={() => (window.location.href = '/')}
             className="px-8 py-3 bg-sky-600 text-white font-semibold rounded-full hover:bg-sky-800 active:bg-sky-900 transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-70 shadow-lg hover:shadow-xl transform active:scale-95"
           >
             Kembali ke Beranda

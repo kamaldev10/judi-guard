@@ -1,5 +1,5 @@
 // src/services/api.js
-import { apiClient } from "./apiClient";
+import { apiClient } from './apiClient';
 
 //* ------------------------------- NEW LOGIC -----------------------------
 
@@ -44,10 +44,7 @@ export const getAnalysisResultsApi = async (analysisId, params = {}) => {
  * Body: { commentIds: [], action: "DELETE", banAuthor: boolean }
  */
 export const executeActionApi = async (analysisId, payload) => {
-  const response = await apiClient.post(
-    `/analysis/${analysisId}/action`,
-    payload,
-  );
+  const response = await apiClient.post(`/analysis/${analysisId}/action`, payload);
   // Return: { message, data: { requested: 5, youtubeResult: ... } }
   return response.data;
 };
@@ -73,13 +70,13 @@ export const undoActionApi = async (analysisId, commentIds) => {
 export const downloadReportPdfApi = async (analysisId) => {
   try {
     const response = await apiClient.get(`/analysis/${analysisId}/report/pdf`, {
-      responseType: "blob", // KUNCI UTAMA DOWNLOAD FILE
+      responseType: 'blob', // KUNCI UTAMA DOWNLOAD FILE
     });
 
     // Langsung return blob datanya untuk diproses component download
     return response.data;
   } catch (error) {
-    throw new Error("Gagal mengunduh laporan PDF.");
+    throw new Error('Gagal mengunduh laporan PDF.');
   }
 };
 
@@ -88,7 +85,7 @@ export const downloadReportPdfApi = async (analysisId) => {
 //submit video analysis
 export const submitVideoForAnalysisApi = async (videoUrl) => {
   try {
-    const response = await apiClient.post("/analysis/videos", { videoUrl });
+    const response = await apiClient.post('/analysis/videos', { videoUrl });
     // response.data seharusnya adalah objek VideoAnalysis yang sudah diproses (atau minimal ID dan status awal)
 
     return response.data.data; // Asumsi backend mengembalikan { success: true, data: videoAnalysisObject }
@@ -117,9 +114,7 @@ export const getVideoAnalysisApi = async (analysisId) => {
  */
 export const getAnalyzedCommentsApi = async (analysisId) => {
   try {
-    const response = await apiClient.get(
-      `/analysis/videos/${analysisId}/comments`,
-    );
+    const response = await apiClient.get(`/analysis/videos/${analysisId}/comments`);
     return response.data.data; // Asumsi backend mengembalikan { success: true, data: [arrayOfComments] }
   } catch (error) {
     throw new Error(error);
@@ -132,9 +127,7 @@ export const getAnalyzedCommentsApi = async (analysisId) => {
  */
 export const batchDeleteJudiCommentsApi = async (analysisId) => {
   try {
-    const response = await apiClient.delete(
-      `/analysis/videos/${analysisId}/judi-comments`,
-    );
+    const response = await apiClient.delete(`/analysis/videos/${analysisId}/judi-comments`);
     return response.data.data; // Asumsi backend mengembalikan { success: true, data: { summary } }
   } catch (error) {
     throw new Error(error);
@@ -144,9 +137,7 @@ export const batchDeleteJudiCommentsApi = async (analysisId) => {
 // Meminta penghapusan satu komentar spesifik.
 export const deleteSingleCommentApi = async (analyzedCommentId) => {
   try {
-    const response = await apiClient.delete(
-      `/analysis/comments/${analyzedCommentId}`,
-    );
+    const response = await apiClient.delete(`/analysis/comments/${analyzedCommentId}`);
     return response.data; // Asumsi backend mengembalikan { success: true, message: "..." }
   } catch (error) {
     throw new Error(error);
@@ -163,8 +154,7 @@ export const getStudioLinkApi = async (analysisId) => {
     const response = await apiClient.get(`/studio/comments-link/${analysisId}`);
     return response.data.data.url;
   } catch (error) {
-    const message =
-      error.response?.data?.message || "Gagal mendapatkan link YouTube Studio.";
+    const message = error.response?.data?.message || 'Gagal mendapatkan link YouTube Studio.';
     throw new Error(message);
   }
 };

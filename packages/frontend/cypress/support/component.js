@@ -1,5 +1,5 @@
-import "./commands";
+import './commands';
 
-import { mount } from "cypress/react";
+import { mount } from 'cypress/react';
 
-Cypress.Commands.add("mount", mount);
+Cypress.Commands.add('mount', mount);

@@ -1,8 +1,8 @@
-import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { LogIn } from "lucide-react";
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { LogIn } from 'lucide-react';
 // Import gambar aset Anda
-import notLoginImg from "@/assets/images/notLogin.svg";
+import notLoginImg from '@/assets/images/notLogin.svg';
 
 export default function LoginRequiredState() {
   const navigate = useNavigate();
@@ -24,24 +24,20 @@ export default function LoginRequiredState() {
         Akses Terbatas untuk Member
       </h2>
       <p className="mb-8 max-w-md text-gray-500 dark:text-gray-400">
-        Fitur ini membutuhkan penyimpanan database pribadi (seperti Blacklist &
-        Whitelist). Silakan masuk atau daftar untuk melanjutkan.
+        Fitur ini membutuhkan penyimpanan database pribadi (seperti Blacklist & Whitelist). Silakan
+        masuk atau daftar untuk melanjutkan.
       </p>
 
       {/* Tombol Aksi */}
       <div className="flex flex-col gap-3 sm:flex-row">
         <Button
-          onClick={() => navigate("/login")}
+          onClick={() => navigate('/login')}
           className="flex items-center gap-2 bg-blue-600 px-8 hover:bg-blue-700"
         >
           <LogIn size={18} />
           Masuk Akun
         </Button>
-        <Button
-          variant="outline"
-          onClick={() => navigate("/register")}
-          className="px-8"
-        >
+        <Button variant="outline" onClick={() => navigate('/register')} className="px-8">
           Daftar Sekarang
         </Button>
       </div>

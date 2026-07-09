@@ -1,13 +1,13 @@
-import React from "react";
-import { render, screen, within } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import ContactForm from "../ContactForm"; // <-- Adjust path
+import React from 'react';
+import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import ContactForm from '../ContactForm'; // <-- Adjust path
 
 // --- 1. Mock Dependencies ---
 
 // Mock 'framer-motion'
-vi.mock("framer-motion", () => ({
+vi.mock('framer-motion', () => ({
   motion: {
     div: React.forwardRef(({ children, ...props }, ref) => (
       <div ref={ref} {...props}>
@@ -23,13 +23,13 @@ vi.mock("framer-motion", () => ({
 }));
 
 // Mock 'lucide-react' (Send icon)
-vi.mock("lucide-react", () => ({
+vi.mock('lucide-react', () => ({
   Send: (props) => <svg data-testid="send-icon" {...props} />,
 }));
 
 // Mock '@formspree/react' (ValidationError)
 // We'll render the error if one for that field exists
-vi.mock("@formspree/react", () => ({
+vi.mock('@formspree/react', () => ({
   ValidationError: vi.fn(({ prefix, field, errors, className }) => {
     if (errors) {
       // Check for a specific field error
@@ -55,7 +55,7 @@ vi.mock("@formspree/react", () => ({
 
 // --- 2. Test Suite Setup ---
 
-describe("Contact Form Component Testing", () => {
+describe('Contact Form Component Testing', () => {
   const user = userEvent.setup();
 
   // Mock functions for props
@@ -64,7 +64,7 @@ describe("Contact Form Component Testing", () => {
 
   // Default props for a clean, empty form
   const defaultProps = {
-    formData: { name: "", email: "", subject: "", message: "" },
+    formData: { name: '', email: '', subject: '', message: '' },
     isSubmitting: false,
     onSubmit: mockOnSubmit,
     onChange: mockOnChange,
@@ -78,28 +78,26 @@ describe("Contact Form Component Testing", () => {
   // --- 3. Test Cases ---
 
   // Test 1: Initial Render
-  it("should render correctly with initial props", () => {
+  it('should render correctly with initial props', () => {
     render(<ContactForm {...defaultProps} />);
 
     // Check heading
-    expect(
-      screen.getByRole("heading", { name: /kirim pesan langsung/i })
-    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /kirim pesan langsung/i })).toBeInTheDocument();
 
     // Check form fields
     expect(screen.getByLabelText(/nama anda/i)).toBeEnabled();
-    expect(screen.getByLabelText(/nama anda/i)).toHaveValue("");
+    expect(screen.getByLabelText(/nama anda/i)).toHaveValue('');
     expect(screen.getByLabelText(/email anda/i)).toBeEnabled();
-    expect(screen.getByLabelText(/email anda/i)).toHaveValue("");
+    expect(screen.getByLabelText(/email anda/i)).toHaveValue('');
     expect(screen.getByLabelText(/subjek/i)).toBeEnabled();
-    expect(screen.getByLabelText(/subjek/i)).toHaveValue("");
+    expect(screen.getByLabelText(/subjek/i)).toHaveValue('');
     expect(screen.getByLabelText(/pesan anda/i)).toBeEnabled();
-    expect(screen.getByLabelText(/pesan anda/i)).toHaveValue("");
+    expect(screen.getByLabelText(/pesan anda/i)).toHaveValue('');
 
     // Check submit button
-    const submitButton = screen.getByRole("button", { name: /kirim pesan/i });
+    const submitButton = screen.getByRole('button', { name: /kirim pesan/i });
     expect(submitButton).toBeEnabled();
-    expect(within(submitButton).getByTestId("send-icon")).toBeInTheDocument();
+    expect(within(submitButton).getByTestId('send-icon')).toBeInTheDocument();
     expect(screen.queryByText(/mengirim.../i)).not.toBeInTheDocument();
 
     // Check that no errors are displayed
@@ -107,21 +105,19 @@ describe("Contact Form Component Testing", () => {
   });
 
   // Test 2: Pre-filled Data
-  it("should render with pre-filled formData", () => {
+  it('should render with pre-filled formData', () => {
     const filledData = {
-      name: "Test User",
-      email: "test@example.com",
-      subject: "Testing",
-      message: "Hello World",
+      name: 'Test User',
+      email: 'test@example.com',
+      subject: 'Testing',
+      message: 'Hello World',
     };
     render(<ContactForm {...defaultProps} formData={filledData} />);
 
     expect(screen.getByLabelText(/nama anda/i)).toHaveValue(filledData.name);
     expect(screen.getByLabelText(/email anda/i)).toHaveValue(filledData.email);
     expect(screen.getByLabelText(/subjek/i)).toHaveValue(filledData.subject);
-    expect(screen.getByLabelText(/pesan anda/i)).toHaveValue(
-      filledData.message
-    );
+    expect(screen.getByLabelText(/pesan anda/i)).toHaveValue(filledData.message);
   });
 
   // Test 3: Input Interaction (onChange)
@@ -142,9 +138,9 @@ describe("Contact Form Component Testing", () => {
   // });
 
   // Test 4: Submit Interaction (onSubmit)
-  it("should call onSubmit prop when form is submitted", async () => {
+  it('should call onSubmit prop when form is submitted', async () => {
     render(<ContactForm {...defaultProps} />);
-    const submitButton = screen.getByRole("button", { name: /kirim pesan/i });
+    const submitButton = screen.getByRole('button', { name: /kirim pesan/i });
 
     await user.click(submitButton);
 
@@ -152,7 +148,7 @@ describe("Contact Form Component Testing", () => {
   });
 
   // Test 5: Submitting State
-  it("should disable inputs/button and show loading state when isSubmitting is true", () => {
+  it('should disable inputs/button and show loading state when isSubmitting is true', () => {
     render(<ContactForm {...defaultProps} isSubmitting={true} />);
 
     // Check all inputs are disabled
@@ -162,13 +158,13 @@ describe("Contact Form Component Testing", () => {
     expect(screen.getByLabelText(/pesan anda/i)).toBeDisabled();
 
     // Check submit button
-    const submitButton = screen.getByRole("button", { name: /mengirim.../i });
+    const submitButton = screen.getByRole('button', { name: /mengirim.../i });
     expect(submitButton).toBeDisabled();
 
     // Check spinner icon (by checking for its specific class)
-    const spinner = submitButton.querySelector("div.animate-spin");
+    const spinner = submitButton.querySelector('div.animate-spin');
     expect(spinner).toBeInTheDocument();
-    expect(screen.queryByTestId("send-icon")).not.toBeInTheDocument();
+    expect(screen.queryByTestId('send-icon')).not.toBeInTheDocument();
   });
 
   // Test 6: Error State

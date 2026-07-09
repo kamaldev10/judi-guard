@@ -1,13 +1,13 @@
-import React from "react";
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import AnalysisSubmitForm from "../AnalysisSubmitForm"; // <-- Sesuaikan path
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import AnalysisSubmitForm from '../AnalysisSubmitForm'; // <-- Sesuaikan path
 
 // --- Mocking Dependencies ---
 
 // 1. Mock 'framer-motion'
-vi.mock("framer-motion", () => ({
+vi.mock('framer-motion', () => ({
   motion: {
     section: React.forwardRef(({ children, ...props }, ref) => (
       <section ref={ref} {...props}>
@@ -19,7 +19,7 @@ vi.mock("framer-motion", () => ({
 
 // --- Test Suite ---
 
-describe("Analysis Submit Form Component Testing", () => {
+describe('Analysis Submit Form Component Testing', () => {
   const user = userEvent.setup();
 
   // 2. Siapkan mock functions untuk props
@@ -28,7 +28,7 @@ describe("Analysis Submit Form Component Testing", () => {
 
   // 3. Props default (state normal, URL kosong)
   const defaultProps = {
-    videoUrl: "",
+    videoUrl: '',
     setVideoUrl: mockSetVideoUrl,
     onSubmit: mockOnSubmit,
     isActionInProgress: false,
@@ -87,10 +87,10 @@ describe("Analysis Submit Form Component Testing", () => {
   // });
 
   // Tes 2: Interaksi Input URL
-  it("should call setVideoUrl when typing in the URL input", async () => {
+  it('should call setVideoUrl when typing in the URL input', async () => {
     render(<AnalysisSubmitForm {...defaultProps} />);
     const urlInput = screen.getByLabelText(/link video/i);
-    const testUrl = "https://youtube.com/watch?v=abc";
+    const testUrl = 'https://youtube.com/watch?v=abc';
 
     await user.type(urlInput, testUrl);
 
@@ -99,18 +99,18 @@ describe("Analysis Submit Form Component Testing", () => {
   });
 
   // Tes 3: Tombol Submit Aktif setelah Input URL
-  it("should enable submit button when videoUrl is not empty", () => {
+  it('should enable submit button when videoUrl is not empty', () => {
     render(<AnalysisSubmitForm {...defaultProps} videoUrl="some-url" />); // Render dengan URL terisi
-    const submitButton = screen.getByRole("button", {
+    const submitButton = screen.getByRole('button', {
       name: /mulai analisis/i,
     });
     expect(submitButton).toBeEnabled();
   });
 
   // Tes 4: Interaksi Klik Submit (ketika aktif)
-  it("should call onSubmit when submit button is clicked and enabled", async () => {
+  it('should call onSubmit when submit button is clicked and enabled', async () => {
     render(<AnalysisSubmitForm {...defaultProps} videoUrl="some-url" />);
-    const submitButton = screen.getByRole("button", {
+    const submitButton = screen.getByRole('button', {
       name: /mulai analisis/i,
     });
     expect(submitButton).toBeEnabled(); // Pastikan enabled
@@ -122,15 +122,15 @@ describe("Analysis Submit Form Component Testing", () => {
   });
 
   // Tes 5: State Loading
-  it("should disable inputs/button, show spinner and loading message when isActionInProgress is true", () => {
-    const loadingMsg = "Memulai analisis...";
+  it('should disable inputs/button, show spinner and loading message when isActionInProgress is true', () => {
+    const loadingMsg = 'Memulai analisis...';
     render(
       <AnalysisSubmitForm
         {...defaultProps}
         videoUrl="some-url" // Beri URL agar tombol tidak disabled karenanya
         isActionInProgress={true} // <-- State loading aktif
         loadingMessage={loadingMsg}
-      />
+      />,
     );
 
     // Cek input disabled
@@ -139,40 +139,36 @@ describe("Analysis Submit Form Component Testing", () => {
     expect(screen.getByLabelText(/sumber komentar/i)).toBeDisabled();
 
     // Cek tombol submit disabled dan teks/ikon berubah
-    const submitButton = screen.getByRole("button", {
+    const submitButton = screen.getByRole('button', {
       name: /mulai analisis/i,
     }); // Gunakan aria-label asli
     expect(submitButton).toBeDisabled(); // Verifikasi disabled
 
     // Cek ikon spinner (cari SVG spinner di dalam tombol)
-    const spinnerSvgCircle = submitButton.querySelector("svg > circle"); // Cari elemen unik spinner
+    const spinnerSvgCircle = submitButton.querySelector('svg > circle'); // Cari elemen unik spinner
     expect(spinnerSvgCircle).toBeInTheDocument();
 
     // Pastikan ikon play tidak ada
-    const playIconSvg = submitButton.querySelector(
-      'svg path[fill-rule="evenodd"]'
-    );
+    const playIconSvg = submitButton.querySelector('svg path[fill-rule="evenodd"]');
     expect(playIconSvg).not.toBeInTheDocument();
 
     // Cek loading message muncul
     expect(screen.getByText(loadingMsg)).toBeInTheDocument();
-    expect(screen.getByText(loadingMsg)).toHaveClass("animate-pulse");
+    expect(screen.getByText(loadingMsg)).toHaveClass('animate-pulse');
   });
 
   // Tes 6: Loading message tidak muncul jika null
-  it("should not render loading message when isActionInProgress is true but loadingMessage is null", () => {
+  it('should not render loading message when isActionInProgress is true but loadingMessage is null', () => {
     render(
       <AnalysisSubmitForm
         {...defaultProps}
         videoUrl="some-url"
         isActionInProgress={true}
         loadingMessage={null} // <-- Pesan loading null
-      />
+      />,
     );
     // Pastikan tidak ada elemen <p> dengan pesan loading
     // (Asumsi loadingMessage dirender dalam <p>)
-    expect(
-      screen.queryByText(/memproses.../i, { selector: "p" })
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText(/memproses.../i, { selector: 'p' })).not.toBeInTheDocument();
   });
 });

@@ -1,9 +1,9 @@
-import { useEffect } from "react";
-import { useAuthStore } from "@/stores/authStore";
-import { useYoutubeStore } from "@/stores/youtubeStore";
-import LoginRequiredState from "@/components/status/LoginRequiredState";
-import ConnectYoutubeState from "@/components/status/ConnectYoutubeState";
-import PageLoader from "@/components/layout/PageLoader";
+import { useEffect } from 'react';
+import { useAuthStore } from '@/stores/authStore';
+import { useYoutubeStore } from '@/stores/youtubeStore';
+import LoginRequiredState from '@/components/status/LoginRequiredState';
+import ConnectYoutubeState from '@/components/status/ConnectYoutubeState';
+import PageLoader from '@/components/layout/PageLoader';
 
 /**
  * FeatureGuard
@@ -11,18 +11,10 @@ import PageLoader from "@/components/layout/PageLoader";
  * @param {boolean} requireYoutube - Jika true, user (Member/Guest) harus sudah connect channel.
  * @param {ReactNode} children - Konten halaman asli.
  */
-export default function FeatureGuard({
-  requireLogin = false,
-  requireYoutube = false,
-  children,
-}) {
+export default function FeatureGuard({ requireLogin = false, requireYoutube = false, children }) {
   const { isLoadingAuth } = useAuthStore();
   const getIsAuthenticated = useAuthStore((state) => state.getIsAuthenticated);
-  const {
-    isConnected,
-    isLoading: isLoadingYT,
-    fetchChannelProfile,
-  } = useYoutubeStore();
+  const { isConnected, isLoading: isLoadingYT, fetchChannelProfile } = useYoutubeStore();
 
   // Pastikan kita punya data channel terbaru saat masuk halaman ini
   useEffect(() => {

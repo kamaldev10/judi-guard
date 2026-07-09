@@ -1,13 +1,13 @@
-import React from "react";
-import { render, screen, act } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import AnalysisFormSection from "../AnalysisFormSection";
+import React from 'react';
+import { render, screen, act } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import AnalysisFormSection from '../AnalysisFormSection';
 
 // --- Mocking Dependencies ---
 
 // 1. Mock framer-motion
-vi.mock("framer-motion", () => ({
+vi.mock('framer-motion', () => ({
   motion: {
     div: React.forwardRef(({ children, ...props }, ref) => (
       <div ref={ref} {...props}>
@@ -29,37 +29,25 @@ vi.mock("framer-motion", () => ({
 // const MockAnalysisSummary = vi.fn();
 // const MockCommentList = vi.fn();
 
-vi.mock("../AnalysisSubmitForm", () => ({
-  default: vi.fn(
-    ({
-      onSubmit,
-      setVideoUrl,
-      videoUrl,
-      isActionInProgress,
-      loadingMessage,
-    }) => (
-      <div data-testid="mock-submit-form">
-        <input
-          aria-label="mock-video-url"
-          value={videoUrl}
-          onChange={setVideoUrl}
-        />
-        <button onClick={onSubmit} disabled={isActionInProgress}>
-          Submit Mock
-        </button>
-        {loadingMessage && <p>{loadingMessage}</p>}
-      </div>
-    )
-  ),
+vi.mock('../AnalysisSubmitForm', () => ({
+  default: vi.fn(({ onSubmit, setVideoUrl, videoUrl, isActionInProgress, loadingMessage }) => (
+    <div data-testid="mock-submit-form">
+      <input aria-label="mock-video-url" value={videoUrl} onChange={setVideoUrl} />
+      <button onClick={onSubmit} disabled={isActionInProgress}>
+        Submit Mock
+      </button>
+      {loadingMessage && <p>{loadingMessage}</p>}
+    </div>
+  )),
 }));
-vi.mock("../AnalysisResultHeader", () => ({
+vi.mock('../AnalysisResultHeader', () => ({
   default: vi.fn(({ analysisId, videoData }) => (
     <div data-testid="mock-result-header">
       Header for {analysisId} - Status: {videoData?.status}
     </div>
   )),
 }));
-vi.mock("../AnalysisSummary", () => ({
+vi.mock('../AnalysisSummary', () => ({
   default: vi.fn(({ onManageComments, isActionInProgress }) => (
     <div data-testid="mock-summary">
       <button onClick={onManageComments} disabled={isActionInProgress}>
@@ -68,7 +56,7 @@ vi.mock("../AnalysisSummary", () => ({
     </div>
   )),
 }));
-vi.mock("../CommentList", () => ({
+vi.mock('../CommentList', () => ({
   default: vi.fn(({ comments, isLoadingInitial, isActionInProgress }) => (
     <div data-testid="mock-comment-list">
       Comments: {comments.length}
@@ -77,10 +65,10 @@ vi.mock("../CommentList", () => ({
   )),
 }));
 
-import MockAnalysisSubmitForm from "../AnalysisSubmitForm";
-import MockAnalysisResultHeader from "../AnalysisResultHeader";
-import MockAnalysisSummary from "../AnalysisSummary";
-import MockCommentList from "../CommentList";
+import MockAnalysisSubmitForm from '../AnalysisSubmitForm';
+import MockAnalysisResultHeader from '../AnalysisResultHeader';
+import MockAnalysisSummary from '../AnalysisSummary';
+import MockCommentList from '../CommentList';
 
 // 3. 🔥 Mock Hook Kustom `useVideoAnalysis`
 //    Ini adalah inti tes. Kita kontrol semua return value-nya.
@@ -90,7 +78,7 @@ const mockHandleManageComments = vi.fn();
 
 // State awal hook yang bisa diubah dalam tes
 let mockHookState = {
-  videoUrl: "",
+  videoUrl: '',
   isLoading: false,
   isAnalyzing: false,
   isDeleting: false,
@@ -106,13 +94,13 @@ let mockHookState = {
   handleManageComments: mockHandleManageComments,
 };
 
-vi.mock("@/hooks/video-analysis/useVideoAnalysis", () => ({
+vi.mock('@/hooks/video-analysis/useVideoAnalysis', () => ({
   useVideoAnalysis: () => mockHookState,
 }));
 
 // --- Test Suite ---
 
-describe("Analysis Form Section Integration Testing", () => {
+describe('Analysis Form Section Integration Testing', () => {
   const user = userEvent.setup();
 
   // Reset state hook dan mock functions sebelum setiap tes
@@ -120,7 +108,7 @@ describe("Analysis Form Section Integration Testing", () => {
     vi.clearAllMocks();
     // Reset state hook ke default
     mockHookState = {
-      videoUrl: "",
+      videoUrl: '',
       isLoading: false,
       isAnalyzing: false,
       isDeleting: false,
@@ -142,9 +130,9 @@ describe("Analysis Form Section Integration Testing", () => {
   });
 
   // Tes 1: Render Awal
-  it("should render AnalysisSubmitForm initially and not the result section", () => {
+  it('should render AnalysisSubmitForm initially and not the result section', () => {
     render(<AnalysisFormSection />);
-    expect(screen.getByTestId("mock-submit-form")).toBeInTheDocument();
+    expect(screen.getByTestId('mock-submit-form')).toBeInTheDocument();
 
     // --- Langkah Diagnosis ---
     // 1. Pastikan mock dipanggil setidaknya sekali
@@ -152,15 +140,15 @@ describe("Analysis Form Section Integration Testing", () => {
 
     // 2. Cek jumlah argumen pada panggilan pertama
     console.log(
-      "Jumlah argumen diterima MockAnalysisSubmitForm:",
-      MockAnalysisSubmitForm.mock.calls[0].length
+      'Jumlah argumen diterima MockAnalysisSubmitForm:',
+      MockAnalysisSubmitForm.mock.calls[0].length,
     );
     expect(MockAnalysisSubmitForm.mock.calls[0].length).toBe(2); // Harusnya 2 (props, undefined)
 
     // 3. Cek nilai argumen kedua
     console.log(
-      "Argumen kedua diterima MockAnalysisSubmitForm:",
-      MockAnalysisSubmitForm.mock.calls[0][1]
+      'Argumen kedua diterima MockAnalysisSubmitForm:',
+      MockAnalysisSubmitForm.mock.calls[0][1],
     );
     expect(MockAnalysisSubmitForm.mock.calls[0][1]).toBeUndefined(); // Harusnya undefined
 
@@ -182,7 +170,7 @@ describe("Analysis Form Section Integration Testing", () => {
     // 4d. Verifikasi argumen pertama (props)
     const receivedProps = firstCallArgs[0];
     expect(receivedProps).toEqual(
-      expect.objectContaining({ videoUrl: "", isActionInProgress: false })
+      expect.objectContaining({ videoUrl: '', isActionInProgress: false }),
     );
 
     // 4e. (Opsional) Verifikasi argumen kedua
@@ -207,11 +195,11 @@ describe("Analysis Form Section Integration Testing", () => {
   // });
 
   // Tes 3: Interaksi Submit di SubmitForm
-  it("should call handleSubmitAnalysis from hook when submit is triggered from SubmitForm", async () => {
+  it('should call handleSubmitAnalysis from hook when submit is triggered from SubmitForm', async () => {
     render(<AnalysisFormSection />);
     // Cari tombol submit di mock
-    const mockSubmitButton = screen.getByRole("button", {
-      name: "Submit Mock",
+    const mockSubmitButton = screen.getByRole('button', {
+      name: 'Submit Mock',
     });
 
     // Klik tombol
@@ -222,11 +210,11 @@ describe("Analysis Form Section Integration Testing", () => {
   });
 
   // Tes 4: Render saat Loading/Analyzing
-  it("should pass correct loading state and message to SubmitForm", () => {
+  it('should pass correct loading state and message to SubmitForm', () => {
     // Ubah state hook
     act(() => {
       mockHookState.isAnalyzing = true;
-      mockHookState.pollingMessage = "Checking video...";
+      mockHookState.pollingMessage = 'Checking video...';
       mockHookState.isLoading = true; // Contoh kombinasi loading
     });
 
@@ -234,18 +222,16 @@ describe("Analysis Form Section Integration Testing", () => {
 
     // Periksa panggilan mock TERAKHIR
     const lastCallArgs =
-      MockAnalysisSubmitForm.mock.calls[
-        MockAnalysisSubmitForm.mock.calls.length - 1
-      ];
+      MockAnalysisSubmitForm.mock.calls[MockAnalysisSubmitForm.mock.calls.length - 1];
 
     // Periksa props (argumen pertama, indeks 0)
     const expectedProps = expect.objectContaining({
       isActionInProgress: true,
-      loadingMessage: "Checking video...",
+      loadingMessage: 'Checking video...',
     });
     expect(lastCallArgs[0]).toEqual(expectedProps);
 
-    expect(screen.getByText("Checking video...")).toBeInTheDocument();
+    expect(screen.getByText('Checking video...')).toBeInTheDocument();
   });
 
   // Tes 5: Render Result Section (Processing)
@@ -338,20 +324,20 @@ describe("Analysis Form Section Integration Testing", () => {
   // });
 
   // Tes 7: Interaksi Tombol Manage Comments
-  it("should call handleManageComments from hook when triggered from Summary", async () => {
+  it('should call handleManageComments from hook when triggered from Summary', async () => {
     // Setup state agar Summary render tombol
     act(() => {
-      mockHookState.analysisId = "789";
-      mockHookState.videoAnalysisData = { status: "COMPLETED" };
-      mockHookState.analyzedComments = [{ _id: "c1", classification: "JUDI" }];
+      mockHookState.analysisId = '789';
+      mockHookState.videoAnalysisData = { status: 'COMPLETED' };
+      mockHookState.analyzedComments = [{ _id: 'c1', classification: 'JUDI' }];
       mockHookState.stats = { total: 1, JUDI: 1 };
     });
 
     render(<AnalysisFormSection />);
 
     // Cari tombol di dalam mock Summary
-    const mockManageButton = screen.getByRole("button", {
-      name: "Manage Mock",
+    const mockManageButton = screen.getByRole('button', {
+      name: 'Manage Mock',
     });
 
     // Klik tombol

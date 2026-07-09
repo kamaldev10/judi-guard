@@ -37,13 +37,14 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    // DEBUG
-    // console.error(
-    //   "[API Interceptor] Error in response for path:",
-    //   error.config?.url,
-    //   error.response?.status,
-    //   error.response?.data
-    // );
+    // auto-logout on 401 — expired/invalid token
+    if (error.response?.status === 401) {
+      localStorage.removeItem('judiGuardToken');
+      // Only redirect if not already on login page
+      if (!window.location.pathname.startsWith('/login')) {
+        window.location.href = '/login';
+      }
+    }
 
     return Promise.reject(error);
   },

@@ -1,16 +1,16 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { useTextPredictStore } from "../textPredictStore";
-import { predictTextApi } from "@/lib/services/predictTextApi";
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { useTextPredictStore } from '../textPredictStore';
+import { predictTextApi } from '@/lib/services/predictTextApi';
 
 // --- 1. Mock External Dependencies ---
 
 // Mock the API service module
-vi.mock("@/lib/services/predictTextApi", () => ({
+vi.mock('@/lib/services/predictTextApi', () => ({
   predictTextApi: vi.fn(),
 }));
 
 // --- Test Suite ---
-describe("Text Predict Store Unit Testing", () => {
+describe('Text Predict Store Unit Testing', () => {
   // 2. Reset store state and mock history before each test
   beforeEach(() => {
     // Reset Zustand store state to its initial values
@@ -29,12 +29,12 @@ describe("Text Predict Store Unit Testing", () => {
   });
 
   // --- Test 1: clear action ---
-  describe("clear", () => {
-    it("should reset prediction and error to null", () => {
+  describe('clear', () => {
+    it('should reset prediction and error to null', () => {
       // Arrange: Set some dummy state
       useTextPredictStore.setState({
-        prediction: { classification: "JUDI" },
-        error: "Some error",
+        prediction: { classification: 'JUDI' },
+        error: 'Some error',
         isLoading: true, // clear() doesn't reset isLoading
       });
 
@@ -50,11 +50,11 @@ describe("Text Predict Store Unit Testing", () => {
   });
 
   // --- Test 2: analyze action ---
-  describe("analyze", () => {
-    const testText = "Check this sample text";
-    const mockResponse = { data: { classification: "JUDI", score: 0.99 } };
+  describe('analyze', () => {
+    const testText = 'Check this sample text';
+    const mockResponse = { data: { classification: 'JUDI', score: 0.99 } };
 
-    it("should set loading, call API, and set prediction on success", async () => {
+    it('should set loading, call API, and set prediction on success', async () => {
       // Arrange
       predictTextApi.mockResolvedValue(mockResponse);
       const store = useTextPredictStore.getState();
@@ -81,9 +81,9 @@ describe("Text Predict Store Unit Testing", () => {
       expect(predictTextApi).toHaveBeenCalledWith(testText);
     });
 
-    it("should set loading, call API, and set error on failure", async () => {
+    it('should set loading, call API, and set error on failure', async () => {
       // Arrange
-      const mockError = new Error("API failed");
+      const mockError = new Error('API failed');
       predictTextApi.mockRejectedValue(mockError);
       const store = useTextPredictStore.getState();
 
@@ -100,7 +100,7 @@ describe("Text Predict Store Unit Testing", () => {
       const state = useTextPredictStore.getState();
       expect(state.isLoading).toBe(false);
       expect(state.prediction).toBeNull();
-      expect(state.error).toBe("Gagal terhubung ke model AI."); // The specific error message from the store
+      expect(state.error).toBe('Gagal terhubung ke model AI.'); // The specific error message from the store
 
       // Verify API call
       expect(predictTextApi).toHaveBeenCalledTimes(1);

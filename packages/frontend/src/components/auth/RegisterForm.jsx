@@ -1,29 +1,29 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff } from "lucide-react";
-import { toast } from "react-toastify";
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
+import { toast } from 'react-toastify';
 
 import {
   validateUserName,
   validateEmail,
   validateRegistrationPassword,
-} from "@/lib/utils/formValidators";
-import { useAuthStore } from "@/stores/authStore";
-import GoogleSignInButton from "./GoogleSignInButton";
+} from '@/lib/utils/formValidators';
+import { useAuthStore } from '@/stores/authStore';
+import GoogleSignInButton from './GoogleSignInButton';
 
 const RegisterForm = () => {
   const { register, isLoadingAuth } = useAuthStore();
 
   const [showPassword, setShowPassword] = useState(false);
   const [formValues, setFormValues] = useState({
-    userName: "",
-    email: "",
-    password: "",
+    userName: '',
+    email: '',
+    password: '',
   });
   const [formErrors, setFormErrors] = useState({
-    userName: "",
-    email: "",
-    password: "",
+    userName: '',
+    email: '',
+    password: '',
   });
 
   const navigate = useNavigate();
@@ -49,10 +49,10 @@ const RegisterForm = () => {
       [name]: value,
     }));
 
-    let error = "";
-    if (name === "userName") error = validateUserName(value);
-    else if (name === "email") error = validateEmail(value);
-    else if (name === "password") error = validateRegistrationPassword(value);
+    let error = '';
+    if (name === 'userName') error = validateUserName(value);
+    else if (name === 'email') error = validateEmail(value);
+    else if (name === 'password') error = validateRegistrationPassword(value);
 
     setFormErrors((prev) => ({
       ...prev,
@@ -64,18 +64,18 @@ const RegisterForm = () => {
     e.preventDefault();
 
     if (!validateAllFields()) {
-      toast.error("Harap perbaiki semua error pada form.", {
-        position: "bottom-right",
+      toast.error('Harap perbaiki semua error pada form.', {
+        position: 'bottom-right',
       });
       return;
     }
 
     try {
       await register(formValues);
-      navigate("/otp", { state: { email: formValues.email } });
+      navigate('/otp', { state: { email: formValues.email } });
     } catch (error) {
-      toast.error(error.message || "Registrasi gagal. Silakan coba lagi.", {
-        position: "bottom-right",
+      toast.error(error.message || 'Registrasi gagal. Silakan coba lagi.', {
+        position: 'bottom-right',
       });
     }
   };
@@ -83,16 +83,11 @@ const RegisterForm = () => {
   return (
     <>
       <form onSubmit={handleRegister}>
-        <h1 className="text-center text-teal-700 font-bold text-xl mb-5">
-          Daftar
-        </h1>
+        <h1 className="text-center text-teal-700 font-bold text-xl mb-5">Daftar</h1>
 
         {/* Username */}
         <div className="mb-4 text-black">
-          <label
-            htmlFor="userName"
-            className="block text-sm mb-1 font-semibold"
-          >
+          <label htmlFor="userName" className="block text-sm mb-1 font-semibold">
             Username
           </label>
           <input
@@ -106,9 +101,9 @@ const RegisterForm = () => {
             disabled={isLoadingAuth}
             className={`w-full px-4 py-1 border rounded-xl focus:outline-none focus:ring-2 bg-white ${
               formErrors.userName
-                ? "border-red-500 focus:ring-red-500"
-                : "border-gray-300 focus:ring-teal-500"
-            } ${isLoadingAuth ? "opacity-50 cursor-not-allowed" : ""}`}
+                ? 'border-red-500 focus:ring-red-500'
+                : 'border-gray-300 focus:ring-teal-500'
+            } ${isLoadingAuth ? 'opacity-50 cursor-not-allowed' : ''}`}
             autoFocus
           />
           {formErrors.userName && (
@@ -132,13 +127,11 @@ const RegisterForm = () => {
             autoComplete="email"
             className={`w-full px-4 py-1 border rounded-xl focus:outline-none focus:ring-2 bg-white ${
               formErrors.email
-                ? "border-red-500 focus:ring-red-500"
-                : "border-gray-300 focus:ring-teal-500"
-            } ${isLoadingAuth ? "opacity-50 cursor-not-allowed" : ""}`}
+                ? 'border-red-500 focus:ring-red-500'
+                : 'border-gray-300 focus:ring-teal-500'
+            } ${isLoadingAuth ? 'opacity-50 cursor-not-allowed' : ''}`}
           />
-          {formErrors.email && (
-            <p className="mt-1 text-sm text-red-600">{formErrors.email}</p>
-          )}
+          {formErrors.email && <p className="mt-1 text-sm text-red-600">{formErrors.email}</p>}
         </div>
 
         {/* Password */}
@@ -153,22 +146,22 @@ const RegisterForm = () => {
               data-cy="password-input"
               name="password"
               id="password"
-              type={showPassword ? "text" : "password"}
+              type={showPassword ? 'text' : 'password'}
               value={formValues.password}
               onChange={handleChange}
               disabled={isLoadingAuth}
               className={`w-full px-4 py-1 border rounded-xl focus:outline-none focus:ring-2 bg-white ${
                 formErrors.password
-                  ? "border-red-500 focus:ring-red-500"
-                  : "border-gray-300 focus:ring-teal-500"
-              } ${isLoadingAuth ? "opacity-50 cursor-not-allowed" : ""}`}
+                  ? 'border-red-500 focus:ring-red-500'
+                  : 'border-gray-300 focus:ring-teal-500'
+              } ${isLoadingAuth ? 'opacity-50 cursor-not-allowed' : ''}`}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               disabled={isLoadingAuth}
               className={`absolute right-3 text-gray-500 hover:text-gray-700 ${
-                isLoadingAuth ? "opacity-50 cursor-not-allowed" : ""
+                isLoadingAuth ? 'opacity-50 cursor-not-allowed' : ''
               }`}
             >
               {showPassword ? (
@@ -190,7 +183,7 @@ const RegisterForm = () => {
           disabled={isLoadingAuth}
           className="w-full py-1 mt-2 bg-[#25c0d4] text-white font-semibold rounded-xl hover:bg-[#089db1] transition disabled:opacity-50"
         >
-          {isLoadingAuth ? "Mendaftar..." : "Daftar"}
+          {isLoadingAuth ? 'Mendaftar...' : 'Daftar'}
         </button>
 
         {/* Redirect to login */}
@@ -199,7 +192,7 @@ const RegisterForm = () => {
           <Link
             to="/login"
             className={`ms-1 font-semibold hover:underline ${
-              isLoadingAuth ? "pointer-events-none opacity-50" : ""
+              isLoadingAuth ? 'pointer-events-none opacity-50' : ''
             }`}
           >
             Masuk di sini
@@ -215,10 +208,7 @@ const RegisterForm = () => {
       </div>
 
       {/* Google Sign In */}
-      <GoogleSignInButton
-        buttonText="Daftar dengan Google"
-        disabled={isLoadingAuth}
-      />
+      <GoogleSignInButton buttonText="Daftar dengan Google" disabled={isLoadingAuth} />
     </>
   );
 };

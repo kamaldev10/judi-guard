@@ -1,7 +1,7 @@
-import React from "react";
-import PropTypes from "prop-types";
-import { motion } from "framer-motion";
-import { User, Mail, Save, XCircle, Loader2, ArrowLeft } from "lucide-react";
+import React from 'react';
+import PropTypes from 'prop-types';
+import { motion } from 'framer-motion';
+import { User, Mail, Save, XCircle, Loader2, ArrowLeft } from 'lucide-react';
 
 // Varian animasi sekarang menjadi milik komponen ini
 const pageVariants = {
@@ -10,7 +10,7 @@ const pageVariants = {
     opacity: 1,
     x: 0,
     transition: {
-      type: "spring",
+      type: 'spring',
       stiffness: 120,
       damping: 20,
       staggerChildren: 0.1,
@@ -19,22 +19,16 @@ const pageVariants = {
   exit: {
     opacity: 0,
     x: 20,
-    transition: { ease: "anticipate", duration: 0.3 },
+    transition: { ease: 'anticipate', duration: 0.3 },
   },
 };
 
 const formItemVariants = {
   hidden: { opacity: 0, y: 10 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: 'easeOut' } },
 };
 
-const EditProfileForm = ({
-  formData,
-  isSaving,
-  onSubmit,
-  onInputChange,
-  onCancel,
-}) => {
+const EditProfileForm = ({ formData, isSaving, onSubmit, onInputChange, onCancel }) => {
   return (
     <motion.div
       key="edit-profile-form"
@@ -53,32 +47,24 @@ const EditProfileForm = ({
         >
           <ArrowLeft size={22} />
         </button>
-        <h1 className="text-2xl md:text-3xl font-bold text-slate-800">
-          Edit Profil Anda
-        </h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-slate-800">Edit Profil Anda</h1>
       </div>
 
       <form onSubmit={onSubmit} className="space-y-5 md:space-y-6">
         {/* Input Email */}
         <motion.div variants={formItemVariants}>
-          <label
-            htmlFor="email"
-            className="block text-sm font-semibold text-slate-700 mb-1.5"
-          >
+          <label htmlFor="email" className="block text-sm font-semibold text-slate-700 mb-1.5">
             Email
           </label>
           <div className="relative group">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-              <Mail
-                size={18}
-                className="text-slate-400 group-focus-within:text-sky-500"
-              />
+              <Mail size={18} className="text-slate-400 group-focus-within:text-sky-500" />
             </div>
             <input
               type="email"
               name="email"
               id="email"
-              value={formData.email || ""}
+              value={formData.email || ''}
               onChange={onInputChange}
               className="block w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-lg shadow-sm placeholder-slate-400 
                          focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 
@@ -92,25 +78,19 @@ const EditProfileForm = ({
 
         {/* Input Username */}
         <motion.div variants={formItemVariants}>
-          <label
-            htmlFor="username"
-            className="block text-sm font-semibold text-slate-700 mb-1.5"
-          >
+          <label htmlFor="username" className="block text-sm font-semibold text-slate-700 mb-1.5">
             Username
           </label>
           <div className="relative group">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none transition-colors group-focus-within:text-sky-600">
-              <User
-                size={18}
-                className="text-slate-400 group-focus-within:text-sky-500"
-              />
+              <User size={18} className="text-slate-400 group-focus-within:text-sky-500" />
             </div>
             <input
               data-cy="username-input"
               type="text"
               name="username"
               id="username"
-              value={formData.username || ""}
+              value={formData.username || ''}
               onChange={onInputChange}
               className="block w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-lg shadow-sm placeholder-slate-400 
                          focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 
@@ -140,7 +120,7 @@ const EditProfileForm = ({
             type="submit"
             whileHover={{
               y: -2,
-              boxShadow: "0px 8px 15px rgba(0, 123, 255, 0.2)",
+              boxShadow: '0px 8px 15px rgba(0, 123, 255, 0.2)',
             }}
             whileTap={{ scale: 0.98 }}
             className="w-full sm:w-auto order-1 sm:order-2 px-6 py-2.5 rounded-lg text-sm font-medium text-white bg-linear-to-r from-sky-500 to-cyan-500 hover:from-sky-600 hover:to-cyan-600 transition-all shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-2 disabled:opacity-70 flex items-center justify-center"
@@ -151,7 +131,7 @@ const EditProfileForm = ({
             ) : (
               <Save size={16} className="mr-2" />
             )}
-            {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
+            {isSaving ? 'Menyimpan...' : 'Simpan Perubahan'}
           </motion.button>
         </div>
       </form>

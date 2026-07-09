@@ -1,25 +1,20 @@
-import { useEffect, useState } from "react";
-import { useConfigStore } from "@/stores/configStore";
-import { AlertTriangle, X } from "lucide-react";
-import { toast } from "sonner";
+import { useEffect, useState } from 'react';
+import { useConfigStore } from '@/stores/configStore';
+import { AlertTriangle, X } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function BlacklistManager() {
-  const {
-    blacklist,
-    fetchBlacklist,
-    addToBlacklist,
-    removeFromBlacklist,
-    isLoadingBlacklist,
-  } = useConfigStore();
+  const { blacklist, fetchBlacklist, addToBlacklist, removeFromBlacklist, isLoadingBlacklist } =
+    useConfigStore();
 
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState('');
 
   useEffect(() => {
     fetchBlacklist();
   }, [fetchBlacklist]);
 
   const handleKeyDown = async (e) => {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       e.preventDefault();
       if (!input.trim()) return;
 
@@ -29,14 +24,14 @@ export default function BlacklistManager() {
 
         // Tampilkan Toast berdasarkan Report
         if (report.added && report.added.length > 0) {
-          toast.success(`Ditambahkan: ${report.added.join(", ")}`);
-          setInput("");
+          toast.success(`Ditambahkan: ${report.added.join(', ')}`);
+          setInput('');
         } else if (report.skipped_duplicate?.length > 0) {
-          toast.info("Kata kunci sudah ada di daftar.");
-          setInput("");
+          toast.info('Kata kunci sudah ada di daftar.');
+          setInput('');
         } else if (report.skipped_default?.length > 0) {
-          toast.info("Kata kunci ini sudah menjadi default sistem.");
-          setInput("");
+          toast.info('Kata kunci ini sudah menjadi default sistem.');
+          setInput('');
         }
       } catch (error) {
         toast.error(error.message);
@@ -47,9 +42,9 @@ export default function BlacklistManager() {
   const handleDelete = async (id) => {
     try {
       await removeFromBlacklist(id);
-      toast.success("Kata kunci dihapus");
+      toast.success('Kata kunci dihapus');
     } catch (error) {
-      toast.error("Gagal menghapus");
+      toast.error('Gagal menghapus');
     }
   };
 
@@ -93,16 +88,11 @@ export default function BlacklistManager() {
           {isLoadingBlacklist ? (
             <div className="flex flex-wrap gap-2">
               {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="h-8 w-16 bg-gray-200 rounded-full animate-pulse"
-                />
+                <div key={i} className="h-8 w-16 bg-gray-200 rounded-full animate-pulse" />
               ))}
             </div>
           ) : blacklist.length === 0 ? (
-            <p className="text-center text-sm text-gray-400 mt-6">
-              Belum ada blacklist.
-            </p>
+            <p className="text-center text-sm text-gray-400 mt-6">Belum ada blacklist.</p>
           ) : (
             <div className="flex flex-wrap gap-2">
               {blacklist.map((item) => (

@@ -1,17 +1,17 @@
-import { useState } from "react";
-import { useHistoryStore } from "@/stores/historyStore";
-import { format } from "date-fns";
-import { id } from "date-fns/locale";
+import { useState } from 'react';
+import { useHistoryStore } from '@/stores/historyStore';
+import { format } from 'date-fns';
+import { id } from 'date-fns/locale';
 import {
   Calendar as CalendarIcon,
   Download,
   FileBarChart,
   Loader2,
   AlertCircle,
-} from "lucide-react";
+} from 'lucide-react';
 
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import {
   Dialog,
   DialogContent,
@@ -19,22 +19,13 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 export default function ReportDialog() {
-  const {
-    generatePreview,
-    downloadPeriodPDF,
-    reportPreview,
-    isLoadingPreview,
-    resetPreview,
-  } = useHistoryStore();
+  const { generatePreview, downloadPeriodPDF, reportPreview, isLoadingPreview, resetPreview } =
+    useHistoryStore();
 
   const [date, setDate] = useState(null); // { from, to }
 
@@ -71,28 +62,26 @@ export default function ReportDialog() {
         <div className="space-y-6 py-4">
           {/* 1. DATE PICKER SECTION */}
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-gray-700">
-              Pilih Periode
-            </label>
+            <label className="text-sm font-medium text-gray-700">Pilih Periode</label>
             <div className="flex gap-2">
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
-                    variant={"outline"}
+                    variant={'outline'}
                     className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !date && "text-muted-foreground",
+                      'w-full justify-start text-left font-normal',
+                      !date && 'text-muted-foreground',
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {date?.from ? (
                       date.to ? (
                         <>
-                          {format(date.from, "dd MMM y", { locale: id })} -{" "}
-                          {format(date.to, "dd MMM y", { locale: id })}
+                          {format(date.from, 'dd MMM y', { locale: id })} -{' '}
+                          {format(date.to, 'dd MMM y', { locale: id })}
                         </>
                       ) : (
-                        format(date.from, "dd MMM y", { locale: id })
+                        format(date.from, 'dd MMM y', { locale: id })
                       )
                     ) : (
                       <span>Pilih Tanggal Mulai - Selesai</span>
@@ -116,11 +105,7 @@ export default function ReportDialog() {
                 onClick={onGenerateClick}
                 disabled={!date?.from || !date?.to || isLoadingPreview}
               >
-                {isLoadingPreview ? (
-                  <Loader2 className="animate-spin" />
-                ) : (
-                  "Preview"
-                )}
+                {isLoadingPreview ? <Loader2 className="animate-spin" /> : 'Preview'}
               </Button>
             </div>
           </div>
@@ -154,9 +139,7 @@ export default function ReportDialog() {
               <div className="rounded-md border text-sm">
                 <div className="bg-gray-50 px-4 py-2 font-medium border-b flex justify-between">
                   <span>Video Terakhir Dianalisis</span>
-                  <span className="text-gray-500 text-xs">
-                    Menampilkan maks 5
-                  </span>
+                  <span className="text-gray-500 text-xs">Menampilkan maks 5</span>
                 </div>
                 <div className="divide-y max-h-[200px] overflow-y-auto">
                   {reportPreview.details.length === 0 ? (
@@ -165,24 +148,18 @@ export default function ReportDialog() {
                     </div>
                   ) : (
                     reportPreview.details.slice(0, 5).map((item) => (
-                      <div
-                        key={item._id}
-                        className="px-4 py-2 flex justify-between items-center"
-                      >
+                      <div key={item._id} className="px-4 py-2 flex justify-between items-center">
                         <div className="truncate max-w-[250px]">
                           <div className="font-medium text-gray-900 truncate">
                             {item.videoTitle}
                           </div>
                           <div className="text-[10px] text-gray-500">
-                            {format(
-                              new Date(item.requestedAt),
-                              "dd MMM, HH:mm",
-                            )}
+                            {format(new Date(item.requestedAt), 'dd MMM, HH:mm')}
                           </div>
                         </div>
                         <div className="text-right">
                           <div
-                            className={`text-xs font-bold ${item.totalSpamDetected > 0 ? "text-red-600" : "text-green-600"}`}
+                            className={`text-xs font-bold ${item.totalSpamDetected > 0 ? 'text-red-600' : 'text-green-600'}`}
                           >
                             {item.totalSpamDetected} Spam
                           </div>
@@ -222,9 +199,7 @@ export default function ReportDialog() {
 function StatCard({ title, value, bgColor, textColor }) {
   return (
     <div className={`rounded-lg p-3 text-center ${bgColor}`}>
-      <div className={`text-xs font-medium opacity-70 ${textColor}`}>
-        {title}
-      </div>
+      <div className={`text-xs font-medium opacity-70 ${textColor}`}>{title}</div>
       <div className={`text-xl font-bold ${textColor}`}>{value}</div>
     </div>
   );

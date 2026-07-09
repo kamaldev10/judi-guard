@@ -1,46 +1,46 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { renderHook, act, waitFor } from "@testing-library/react";
-import { useVideoAnalysis } from "@/hooks/video-analysis/useVideoAnalysis";
-import * as videoAnalysisApi from "@/lib/services/videoAnalysisApi";
-import * as userApi from "@/lib/services/userApi";
-import * as formValidators from "@/lib/utils/formValidators";
-import Swal from "sweetalert2";
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { renderHook, act, waitFor } from '@testing-library/react';
+import { useVideoAnalysis } from '@/hooks/video-analysis/useVideoAnalysis';
+import * as videoAnalysisApi from '@/lib/services/videoAnalysisApi';
+import * as userApi from '@/lib/services/userApi';
+import * as formValidators from '@/lib/utils/formValidators';
+import Swal from 'sweetalert2';
 
 // Mock all dependencies
-vi.mock("sweetalert2");
-vi.mock("@/lib/services/videoAnalysisApi");
-vi.mock("@/lib/services/userApi");
-vi.mock("@/lib/utils/formValidators");
+vi.mock('sweetalert2');
+vi.mock('@/lib/services/videoAnalysisApi');
+vi.mock('@/lib/services/userApi');
+vi.mock('@/lib/utils/formValidators');
 
-describe("useVideoAnalysis", () => {
+describe('useVideoAnalysis', () => {
   const mockUser = {
-    _id: "user123",
-    email: "test@example.com",
-    youtubeChannelId: "channel123",
+    _id: 'user123',
+    email: 'test@example.com',
+    youtubeChannelId: 'channel123',
   };
 
   const mockVideoAnalysis = {
-    _id: "analysis123",
-    status: "COMPLETED",
-    videoTitle: "Test Video",
+    _id: 'analysis123',
+    status: 'COMPLETED',
+    videoTitle: 'Test Video',
     totalCommentsAnalyzed: 10,
     totalCommentsFetched: 10,
   };
 
   const mockComments = [
     {
-      _id: "comment1",
-      classification: "JUDI",
-      commentPublishedAt: "2024-01-01T10:00:00Z",
-      youtubeCommentId: "yt123",
-      text: "Test comment 1",
+      _id: 'comment1',
+      classification: 'JUDI',
+      commentPublishedAt: '2024-01-01T10:00:00Z',
+      youtubeCommentId: 'yt123',
+      text: 'Test comment 1',
     },
     {
-      _id: "comment2",
-      classification: "NON_JUDI",
-      commentPublishedAt: "2024-01-02T10:00:00Z",
-      youtubeCommentId: "yt124",
-      text: "Test comment 2",
+      _id: 'comment2',
+      classification: 'NON_JUDI',
+      commentPublishedAt: '2024-01-02T10:00:00Z',
+      youtubeCommentId: 'yt124',
+      text: 'Test comment 2',
     },
   ];
 
@@ -57,7 +57,7 @@ describe("useVideoAnalysis", () => {
     // Setup default mocks
     vi.mocked(userApi.getCurrentUserApi).mockResolvedValue({
       success: true,
-      status: "success",
+      status: 'success',
       data: { user: mockUser },
     });
 
@@ -78,8 +78,8 @@ describe("useVideoAnalysis", () => {
     vi.useRealTimers();
   });
 
-  describe("Initialization", () => {
-    it("should fetch user data on mount", async () => {
+  describe('Initialization', () => {
+    it('should fetch user data on mount', async () => {
       renderHook(() => useVideoAnalysis());
 
       await waitFor(() => {
@@ -87,7 +87,7 @@ describe("useVideoAnalysis", () => {
       });
     });
 
-    it("should set user data correctly", async () => {
+    it('should set user data correctly', async () => {
       const { result } = renderHook(() => useVideoAnalysis());
 
       await waitForUserLoad(result);
@@ -97,23 +97,19 @@ describe("useVideoAnalysis", () => {
     });
   });
 
-  describe("handleSubmitAnalysis", () => {
+  describe('handleSubmitAnalysis', () => {
     beforeEach(() => {
-      vi.mocked(videoAnalysisApi.submitVideoForAnalysisApi).mockResolvedValue(
-        mockVideoAnalysis
-      );
-      vi.mocked(videoAnalysisApi.getAnalyzedCommentsApi).mockResolvedValue(
-        mockComments
-      );
+      vi.mocked(videoAnalysisApi.submitVideoForAnalysisApi).mockResolvedValue(mockVideoAnalysis);
+      vi.mocked(videoAnalysisApi.getAnalyzedCommentsApi).mockResolvedValue(mockComments);
     });
 
-    it("should submit analysis successfully for COMPLETED status", async () => {
+    it('should submit analysis successfully for COMPLETED status', async () => {
       const { result } = renderHook(() => useVideoAnalysis());
 
       await waitForUserLoad(result);
 
       act(() => {
-        result.current.setVideoUrl("https://youtube.com/watch?v=test123");
+        result.current.setVideoUrl('https://youtube.com/watch?v=test123');
       });
 
       await act(async () => {
@@ -121,23 +117,21 @@ describe("useVideoAnalysis", () => {
       });
 
       expect(videoAnalysisApi.submitVideoForAnalysisApi).toHaveBeenCalledWith(
-        "https://youtube.com/watch?v=test123"
+        'https://youtube.com/watch?v=test123',
       );
-      expect(result.current.analysisId).toBe("analysis123");
+      expect(result.current.analysisId).toBe('analysis123');
     });
 
-    it("should validate YouTube URL before submission", async () => {
-      const errorMessage = "Invalid YouTube URL";
-      vi.mocked(formValidators.validateYoutubeUrl).mockReturnValue(
-        errorMessage
-      );
+    it('should validate YouTube URL before submission', async () => {
+      const errorMessage = 'Invalid YouTube URL';
+      vi.mocked(formValidators.validateYoutubeUrl).mockReturnValue(errorMessage);
 
       const { result } = renderHook(() => useVideoAnalysis());
 
       await waitForUserLoad(result);
 
       act(() => {
-        result.current.setVideoUrl("invalid-url");
+        result.current.setVideoUrl('invalid-url');
       });
 
       await act(async () => {
@@ -148,17 +142,17 @@ describe("useVideoAnalysis", () => {
       // FIXED: Expect object parameter instead of positional arguments
       expect(Swal.fire).toHaveBeenCalledWith(
         expect.objectContaining({
-          title: "Input Tidak Valid",
+          title: 'Input Tidak Valid',
           text: errorMessage,
-          icon: "warning",
-        })
+          icon: 'warning',
+        }),
       );
     });
 
-    it("should check prerequisites before submission - no YouTube connection", async () => {
+    it('should check prerequisites before submission - no YouTube connection', async () => {
       vi.mocked(userApi.getCurrentUserApi).mockResolvedValue({
         success: true,
-        status: "success",
+        status: 'success',
         data: { user: { ...mockUser, youtubeChannelId: null } },
       });
 
@@ -167,7 +161,7 @@ describe("useVideoAnalysis", () => {
       await waitForUserLoad(result);
 
       act(() => {
-        result.current.setVideoUrl("https://youtube.com/watch?v=test123");
+        result.current.setVideoUrl('https://youtube.com/watch?v=test123');
       });
 
       await act(async () => {
@@ -181,38 +175,36 @@ describe("useVideoAnalysis", () => {
       const swalCalls = vi.mocked(Swal.fire).mock.calls;
       const hasWarningCall = swalCalls.some((call) => {
         if (Array.isArray(call[0])) {
-          return call[0][0] === "Koneksi YouTube Diperlukan";
+          return call[0][0] === 'Koneksi YouTube Diperlukan';
         }
-        if (typeof call[0] === "object") {
-          return call[0]?.title === "Koneksi YouTube Diperlukan";
+        if (typeof call[0] === 'object') {
+          return call[0]?.title === 'Koneksi YouTube Diperlukan';
         }
-        return call[0] === "Koneksi YouTube Diperlukan";
+        return call[0] === 'Koneksi YouTube Diperlukan';
       });
 
       expect(hasWarningCall).toBe(true);
     });
   });
 
-  describe("Error Handling", () => {
-    it("should handle API quota error (429)", async () => {
+  describe('Error Handling', () => {
+    it('should handle API quota error (429)', async () => {
       const error = {
         response: {
           status: 429,
-          data: { message: "Quota exceeded" },
+          data: { message: 'Quota exceeded' },
         },
-        message: "Quota exceeded",
+        message: 'Quota exceeded',
       };
 
-      vi.mocked(videoAnalysisApi.submitVideoForAnalysisApi).mockRejectedValue(
-        error
-      );
+      vi.mocked(videoAnalysisApi.submitVideoForAnalysisApi).mockRejectedValue(error);
 
       const { result } = renderHook(() => useVideoAnalysis());
 
       await waitForUserLoad(result);
 
       act(() => {
-        result.current.setVideoUrl("https://youtube.com/watch?v=test123");
+        result.current.setVideoUrl('https://youtube.com/watch?v=test123');
       });
 
       await act(async () => {
@@ -224,8 +216,8 @@ describe("useVideoAnalysis", () => {
     });
   });
 
-  describe("handleDeleteSingleComment", () => {
-    it("should attempt to delete a comment when conditions are met", async () => {
+  describe('handleDeleteSingleComment', () => {
+    it('should attempt to delete a comment when conditions are met', async () => {
       vi.mocked(videoAnalysisApi.deleteSingleCommentApi).mockResolvedValue({});
 
       const { result } = renderHook(() => useVideoAnalysis());
@@ -237,10 +229,7 @@ describe("useVideoAnalysis", () => {
 
       await act(async () => {
         try {
-          await result.current.handleDeleteSingleComment(
-            "comment1",
-            "Test comment"
-          );
+          await result.current.handleDeleteSingleComment('comment1', 'Test comment');
         } catch (error) {
           // Allow the function to fail gracefully
         }
@@ -250,7 +239,7 @@ describe("useVideoAnalysis", () => {
       expect(Swal.fire).toHaveBeenCalled();
     });
 
-    it("should not delete if user cancels confirmation", async () => {
+    it('should not delete if user cancels confirmation', async () => {
       vi.mocked(Swal.fire).mockResolvedValueOnce({
         isConfirmed: false,
         isDenied: false,
@@ -262,10 +251,7 @@ describe("useVideoAnalysis", () => {
       await waitForUserLoad(result);
 
       await act(async () => {
-        await result.current.handleDeleteSingleComment(
-          "comment1",
-          "Test comment"
-        );
+        await result.current.handleDeleteSingleComment('comment1', 'Test comment');
       });
 
       // API should not be called if user cancels
@@ -273,19 +259,17 @@ describe("useVideoAnalysis", () => {
     });
   });
 
-  describe("handleManageComments", () => {
-    it("should handle errors when getting studio link", async () => {
+  describe('handleManageComments', () => {
+    it('should handle errors when getting studio link', async () => {
       // First setup a successful analysis to get analysisId
-      vi.mocked(
-        videoAnalysisApi.submitVideoForAnalysisApi
-      ).mockResolvedValueOnce(mockVideoAnalysis);
-      vi.mocked(videoAnalysisApi.getAnalyzedCommentsApi).mockResolvedValueOnce(
-        mockComments
+      vi.mocked(videoAnalysisApi.submitVideoForAnalysisApi).mockResolvedValueOnce(
+        mockVideoAnalysis,
       );
+      vi.mocked(videoAnalysisApi.getAnalyzedCommentsApi).mockResolvedValueOnce(mockComments);
 
       // Then mock getStudioLinkApi to fail
       vi.mocked(videoAnalysisApi.getStudioLinkApi).mockRejectedValue(
-        new Error("Failed to get link")
+        new Error('Failed to get link'),
       );
 
       const { result } = renderHook(() => useVideoAnalysis());
@@ -294,7 +278,7 @@ describe("useVideoAnalysis", () => {
 
       // Submit analysis first
       act(() => {
-        result.current.setVideoUrl("https://youtube.com/watch?v=test123");
+        result.current.setVideoUrl('https://youtube.com/watch?v=test123');
       });
 
       await act(async () => {
@@ -314,8 +298,8 @@ describe("useVideoAnalysis", () => {
     });
   });
 
-  describe("Polling", () => {
-    it("should clean up on unmount", async () => {
+  describe('Polling', () => {
+    it('should clean up on unmount', async () => {
       // FIXED: Don't use fake timers for this simple cleanup test
       // Just test that unmount doesn't throw errors
       const { result, unmount } = renderHook(() => useVideoAnalysis());
@@ -325,16 +309,14 @@ describe("useVideoAnalysis", () => {
       // Setup for polling scenario
       const processingAnalysis = {
         ...mockVideoAnalysis,
-        status: "PROCESSING",
+        status: 'PROCESSING',
       };
 
-      vi.mocked(videoAnalysisApi.submitVideoForAnalysisApi).mockResolvedValue(
-        processingAnalysis
-      );
+      vi.mocked(videoAnalysisApi.submitVideoForAnalysisApi).mockResolvedValue(processingAnalysis);
 
       // Start analysis but don't wait for it to complete
       act(() => {
-        result.current.setVideoUrl("https://youtube.com/watch?v=test123");
+        result.current.setVideoUrl('https://youtube.com/watch?v=test123');
       });
 
       // Start the analysis but don't await it
@@ -352,7 +334,7 @@ describe("useVideoAnalysis", () => {
       expect(true).toBe(true);
     });
 
-    it("should handle polling without timeout", async () => {
+    it('should handle polling without timeout', async () => {
       // Use real timers for this test
       vi.useRealTimers();
 
@@ -363,26 +345,20 @@ describe("useVideoAnalysis", () => {
       // Setup a processing analysis
       const processingAnalysis = {
         ...mockVideoAnalysis,
-        status: "PROCESSING",
+        status: 'PROCESSING',
       };
 
       const completedAnalysis = {
         ...processingAnalysis,
-        status: "COMPLETED",
+        status: 'COMPLETED',
       };
 
-      vi.mocked(videoAnalysisApi.submitVideoForAnalysisApi).mockResolvedValue(
-        processingAnalysis
-      );
-      vi.mocked(videoAnalysisApi.getVideoAnalysisApi).mockResolvedValue(
-        completedAnalysis
-      );
-      vi.mocked(videoAnalysisApi.getAnalyzedCommentsApi).mockResolvedValue(
-        mockComments
-      );
+      vi.mocked(videoAnalysisApi.submitVideoForAnalysisApi).mockResolvedValue(processingAnalysis);
+      vi.mocked(videoAnalysisApi.getVideoAnalysisApi).mockResolvedValue(completedAnalysis);
+      vi.mocked(videoAnalysisApi.getAnalyzedCommentsApi).mockResolvedValue(mockComments);
 
       act(() => {
-        result.current.setVideoUrl("https://youtube.com/watch?v=test123");
+        result.current.setVideoUrl('https://youtube.com/watch?v=test123');
       });
 
       // Start analysis with a timeout
@@ -398,11 +374,11 @@ describe("useVideoAnalysis", () => {
     });
   });
 
-  describe("Edge Cases", () => {
-    it("should handle missing youtubeChannelId in user data", async () => {
+  describe('Edge Cases', () => {
+    it('should handle missing youtubeChannelId in user data', async () => {
       vi.mocked(userApi.getCurrentUserApi).mockResolvedValue({
         success: true,
-        status: "success",
+        status: 'success',
         data: { user: { ...mockUser, youtubeChannelId: null } },
       });
 
@@ -413,35 +389,35 @@ describe("useVideoAnalysis", () => {
       expect(result.current.isYouTubeConnected).toBe(false);
     });
 
-    it("should handle empty polling message initially", async () => {
+    it('should handle empty polling message initially', async () => {
       const { result } = renderHook(() => useVideoAnalysis());
 
       await waitForUserLoad(result);
 
-      expect(result.current.pollingMessage).toBe("");
+      expect(result.current.pollingMessage).toBe('');
     });
   });
 
-  describe("Hook Return Values", () => {
-    it("should return all expected properties and functions", async () => {
+  describe('Hook Return Values', () => {
+    it('should return all expected properties and functions', async () => {
       const { result } = renderHook(() => useVideoAnalysis());
 
       await waitForUserLoad(result);
 
-      expect(result.current).toHaveProperty("videoUrl");
-      expect(result.current).toHaveProperty("setVideoUrl");
-      expect(result.current).toHaveProperty("isLoading");
-      expect(result.current).toHaveProperty("isAnalyzing");
-      expect(result.current).toHaveProperty("isDeleting");
-      expect(result.current).toHaveProperty("handleSubmitAnalysis");
-      expect(result.current).toHaveProperty("handleManageComments");
-      expect(result.current).toHaveProperty("handleDeleteSingleComment");
+      expect(result.current).toHaveProperty('videoUrl');
+      expect(result.current).toHaveProperty('setVideoUrl');
+      expect(result.current).toHaveProperty('isLoading');
+      expect(result.current).toHaveProperty('isAnalyzing');
+      expect(result.current).toHaveProperty('isDeleting');
+      expect(result.current).toHaveProperty('handleSubmitAnalysis');
+      expect(result.current).toHaveProperty('handleManageComments');
+      expect(result.current).toHaveProperty('handleDeleteSingleComment');
     });
   });
 
   // Additional test for Swal parameter format variations
-  describe("Swal Parameter Formats", () => {
-    it("should handle different Swal.fire call formats", async () => {
+  describe('Swal Parameter Formats', () => {
+    it('should handle different Swal.fire call formats', async () => {
       // Test that our assertions handle both object and positional parameters
       const { result } = renderHook(() => useVideoAnalysis());
 
@@ -453,10 +429,8 @@ describe("useVideoAnalysis", () => {
       // Test 1: Check object parameter
       await act(async () => {
         // Mock validation to fail
-        vi.mocked(formValidators.validateYoutubeUrl).mockReturnValue(
-          "Test error"
-        );
-        result.current.setVideoUrl("bad-url");
+        vi.mocked(formValidators.validateYoutubeUrl).mockReturnValue('Test error');
+        result.current.setVideoUrl('bad-url');
         await result.current.handleSubmitAnalysis();
       });
 

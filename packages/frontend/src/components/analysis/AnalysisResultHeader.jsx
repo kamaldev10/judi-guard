@@ -1,6 +1,6 @@
 // src/features/video-analysis/views/components/AnalysisResultHeader.jsx
-import React from "react";
-import PropTypes from "prop-types";
+import React from 'react';
+import PropTypes from 'prop-types';
 
 const AnalysisResultHeader = ({ analysisId, videoData, pollingMessage }) => {
   return (
@@ -12,22 +12,21 @@ const AnalysisResultHeader = ({ analysisId, videoData, pollingMessage }) => {
         </em>
       </h2>
       <p className="text-center text-xs text-gray-500 mb-6">
-        ID Analisis: {analysisId} | Status:{" "}
+        ID Analisis: {analysisId} | Status:{' '}
         <span
           className={`font-medium px-2 py-0.5 rounded-full text-xs ${
-            videoData.status === "COMPLETED"
-              ? "bg-green-100 text-green-700"
-              : videoData.status === "FAILED" ||
-                  videoData.status?.includes("ERROR")
-                ? "bg-red-100 text-red-700"
-                : "bg-orange-100 text-orange-700 animate-pulse"
+            videoData.status === 'COMPLETED'
+              ? 'bg-green-100 text-green-700'
+              : videoData.status === 'FAILED' || videoData.status?.includes('ERROR')
+                ? 'bg-red-100 text-red-700'
+                : 'bg-orange-100 text-orange-700 animate-pulse'
           }`}
         >
           {videoData.status}
         </span>
       </p>
       {/* Pesan jika analisis belum selesai atau gagal */}
-      {videoData.status !== "COMPLETED" && (
+      {videoData.status !== 'COMPLETED' && (
         <p className="text-gray-600 text-center py-4">
           {videoData.errorMessage ? (
             <>
@@ -35,8 +34,8 @@ const AnalysisResultHeader = ({ analysisId, videoData, pollingMessage }) => {
             </>
           ) : (
             <>
-              <strong>Status Analisis Saat Ini:</strong> {videoData.status}.{" "}
-              {pollingMessage || "Sedang diproses..."}
+              <strong>Status Analisis Saat Ini:</strong> {videoData.status}.{' '}
+              {pollingMessage || 'Sedang diproses...'}
             </>
           )}
         </p>

@@ -1,12 +1,12 @@
 // src/features/video-analysis/views/AnalysisFormSection.jsx
-import React from "react";
-import { motion } from "framer-motion";
+import React from 'react';
+import { motion } from 'framer-motion';
 
-import AnalysisSubmitForm from "./AnalysisSubmitForm";
-import AnalysisResultHeader from "./AnalysisResultHeader";
-import AnalysisSummary from "./AnalysisSummary";
-import CommentList from "./CommentList";
-import { useVideoAnalysis } from "@/hooks/video-analysis/useVideoAnalysis";
+import AnalysisSubmitForm from './AnalysisSubmitForm';
+import AnalysisResultHeader from './AnalysisResultHeader';
+import AnalysisSummary from './AnalysisSummary';
+import CommentList from './CommentList';
+import { useVideoAnalysis } from '@/hooks/video-analysis/useVideoAnalysis';
 
 /**
  * Komponen induk untuk halaman analisis video.
@@ -46,11 +46,7 @@ const AnalysisFormSection = () => {
           setVideoUrl={setVideoUrl}
           onSubmit={handleSubmitAnalysis}
           isActionInProgress={isActionInProgress}
-          loadingMessage={
-            isAnalyzing
-              ? pollingMessage || "Sedang menganalisis video..."
-              : null
-          }
+          loadingMessage={isAnalyzing ? pollingMessage || 'Sedang menganalisis video...' : null}
         />
 
         {analysisId && videoAnalysisData && (
@@ -67,23 +63,20 @@ const AnalysisFormSection = () => {
               pollingMessage={pollingMessage}
             />
 
-            {videoAnalysisData.status === "COMPLETED" &&
-              analyzedComments.length > 0 && (
-                <AnalysisSummary
-                  pieChartData={pieChartData}
-                  stats={stats}
-                  onManageComments={handleManageComments}
-                  isActionInProgress={isActionInProgress}
-                />
-              )}
+            {videoAnalysisData.status === 'COMPLETED' && analyzedComments.length > 0 && (
+              <AnalysisSummary
+                pieChartData={pieChartData}
+                stats={stats}
+                onManageComments={handleManageComments}
+                isActionInProgress={isActionInProgress}
+              />
+            )}
 
             <CommentList
               comments={analyzedComments}
               // onDeleteSingle={handleDeleteSingleComment}
               isActionInProgress={isActionInProgress}
-              isLoadingInitial={
-                isLoading && analyzedComments.length === 0 && !isAnalyzing
-              }
+              isLoadingInitial={isLoading && analyzedComments.length === 0 && !isAnalyzing}
             />
           </motion.section>
         )}

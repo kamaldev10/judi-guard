@@ -1,5 +1,5 @@
-import PropTypes from "prop-types";
-import { motion } from "framer-motion";
+import PropTypes from 'prop-types';
+import { motion } from 'framer-motion';
 
 // Varian animasi untuk item di dalam kartu
 const itemVariants = {
@@ -17,10 +17,7 @@ export const FactCard = ({ fact }) => {
       className="relative group bg-white/30 dark:bg-gray-900/40 backdrop-blur-lg p-5 rounded-2xl shadow-lg border border-white/20 transition-all duration-300 hover:shadow-cyan-500/50 hover:scale-[1.03]"
       variants={itemVariants}
     >
-      <motion.div
-        variants={itemVariants}
-        className="w-full h-40 mb-4 overflow-hidden rounded-lg"
-      >
+      <motion.div variants={itemVariants} className="w-full h-40 mb-4 overflow-hidden rounded-lg">
         <img
           src={fact.image}
           alt={fact.title}
@@ -36,10 +33,7 @@ export const FactCard = ({ fact }) => {
       >
         {fact.title}
       </motion.h3>
-      <motion.p
-        variants={itemVariants}
-        className="text-sm text-gray-700 dark:text-gray-300 mt-2"
-      >
+      <motion.p variants={itemVariants} className="text-sm text-gray-700 dark:text-gray-300 mt-2">
         {fact.text}
       </motion.p>
     </motion.div>

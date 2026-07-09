@@ -1,32 +1,29 @@
-import React from "react";
-import { motion } from "framer-motion";
-import { useProfilePresenter } from "@/hooks/profile/useProfilePresenter";
-import { CalendarDays, Edit3, Mail, ShieldCheck, User } from "lucide-react";
-import PropTypes from "prop-types";
-import { sectionItemVariants } from "@/pages/profile/ProfilePage";
+import React from 'react';
+import { motion } from 'framer-motion';
+import { useProfilePresenter } from '@/hooks/profile/useProfilePresenter';
+import { CalendarDays, Edit3, Mail, ShieldCheck, User } from 'lucide-react';
+import PropTypes from 'prop-types';
+import { sectionItemVariants } from '@/pages/profile/ProfilePage';
 
 const InfoItem = ({
   icon,
   label,
   value,
-  valueClassName = "text-slate-700 font-medium",
+  valueClassName = 'text-slate-700 font-medium',
   delay = 0,
 }) => (
   <motion.div
     initial={{ opacity: 0, x: -20 }}
     animate={{ opacity: 1, x: 0 }}
-    transition={{ type: "spring", stiffness: 100, delay }}
+    transition={{ type: 'spring', stiffness: 100, delay }}
     className="flex items-start p-3 sm:p-3.5 bg-sky-50 hover:bg-sky-100 transition-colors duration-200 rounded-lg shadow-sm border border-sky-200"
   >
-    <div
-      className="mr-3 sm:mr-4 mt-1 shrink-0 text-cyan-600"
-      aria-hidden="true"
-    >
-      {React.cloneElement(icon, { size: 18 })}{" "}
+    <div className="mr-3 sm:mr-4 mt-1 shrink-0 text-cyan-600" aria-hidden="true">
+      {React.cloneElement(icon, { size: 18 })}{' '}
     </div>
     <div>
       <p className="text-xs text-slate-500">{label}</p>
-      <p className={`text-sm break-all ${valueClassName}`}>{value || "N/A"}</p>
+      <p className={`text-sm break-all ${valueClassName}`}>{value || 'N/A'}</p>
     </div>
   </motion.div>
 );
@@ -43,7 +40,7 @@ const avatarMotionVariants = {
   animate: {
     scale: 1,
     opacity: 1,
-    transition: { type: "spring", stiffness: 260, damping: 20, delay: 0.05 },
+    transition: { type: 'spring', stiffness: 260, damping: 20, delay: 0.05 },
   },
   hover: { scale: 1.05, rotate: 2, transition: { duration: 0.3 } },
 };
@@ -52,12 +49,12 @@ export const ProfileHeader = () => {
   const { handleEditProfile, user } = useProfilePresenter();
 
   const joinedDate = user.createdAt
-    ? new Date(user.createdAt).toLocaleDateString("id-ID", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
+    ? new Date(user.createdAt).toLocaleDateString('id-ID', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
       })
-    : "N/A";
+    : 'N/A';
 
   return (
     <>
@@ -86,15 +83,10 @@ export const ProfileHeader = () => {
               </motion.div>
             )}
           </motion.div>
-          <motion.h1
-            id="profile-heading"
-            className="text-3xl md:text-4xl font-bold text-slate-800"
-          >
-            {user.username || "Nama Pengguna"}
+          <motion.h1 id="profile-heading" className="text-3xl md:text-4xl font-bold text-slate-800">
+            {user.username || 'Nama Pengguna'}
           </motion.h1>
-          <motion.p className="text-sm text-cyan-600 font-medium mt-1">
-            Pengguna Terdaftar
-          </motion.p>
+          <motion.p className="text-sm text-cyan-600 font-medium mt-1">Pengguna Terdaftar</motion.p>
         </div>
 
         {/* Info Detail dan Tombol Edit */}
@@ -118,9 +110,7 @@ export const ProfileHeader = () => {
                 className="flex items-center p-2.5 bg-green-50 text-green-700 rounded-lg text-xs border border-green-200"
               >
                 <ShieldCheck size={18} className="mr-2 shrink-0" />
-                <p className="font-medium">
-                  Akun email ini telah diverifikasi.
-                </p>
+                <p className="font-medium">Akun email ini telah diverifikasi.</p>
               </motion.div>
             )}
           </div>

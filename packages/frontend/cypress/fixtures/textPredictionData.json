@@ -15,7 +15,7 @@
     {
       "keyword": "menang besar",
       "classification": "JUDI",
-      "confidenceScore": 0.880,
+      "confidenceScore": 0.88,
       "modelVersion": "distilbert-flask-v1"
     }
   ],
@@ -24,7 +24,7 @@
   },
   "defaultResponse": {
     "classification": "NON_JUDI",
-    "confidenceScore": 0.100,
+    "confidenceScore": 0.1,
     "modelVersion": "distilbert-flask-v1"
   }
 }

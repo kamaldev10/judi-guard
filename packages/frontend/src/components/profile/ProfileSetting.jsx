@@ -1,17 +1,10 @@
-import React from "react";
-import { sectionItemVariants } from "@/pages/profile/ProfilePage";
-import { Link } from "react-router-dom";
-import {
-  Trash2,
-  Loader2,
-  ChevronRight,
-  KeyRound,
-  Settings,
-  AlertTriangle,
-} from "lucide-react";
-import { useProfilePresenter } from "@/hooks/profile/useProfilePresenter";
-import Swal from "sweetalert2";
-import { motion } from "framer-motion";
+import React from 'react';
+import { sectionItemVariants } from '@/pages/profile/ProfilePage';
+import { Link } from 'react-router-dom';
+import { Trash2, Loader2, ChevronRight, KeyRound, Settings, AlertTriangle } from 'lucide-react';
+import { useProfilePresenter } from '@/hooks/profile/useProfilePresenter';
+import Swal from 'sweetalert2';
+import { motion } from 'framer-motion';
 
 export const ProfileSetting = () => {
   const { isDeleting, executeDeleteAccount } = useProfilePresenter();
@@ -20,15 +13,15 @@ export const ProfileSetting = () => {
     if (isDeleting) return;
 
     Swal.fire({
-      title: "Konfirmasi Hapus Akun",
-      text: "Apakah Anda yakin ingin menghapus akun Anda secara permanen? Tindakan ini tidak dapat diurungkan.",
-      icon: "warning",
+      title: 'Konfirmasi Hapus Akun',
+      text: 'Apakah Anda yakin ingin menghapus akun Anda secara permanen? Tindakan ini tidak dapat diurungkan.',
+      icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: "#e53e3e", // Merah untuk delete
-      cancelButtonColor: "#718096", // Abu-abu
-      confirmButtonText: "Ya, Hapus Akun Saya!",
-      cancelButtonText: "Batal",
-      customClass: { popup: "rounded-xl shadow-lg text-sm" },
+      confirmButtonColor: '#e53e3e', // Merah untuk delete
+      cancelButtonColor: '#718096', // Abu-abu
+      confirmButtonText: 'Ya, Hapus Akun Saya!',
+      cancelButtonText: 'Batal',
+      customClass: { popup: 'rounded-xl shadow-lg text-sm' },
     }).then((result) => {
       if (result.isConfirmed) {
         executeDeleteAccount();
@@ -64,9 +57,7 @@ export const ProfileSetting = () => {
                   <KeyRound className="text-slate-600" size={20} />
                 </div>
                 <div>
-                  <span className="font-semibold text-slate-700">
-                    Ganti Kata Sandi
-                  </span>
+                  <span className="font-semibold text-slate-700">Ganti Kata Sandi</span>
                   <p className="text-sm text-slate-500">
                     Ubah kata sandi Anda secara berkala untuk keamanan.
                   </p>
@@ -89,8 +80,8 @@ export const ProfileSetting = () => {
             <h3 className="text-lg font-bold text-rose-800">Zona Berbahaya</h3>
           </div>
           <p className="text-sm text-rose-700 mb-5 w-full">
-            Tindakan di bawah ini bersifat permanen dan akan menghapus semua
-            data Anda secara permanen. Harap berhati-hati.
+            Tindakan di bawah ini bersifat permanen dan akan menghapus semua data Anda secara
+            permanen. Harap berhati-hati.
           </p>
           <motion.button
             data-cy="delete-my-account-button"
@@ -105,7 +96,7 @@ export const ProfileSetting = () => {
             ) : (
               <Trash2 size={16} className="mr-2" />
             )}
-            {isDeleting ? "Menghapus Akun..." : "Hapus Akun Saya"}
+            {isDeleting ? 'Menghapus Akun...' : 'Hapus Akun Saya'}
           </motion.button>
         </div>
       </motion.section>

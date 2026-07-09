@@ -1,9 +1,9 @@
-import { Title } from "react-head";
-import { useLocation } from "react-router-dom";
-import React, { useEffect, useMemo } from "react";
+import { Title } from 'react-head';
+import { useLocation } from 'react-router-dom';
+import React, { useEffect, useMemo } from 'react';
 
-import WorkGuideSection from "@/components/work-guide/WorkGuideSection";
-import AnalysisFormSection from "@/components/analysis/AnalysisFormSection";
+import WorkGuideSection from '@/components/work-guide/WorkGuideSection';
+import AnalysisFormSection from '@/components/analysis/AnalysisFormSection';
 
 const AnalysisPage = () => {
   const location = useLocation();
@@ -11,19 +11,19 @@ const AnalysisPage = () => {
   const sections = useMemo(
     () => [
       {
-        id: "work-guide",
+        id: 'work-guide',
         component: WorkGuideSection,
-        title: "Work Guide",
+        title: 'Work Guide',
         ref: React.createRef(),
       },
       {
-        id: "video-analysis-form",
+        id: 'video-analysis-form',
         component: AnalysisFormSection,
-        title: "Video Analysis Form",
+        title: 'Video Analysis Form',
         ref: React.createRef(),
       },
     ],
-    []
+    [],
   );
 
   useEffect(() => {
@@ -34,17 +34,17 @@ const AnalysisPage = () => {
       const element = document.getElementById(id);
       if (element) {
         timerId = setTimeout(() => {
-          element.scrollIntoView({ behavior: "smooth" });
+          element.scrollIntoView({ behavior: 'smooth' });
         }, 100);
         return;
       }
     }
 
-    if (location.pathname === "/analysis" && !location.hash) {
-      const WorkGuideDetail = sections.find((s) => s.id === "work-guide");
+    if (location.pathname === '/analysis' && !location.hash) {
+      const WorkGuideDetail = sections.find((s) => s.id === 'work-guide');
       if (WorkGuideDetail && WorkGuideDetail.ref.current) {
         timerId = setTimeout(() => {
-          WorkGuideDetail.ref.current.scrollIntoView({ behavior: "smooth" });
+          WorkGuideDetail.ref.current.scrollIntoView({ behavior: 'smooth' });
         }, 100);
       }
     }

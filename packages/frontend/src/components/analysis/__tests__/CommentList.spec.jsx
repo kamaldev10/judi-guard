@@ -1,13 +1,13 @@
-import React from "react";
-import { render, screen, within } from "@testing-library/react"; // 1. Impor within
-import userEvent from "@testing-library/user-event";
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import CommentList from "../CommentList"; // <-- Sesuaikan path
+import React from 'react';
+import { render, screen, within } from '@testing-library/react'; // 1. Impor within
+import userEvent from '@testing-library/user-event';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import CommentList from '../CommentList'; // <-- Sesuaikan path
 
 // --- Mocking Dependencies ---
 
 // 2. Mock framer-motion
-vi.mock("framer-motion", () => ({
+vi.mock('framer-motion', () => ({
   motion: {
     div: React.forwardRef(({ children, ...props }, ref) => (
       <div ref={ref} {...props}>
@@ -19,14 +19,14 @@ vi.mock("framer-motion", () => ({
 }));
 
 // 3. Mock lucide-react icons
-vi.mock("lucide-react", () => ({
+vi.mock('lucide-react', () => ({
   Loader2: (props) => <svg data-testid="loader-icon" {...props} />,
   Trash2: (props) => <svg data-testid="trash-icon" {...props} />,
 }));
 
 // 4. Mock FormattedDate component
 //    Ganti dengan komponen sederhana yang menampilkan tanggal mock
-vi.mock("@/lib/utils/formatters", () => ({
+vi.mock('@/lib/utils/formatters', () => ({
   // <-- Sesuaikan path
   FormattedDate: ({ isoDate }) => (
     <span data-testid={`formatted-date-${isoDate}`}>Tanggal Mock</span>
@@ -38,30 +38,30 @@ vi.mock("@/lib/utils/formatters", () => ({
 // 5. Buat data komentar tiruan
 const mockComments = [
   {
-    _id: "id1",
-    youtubeCommentId: "yt1",
-    commentAuthorDisplayName: "User Judi",
-    commentTextDisplay: "Ini komentar judi 123.",
-    commentPublishedAt: "2025-10-27T10:00:00Z",
-    classification: "JUDI",
+    _id: 'id1',
+    youtubeCommentId: 'yt1',
+    commentAuthorDisplayName: 'User Judi',
+    commentTextDisplay: 'Ini komentar judi 123.',
+    commentPublishedAt: '2025-10-27T10:00:00Z',
+    classification: 'JUDI',
     aiConfidenceScore: 0.95,
   },
   {
-    _id: "id2",
-    youtubeCommentId: "yt2",
-    commentAuthorDisplayName: "User Biasa",
-    commentTextDisplay: "Komentar normal saja.",
-    commentPublishedAt: "2025-10-27T11:00:00Z",
-    classification: "NON_JUDI",
+    _id: 'id2',
+    youtubeCommentId: 'yt2',
+    commentAuthorDisplayName: 'User Biasa',
+    commentTextDisplay: 'Komentar normal saja.',
+    commentPublishedAt: '2025-10-27T11:00:00Z',
+    classification: 'NON_JUDI',
     aiConfidenceScore: 0.88,
   },
   {
-    _id: "id3",
-    youtubeCommentId: "yt3",
-    commentAuthorDisplayName: "Anonim", // Test case tanpa nama
-    commentTextDisplay: "Komentar lain.",
-    commentPublishedAt: "2025-10-27T12:00:00Z",
-    classification: "NON_JUDI",
+    _id: 'id3',
+    youtubeCommentId: 'yt3',
+    commentAuthorDisplayName: 'Anonim', // Test case tanpa nama
+    commentTextDisplay: 'Komentar lain.',
+    commentPublishedAt: '2025-10-27T12:00:00Z',
+    classification: 'NON_JUDI',
     // Tanpa aiConfidenceScore
   },
 ];
@@ -71,7 +71,7 @@ const mockOnDeleteSingle = vi.fn(); // Mock fungsi delete
 
 // --- Test Suite ---
 
-describe("Comment List Component Testing", () => {
+describe('Comment List Component Testing', () => {
   const user = userEvent.setup();
 
   beforeEach(() => {
@@ -79,54 +79,50 @@ describe("Comment List Component Testing", () => {
   });
 
   // Tes 1: Initial Loading State
-  it("should render loading state when isLoadingInitial is true and comments are empty", () => {
+  it('should render loading state when isLoadingInitial is true and comments are empty', () => {
     render(
       <CommentList
         comments={[]}
         onDeleteSingle={mockOnDeleteSingle}
         isActionInProgress={false}
         isLoadingInitial={true} // <-- State loading
-      />
+      />,
     );
 
     // Cek judul tetap ada
     expect(
-      screen.getByRole("heading", { level: 3, name: /daftar komentar \(0\)/i })
+      screen.getByRole('heading', { level: 3, name: /daftar komentar \(0\)/i }),
     ).toBeInTheDocument();
     // Cek spinner dan teks loading
-    expect(screen.getByTestId("loader-icon")).toBeInTheDocument();
+    expect(screen.getByTestId('loader-icon')).toBeInTheDocument();
     expect(screen.getByText(/memuat daftar komentar.../i)).toBeInTheDocument();
     // Pastikan pesan "tidak ada komentar" tidak muncul
     expect(screen.queryByText(/tidak ada komentar/i)).not.toBeInTheDocument();
   });
 
   // Tes 2: Empty State
-  it("should render empty state message when no comments and not loading", () => {
+  it('should render empty state message when no comments and not loading', () => {
     render(
       <CommentList
         comments={[]}
         onDeleteSingle={mockOnDeleteSingle}
         isActionInProgress={false}
         isLoadingInitial={false} // <-- Tidak loading
-      />
+      />,
     );
     // Cek judul tetap ada
     expect(
-      screen.getByRole("heading", { level: 3, name: /daftar komentar \(0\)/i })
+      screen.getByRole('heading', { level: 3, name: /daftar komentar \(0\)/i }),
     ).toBeInTheDocument();
     // Cek pesan "tidak ada komentar"
-    expect(
-      screen.getByText(/tidak ada komentar untuk ditampilkan/i)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/tidak ada komentar untuk ditampilkan/i)).toBeInTheDocument();
     // Pastikan loading tidak muncul
-    expect(screen.queryByTestId("loader-icon")).not.toBeInTheDocument();
-    expect(
-      screen.queryByText(/memuat daftar komentar.../i)
-    ).not.toBeInTheDocument();
+    expect(screen.queryByTestId('loader-icon')).not.toBeInTheDocument();
+    expect(screen.queryByText(/memuat daftar komentar.../i)).not.toBeInTheDocument();
   });
 
   // Tes 3: Populated State
-  describe("when comments are provided", () => {
+  describe('when comments are provided', () => {
     beforeEach(() => {
       // Render dengan data mock untuk tes di dalam describe ini
       render(
@@ -135,16 +131,16 @@ describe("Comment List Component Testing", () => {
           onDeleteSingle={mockOnDeleteSingle}
           isActionInProgress={false}
           isLoadingInitial={false}
-        />
+        />,
       );
     });
 
-    it("should render the correct heading with comment count", () => {
+    it('should render the correct heading with comment count', () => {
       expect(
-        screen.getByRole("heading", {
+        screen.getByRole('heading', {
           level: 3,
           name: `Daftar Komentar (${mockComments.length})`,
-        })
+        }),
       ).toBeInTheDocument();
     });
 

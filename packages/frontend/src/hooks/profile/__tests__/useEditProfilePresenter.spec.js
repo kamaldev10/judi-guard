@@ -1,21 +1,21 @@
-import { renderHook, act, waitFor } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { useEditProfilePresenter } from "../useEditProfilePresenter";
-import { useUserStore } from "@/stores/userStore";
-import { useNavigate } from "react-router-dom";
-import Swal from "sweetalert2";
+import { renderHook, act, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { useEditProfilePresenter } from '../useEditProfilePresenter';
+import { useUserStore } from '@/stores/userStore';
+import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 
 // --- 1. Mock Dependencies ---
 
 // Mock 'react-router-dom'
 const mockNavigate = vi.fn();
-vi.mock("react-router-dom", () => ({
+vi.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate,
 }));
 
 // Mock 'sweetalert2'
 // We spy on .fire and mock .showLoading/.close
-vi.mock("sweetalert2", () => ({
+vi.mock('sweetalert2', () => ({
   default: {
     fire: vi.fn(),
     showLoading: vi.fn(),
@@ -26,7 +26,7 @@ vi.mock("sweetalert2", () => ({
 // Mock 'useUserStore'
 const mockGetCurrentUser = vi.fn();
 const mockUpdateProfile = vi.fn();
-vi.mock("@/stores/userStore", () => ({
+vi.mock('@/stores/userStore', () => ({
   useUserStore: () => ({
     getCurrentUser: mockGetCurrentUser,
     updateProfile: mockUpdateProfile,
@@ -40,18 +40,18 @@ vi.mock("@/stores/userStore", () => ({
 const mockedSwalFire = Swal.fire;
 
 // --- Test Suite ---
-describe("Custom useEditProfilePresenter Hook Unit Testing", () => {
-  const mockUser = { username: "testuser", email: "test@example.com" };
+describe('Custom useEditProfilePresenter Hook Unit Testing', () => {
+  const mockUser = { username: 'testuser', email: 'test@example.com' };
 
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   // Test 1: Initial Data Fetching (Success)
-  it("should fetch user data on mount and set formData", async () => {
+  it('should fetch user data on mount and set formData', async () => {
     // Arrange
     mockGetCurrentUser.mockResolvedValue({
-      status: "success",
+      status: 'success',
       data: { user: mockUser },
     });
 
@@ -74,9 +74,9 @@ describe("Custom useEditProfilePresenter Hook Unit Testing", () => {
   });
 
   // Test 2: Initial Data Fetching (Failure)
-  it("should set fetchError if initial data fetch fails", async () => {
+  it('should set fetchError if initial data fetch fails', async () => {
     // Arrange
-    const mockError = new Error("Failed to fetch");
+    const mockError = new Error('Failed to fetch');
     mockGetCurrentUser.mockRejectedValue(mockError);
 
     // Act
@@ -93,13 +93,13 @@ describe("Custom useEditProfilePresenter Hook Unit Testing", () => {
     // Assert: Final error state
     expect(result.current.fetchError).toEqual(expect.any(Error));
     expect(result.current.fetchError.message).toBe(mockError.message);
-    expect(result.current.formData).toEqual({ username: "", email: "" });
+    expect(result.current.formData).toEqual({ username: '', email: '' });
   });
 
   // Test 3: handleInputChange
-  it("should update formData on handleInputChange", async () => {
+  it('should update formData on handleInputChange', async () => {
     mockGetCurrentUser.mockResolvedValue({
-      status: "success",
+      status: 'success',
       data: { user: mockUser },
     });
     const { result } = renderHook(() => useEditProfilePresenter());
@@ -110,19 +110,19 @@ describe("Custom useEditProfilePresenter Hook Unit Testing", () => {
     });
 
     // Act
-    const mockEvent = { target: { name: "username", value: "newUser" } };
+    const mockEvent = { target: { name: 'username', value: 'newUser' } };
     act(() => {
       result.current.handleInputChange(mockEvent);
     });
 
     // Assert
-    expect(result.current.formData.username).toBe("newUser");
+    expect(result.current.formData.username).toBe('newUser');
     // initialData is now populated, so this test will pass
-    expect(result.current.initialData.username).toBe("testuser");
+    expect(result.current.initialData.username).toBe('testuser');
   });
 
   // Test 4: handleCancel
-  it("should call navigate to /profile on handleCancel", () => {
+  it('should call navigate to /profile on handleCancel', () => {
     const { result } = renderHook(() => useEditProfilePresenter());
 
     // Act
@@ -132,13 +132,13 @@ describe("Custom useEditProfilePresenter Hook Unit Testing", () => {
 
     // Assert
     expect(mockNavigate).toHaveBeenCalledTimes(1);
-    expect(mockNavigate).toHaveBeenCalledWith("/profile");
+    expect(mockNavigate).toHaveBeenCalledWith('/profile');
   });
 
   // Test 5: handleSubmit (No Changes)
-  it("should show info Swal if handleSubmit is called with no changes", async () => {
+  it('should show info Swal if handleSubmit is called with no changes', async () => {
     mockGetCurrentUser.mockResolvedValue({
-      status: "success",
+      status: 'success',
       data: { user: mockUser },
     });
     const { result } = renderHook(() => useEditProfilePresenter());
@@ -160,9 +160,9 @@ describe("Custom useEditProfilePresenter Hook Unit Testing", () => {
     expect(mockUpdateProfile).not.toHaveBeenCalled();
     expect(mockedSwalFire).toHaveBeenCalledWith(
       expect.objectContaining({
-        title: "Tidak Ada Perubahan",
-        icon: "info",
-      })
+        title: 'Tidak Ada Perubahan',
+        icon: 'info',
+      }),
     );
   });
 
@@ -227,11 +227,11 @@ describe("Custom useEditProfilePresenter Hook Unit Testing", () => {
   // });
 
   // Test 7: handleSubmit (API Failure)
-  it("should show error Swal if updateProfile API fails", async () => {
-    const errorMessage = "Username already taken";
-    const newUsername = "newUser";
+  it('should show error Swal if updateProfile API fails', async () => {
+    const errorMessage = 'Username already taken';
+    const newUsername = 'newUser';
     mockGetCurrentUser.mockResolvedValue({
-      status: "success",
+      status: 'success',
       data: { user: mockUser },
     });
     mockUpdateProfile.mockRejectedValue(new Error(errorMessage));
@@ -246,7 +246,7 @@ describe("Custom useEditProfilePresenter Hook Unit Testing", () => {
     // Act 1: Change data
     act(() => {
       result.current.handleInputChange({
-        target: { name: "username", value: newUsername },
+        target: { name: 'username', value: newUsername },
       });
     });
 

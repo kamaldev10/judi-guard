@@ -1,6 +1,6 @@
 // src/components/AnalysisLegend.jsx (atau path yang Anda gunakan)
-import React from "react";
-import PropTypes from "prop-types";
+import React from 'react';
+import PropTypes from 'prop-types';
 
 const AnalysisLegend = (props) => {
   const { payload } = props; // 'payload' disediakan oleh Recharts <Legend content={...} />
@@ -14,7 +14,7 @@ const AnalysisLegend = (props) => {
     // Atur posisi dan tampilan agar mirip dengan sisi kanan chart di gambar.
     // ml-4 md:ml-0 mungkin perlu disesuaikan atau dihapus jika layout diatur oleh wrapperStyle Legend.
     <ul className="flex flex-col items-start space-y-2 text-xs sm:text-sm">
-      {" "}
+      {' '}
       {/* Penyesuaian space dan ukuran font */}
       {payload.map((entry, index) => (
         <li key={`item-${index}`} className="flex items-center text-slate-700">
@@ -43,7 +43,7 @@ AnalysisLegend.propTypes = {
         value: PropTypes.number, // Jumlah komentar
         percent: PropTypes.number, // Persentase (disediakan oleh Recharts)
       }),
-    })
+    }),
   ),
 };
 

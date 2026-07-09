@@ -1,14 +1,6 @@
-import { useVideoAnalysisStore } from "@/stores/videoAnalysisStore";
-import {
-  ArrowLeft,
-  Play,
-  MessageSquare,
-  ThumbsUp,
-  Eye,
-  Calendar,
-  AlertCircle,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useVideoAnalysisStore } from '@/stores/videoAnalysisStore';
+import { ArrowLeft, Play, MessageSquare, ThumbsUp, Eye, Calendar, AlertCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function AnalysisPreview() {
   const {
@@ -22,7 +14,7 @@ export default function AnalysisPreview() {
   if (!selectedVideo) return null;
 
   // Format Angka (1,200,000)
-  const fmt = (num) => parseInt(num || 0).toLocaleString("id-ID");
+  const fmt = (num) => parseInt(num || 0).toLocaleString('id-ID');
 
   return (
     <div className="mx-auto max-w-7xl animate-in slide-in-from-right-4 duration-500">
@@ -64,27 +56,21 @@ export default function AnalysisPreview() {
                   <span className="text-sm font-semibold text-gray-900 dark:text-white">
                     {fmt(selectedVideo.statistics.viewCount)}
                   </span>
-                  <span className="text-[10px] text-gray-500 uppercase">
-                    Views
-                  </span>
+                  <span className="text-[10px] text-gray-500 uppercase">Views</span>
                 </div>
                 <div className="flex flex-col items-center gap-1 border-x border-gray-100 dark:border-gray-800">
                   <ThumbsUp size={18} className="text-green-500" />
                   <span className="text-sm font-semibold text-gray-900 dark:text-white">
                     {fmt(selectedVideo.statistics.likeCount)}
                   </span>
-                  <span className="text-[10px] text-gray-500 uppercase">
-                    Likes
-                  </span>
+                  <span className="text-[10px] text-gray-500 uppercase">Likes</span>
                 </div>
                 <div className="flex flex-col items-center gap-1">
                   <MessageSquare size={18} className="text-purple-500" />
                   <span className="text-sm font-semibold text-gray-900 dark:text-white">
                     {fmt(selectedVideo.statistics.commentCount)}
                   </span>
-                  <span className="text-[10px] text-gray-500 uppercase">
-                    Comments
-                  </span>
+                  <span className="text-[10px] text-gray-500 uppercase">Comments</span>
                 </div>
               </div>
 
@@ -98,8 +84,7 @@ export default function AnalysisPreview() {
                   Mulai Analisis AI
                 </Button>
                 <p className="text-center text-xs text-gray-400">
-                  Sistem akan memindai komentar dan mendeteksi spam secara
-                  otomatis.
+                  Sistem akan memindai komentar dan mendeteksi spam secara otomatis.
                 </p>
               </div>
             </div>
@@ -110,8 +95,8 @@ export default function AnalysisPreview() {
             <div className="flex gap-2">
               <AlertCircle size={18} className="shrink-0" />
               <p>
-                Pastikan video ini memiliki komentar publik. Komentar yang
-                ditahan untuk tinjauan tidak dapat diakses via API.
+                Pastikan video ini memiliki komentar publik. Komentar yang ditahan untuk tinjauan
+                tidak dapat diakses via API.
               </p>
             </div>
           </div>
@@ -127,9 +112,7 @@ export default function AnalysisPreview() {
                 Preview Komentar Terbaru
               </h3>
               <span className="text-xs bg-white border px-2.5 py-1 rounded-full text-gray-600 font-medium shadow-sm dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700">
-                {isLoadingPreview
-                  ? "Memuat..."
-                  : `${previewComments.length} Ditampilkan`}
+                {isLoadingPreview ? 'Memuat...' : `${previewComments.length} Ditampilkan`}
               </span>
             </div>
 
@@ -156,10 +139,7 @@ export default function AnalysisPreview() {
                   <p>Tidak ada komentar ditemukan atau belum dimuat.</p>
                 </div>
               ) : (
-                <ul
-                  data-cy="comment-list-section"
-                  className="divide-y dark:divide-gray-800"
-                >
+                <ul data-cy="comment-list-section" className="divide-y dark:divide-gray-800">
                   {previewComments.map((thread, idx) => {
                     // [DEBUGGING]
                     // console.log("previewComments sample", previewComments[0]);
@@ -177,11 +157,8 @@ export default function AnalysisPreview() {
                         <div className="flex gap-4">
                           {/* Avatar */}
                           <img
-                            src={
-                              comment.author.avatar ||
-                              "https://ui-avatars.com/api/?name=User"
-                            }
-                            alt={comment.author.name || "User"}
+                            src={comment.author.avatar || 'https://ui-avatars.com/api/?name=User'}
+                            alt={comment.author.name || 'User'}
                             className="h-10 w-10 rounded-full border border-gray-100 bg-white object-cover shadow-sm"
                             loading="lazy"
                           />
@@ -191,17 +168,13 @@ export default function AnalysisPreview() {
                             <div className="flex items-center justify-between mb-1">
                               <div className="flex items-center gap-2">
                                 <span className="font-semibold text-sm text-gray-900 dark:text-white truncate">
-                                  {comment.author.name || "User"}
+                                  {comment.author.name || 'User'}
                                 </span>
                                 {/* Badge Author/Verified bisa ditaruh sini */}
                               </div>
                               <div className="flex items-center gap-1 text-xs text-gray-400 whitespace-nowrap">
                                 <Calendar size={12} />
-                                <span>
-                                  {new Date(
-                                    comment.publishedAt,
-                                  ).toLocaleDateString()}
-                                </span>
+                                <span>{new Date(comment.publishedAt).toLocaleDateString()}</span>
                               </div>
                             </div>
 
@@ -245,8 +218,7 @@ export default function AnalysisPreview() {
                                 ))}
                                 {thread.replies.length > 2 && (
                                   <p className="text-xs text-blue-500 cursor-pointer hover:underline">
-                                    Lihat semua {thread.replies.length}{" "}
-                                    balasan...
+                                    Lihat semua {thread.replies.length} balasan...
                                   </p>
                                 )}
                               </div>
@@ -262,8 +234,8 @@ export default function AnalysisPreview() {
 
             {/* Footer Alert */}
             <div className="bg-gray-50 p-3 text-center text-xs text-gray-500 border-t dark:bg-gray-900 dark:border-gray-800 rounded-b-2xl">
-              Hanya menampilkan 50 komentar teratas sebagai preview. Analisis AI
-              akan memindai seluruh komentar.
+              Hanya menampilkan 50 komentar teratas sebagai preview. Analisis AI akan memindai
+              seluruh komentar.
             </div>
           </div>
         </div>

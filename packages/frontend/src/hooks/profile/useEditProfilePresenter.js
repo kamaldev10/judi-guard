@@ -1,17 +1,16 @@
-import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import Swal from "sweetalert2";
-import { useUserStore } from "@/stores/userStore";
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
+import { useUserStore } from '@/stores/userStore';
 
 export const useEditProfilePresenter = () => {
-  const { getCurrentUser, updateProfile, isLoadingUser, error } =
-    useUserStore();
+  const { getCurrentUser, updateProfile, isLoadingUser, error } = useUserStore();
   const navigate = useNavigate();
 
   const [initialData, setInitialData] = useState({}); // Data awal untuk perbandingan
   const [formData, setFormData] = useState({
-    username: "",
-    email: "",
+    username: '',
+    email: '',
     // Tambahkan field lain di sini jika backend mengizinkan, e.g., bio: ''
   });
 
@@ -26,21 +25,17 @@ export const useEditProfilePresenter = () => {
       setFetchError(null);
       try {
         const response = await getCurrentUser();
-        if (response.status === "success" && response.data.user) {
+        if (response.status === 'success' && response.data.user) {
           const { username, email } = response.data.user; // Ambil field relevan
           const relevantData = { username, email };
           setFormData(relevantData);
           setInitialData(relevantData);
         } else {
-          setFetchError(
-            new Error(response.message || "Gagal mengambil data pengguna.")
-          );
+          setFetchError(new Error(response.message || 'Gagal mengambil data pengguna.'));
         }
       } catch (error) {
         setFetchError(
-          new Error(
-            error.message || "Terjadi kesalahan saat mengambil data pengguna."
-          )
+          new Error(error.message || 'Terjadi kesalahan saat mengambil data pengguna.'),
         );
       } finally {
         setIsLoading(false);
@@ -75,23 +70,23 @@ export const useEditProfilePresenter = () => {
       if (!hasChanges) {
         setIsSaving(false);
         Swal.fire({
-          title: "Tidak Ada Perubahan",
-          text: "Anda tidak melakukan perubahan apapun pada data profil.",
-          icon: "info",
-          confirmButtonText: "OK",
-          customClass: { popup: "rounded-xl shadow-lg text-sm" },
+          title: 'Tidak Ada Perubahan',
+          text: 'Anda tidak melakukan perubahan apapun pada data profil.',
+          icon: 'info',
+          confirmButtonText: 'OK',
+          customClass: { popup: 'rounded-xl shadow-lg text-sm' },
         });
         return;
       }
 
       Swal.fire({
-        title: "Menyimpan Perubahan...",
-        text: "Mohon tunggu sebentar.",
+        title: 'Menyimpan Perubahan...',
+        text: 'Mohon tunggu sebentar.',
         allowOutsideClick: false,
         didOpen: () => {
           Swal.showLoading();
         },
-        customClass: { popup: "rounded-xl shadow-lg text-sm" },
+        customClass: { popup: 'rounded-xl shadow-lg text-sm' },
       });
 
       try {
@@ -99,44 +94,41 @@ export const useEditProfilePresenter = () => {
         setIsSaving(false);
         Swal.close();
 
-        if (response.status === "success") {
+        if (response.status === 'success') {
           await Swal.fire({
-            title: "Profil Diperbarui!",
-            text: "Data profil Anda telah berhasil diperbarui.",
-            icon: "success",
-            confirmButtonText: "OK",
-            customClass: { popup: "rounded-xl shadow-lg text-sm" },
+            title: 'Profil Diperbarui!',
+            text: 'Data profil Anda telah berhasil diperbarui.',
+            icon: 'success',
+            confirmButtonText: 'OK',
+            customClass: { popup: 'rounded-xl shadow-lg text-sm' },
           });
           setInitialData(formData);
           setTimeout(() => {
-            navigate("/profile");
+            navigate('/profile');
           }, 2000);
         } else {
-          Swal.fire(
-            "Gagal!",
-            response.message || "Gagal memperbarui profil.",
-            "error",
-            { customClass: { popup: "rounded-xl shadow-lg text-sm" } }
-          );
+          Swal.fire('Gagal!', response.message || 'Gagal memperbarui profil.', 'error', {
+            customClass: { popup: 'rounded-xl shadow-lg text-sm' },
+          });
         }
       } catch (error) {
         setIsSaving(false);
         Swal.close();
         Swal.fire({
-          title: "Gagal Memperbarui!",
-          text: error.message || "Terjadi kesalahan. Silakan coba lagi.",
-          icon: "error",
-          confirmButtonText: "OK",
-          customClass: { popup: "rounded-xl shadow-lg text-sm" },
+          title: 'Gagal Memperbarui!',
+          text: error.message || 'Terjadi kesalahan. Silakan coba lagi.',
+          icon: 'error',
+          confirmButtonText: 'OK',
+          customClass: { popup: 'rounded-xl shadow-lg text-sm' },
         });
       }
     },
-    [formData, initialData, navigate, updateProfile]
+    [formData, initialData, navigate, updateProfile],
   );
 
   // 🔹 Handle cancel
   const handleCancel = useCallback(() => {
-    navigate("/profile");
+    navigate('/profile');
   }, [navigate]);
 
   return {

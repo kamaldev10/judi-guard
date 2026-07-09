@@ -1,11 +1,11 @@
-import React from "react";
-import { HeadProvider } from "react-head";
-import { Slide, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { Toaster } from "@/components/ui/sonner";
+import React from 'react';
+import { HeadProvider } from 'react-head';
+import { Slide, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { Toaster } from '@/components/ui/sonner';
 
-import AppErrorBoundary from "@/components/error-boundary/AppErrorBoundary";
-import AppRouter from "./routes/AppRouter";
+import AppErrorBoundary from '@/components/error-boundary/AppErrorBoundary';
+import AppRouter from './routes/AppRouter';
 
 function App() {
   return (

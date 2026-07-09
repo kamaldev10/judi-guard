@@ -1,14 +1,21 @@
 {
   "name": "server",
-  "version": "1.0.0",
-  "main": "src/server.js",
-  "scripts": {
-    "start": "node src/server.js",
-    "dev": "nodemon src/server.js",
-    "test": "jest --testTimeout=30000 --runInBand"
+  "version": "2.0.0",
+  "main": "src/app/server.js",
+  "type": "module",
+  "imports": {
+    "#app/*": "./src/app/*",
+    "#config/*": "./src/config/*",
+    "#middlewares/*": "./src/middlewares/*",
+    "#modules/*": "./src/modules/*",
+    "#shared/*": "./src/shared/*"
   },
-  "_moduleAliases": {
-    "@": "src"
+  "scripts": {
+    "start": "node src/app/server.js",
+    "dev": "nodemon src/app/server.js",
+    "lint": "eslint . ",
+    "format": "prettier --write",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testTimeout=30000 --runInBand"
   },
   "keywords": [],
   "author": "",
@@ -29,7 +36,6 @@
     "helmet": "^8.1.0",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
-    "module-alias": "^2.2.3",
     "mongoose": "^8.15.1",
     "morgan": "^1.10.0",
     "node-gyp": "^11.2.0",
@@ -39,9 +45,14 @@
     "postmark": "^4.0.5"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "eslint": "^9.39.4",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^16.4.0",
     "jest": "^30.0.0",
     "mongodb-memory-server": "^10.1.4",
     "nodemon": "^3.1.10",
+    "prettier": "^3.9.4",
     "supertest": "^7.1.1"
   },
   "jest": {

@@ -1,20 +1,20 @@
-import React from "react";
-import { render, screen, within } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { MemoryRouter } from "react-router-dom"; // 1. Import MemoryRouter
-import { ProfileSetting } from "../ProfileSetting"; // <-- Adjust path
+import React from 'react';
+import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { MemoryRouter } from 'react-router-dom'; // 1. Import MemoryRouter
+import { ProfileSetting } from '../ProfileSetting'; // <-- Adjust path
 
 // --- 2. Import Mocks ---
-import { useProfilePresenter } from "@/hooks/profile/useProfilePresenter";
-import Swal from "sweetalert2";
-import * as FramerMotion from "framer-motion";
-import * as LucideReact from "lucide-react";
+import { useProfilePresenter } from '@/hooks/profile/useProfilePresenter';
+import Swal from 'sweetalert2';
+import * as FramerMotion from 'framer-motion';
+import * as LucideReact from 'lucide-react';
 
 // --- 3. Mocking Dependencies ---
 
 // Mock framer-motion
-vi.mock("framer-motion", () => ({
+vi.mock('framer-motion', () => ({
   motion: {
     section: React.forwardRef(({ children, ...props }, ref) => (
       <section ref={ref} {...props}>
@@ -35,7 +35,7 @@ vi.mock("framer-motion", () => ({
 }));
 
 // Mock lucide-react icons
-vi.mock("lucide-react", () => ({
+vi.mock('lucide-react', () => ({
   Trash2: (props) => <svg data-testid="trash-icon" {...props} />,
   Loader2: (props) => <svg data-testid="loader-icon" {...props} />,
   ChevronRight: (props) => <svg data-testid="chevron-icon" {...props} />,
@@ -45,14 +45,14 @@ vi.mock("lucide-react", () => ({
 }));
 
 // Mock SweetAlert2
-vi.mock("sweetalert2", () => ({
+vi.mock('sweetalert2', () => ({
   default: {
     fire: vi.fn(), // Mock the .fire() method
   },
 }));
 
 // Mock the custom hook
-vi.mock("@/hooks/profile/useProfilePresenter", () => ({
+vi.mock('@/hooks/profile/useProfilePresenter', () => ({
   useProfilePresenter: vi.fn(),
 }));
 
@@ -63,7 +63,7 @@ const mockedUseProfilePresenter = useProfilePresenter;
 const mockedSwalFire = Swal.fire;
 
 // --- Test Suite ---
-describe("Profile Setting Integration Testing", () => {
+describe('Profile Setting Integration Testing', () => {
   const user = userEvent.setup();
 
   // Mock hook return values
@@ -81,7 +81,7 @@ describe("Profile Setting Integration Testing", () => {
     return render(
       <MemoryRouter>
         <ProfileSetting />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
   };
 
@@ -90,69 +90,59 @@ describe("Profile Setting Integration Testing", () => {
   });
 
   // Test 1: Initial Render (Not Deleting)
-  it("should render the component correctly in normal state", () => {
+  it('should render the component correctly in normal state', () => {
     renderSettings(false);
 
     // Check main heading
-    expect(
-      screen.getByRole("heading", { level: 1, name: /pengaturan akun/i })
-    ).toBeInTheDocument();
-    expect(screen.getByTestId("settings-icon")).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: /pengaturan akun/i })).toBeInTheDocument();
+    expect(screen.getByTestId('settings-icon')).toBeInTheDocument();
 
     // Check 'Change Password' link
-    const changePassLink = screen.getByRole("link", {
+    const changePassLink = screen.getByRole('link', {
       name: /ganti kata sandi/i,
     });
     expect(changePassLink).toBeInTheDocument();
-    expect(changePassLink).toHaveAttribute("href", "/change-password");
-    expect(within(changePassLink).getByTestId("key-icon")).toBeInTheDocument();
-    expect(
-      within(changePassLink).getByTestId("chevron-icon")
-    ).toBeInTheDocument();
+    expect(changePassLink).toHaveAttribute('href', '/change-password');
+    expect(within(changePassLink).getByTestId('key-icon')).toBeInTheDocument();
+    expect(within(changePassLink).getByTestId('chevron-icon')).toBeInTheDocument();
 
     // Check 'Danger Zone'
-    expect(
-      screen.getByRole("heading", { level: 3, name: /zona berbahaya/i })
-    ).toBeInTheDocument();
-    expect(screen.getByTestId("alert-icon")).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 3, name: /zona berbahaya/i })).toBeInTheDocument();
+    expect(screen.getByTestId('alert-icon')).toBeInTheDocument();
 
     // Check 'Delete Account' button
-    const deleteButton = screen.getByRole("button", {
+    const deleteButton = screen.getByRole('button', {
       name: /hapus akun saya/i,
     });
     expect(deleteButton).toBeInTheDocument();
     expect(deleteButton).toBeEnabled();
-    expect(within(deleteButton).getByTestId("trash-icon")).toBeInTheDocument();
-    expect(
-      within(deleteButton).queryByTestId("loader-icon")
-    ).not.toBeInTheDocument();
+    expect(within(deleteButton).getByTestId('trash-icon')).toBeInTheDocument();
+    expect(within(deleteButton).queryByTestId('loader-icon')).not.toBeInTheDocument();
   });
 
   // Test 2: Deleting State
-  it("should render the component in deleting state when isDeleting is true", () => {
+  it('should render the component in deleting state when isDeleting is true', () => {
     renderSettings(true); // Render with isDeleting = true
 
     // Check 'Delete Account' button
-    const deleteButton = screen.getByRole("button", {
+    const deleteButton = screen.getByRole('button', {
       name: /menghapus akun.../i,
     });
     expect(deleteButton).toBeInTheDocument();
     expect(deleteButton).toBeDisabled(); // Button is disabled
-    expect(within(deleteButton).getByTestId("loader-icon")).toBeInTheDocument(); // Spinner is present
-    expect(
-      within(deleteButton).queryByTestId("trash-icon")
-    ).not.toBeInTheDocument(); // Trash icon is gone
+    expect(within(deleteButton).getByTestId('loader-icon')).toBeInTheDocument(); // Spinner is present
+    expect(within(deleteButton).queryByTestId('trash-icon')).not.toBeInTheDocument(); // Trash icon is gone
   });
 
   // Test 3: Delete Click -> Confirm
-  it("should call executeDeleteAccount when confirmation modal is confirmed", async () => {
+  it('should call executeDeleteAccount when confirmation modal is confirmed', async () => {
     // Arrange: Mock Swal to return 'isConfirmed: true'
     mockedSwalFire.mockResolvedValue({
       isConfirmed: true,
     });
 
     renderSettings(false);
-    const deleteButton = screen.getByRole("button", {
+    const deleteButton = screen.getByRole('button', {
       name: /hapus akun saya/i,
     });
 
@@ -163,9 +153,9 @@ describe("Profile Setting Integration Testing", () => {
     expect(mockedSwalFire).toHaveBeenCalledTimes(1);
     expect(mockedSwalFire).toHaveBeenCalledWith(
       expect.objectContaining({
-        title: "Konfirmasi Hapus Akun",
-        icon: "warning",
-      })
+        title: 'Konfirmasi Hapus Akun',
+        icon: 'warning',
+      }),
     );
 
     // Assert: Because Swal was confirmed, executeDeleteAccount (from hook) was called
@@ -173,14 +163,14 @@ describe("Profile Setting Integration Testing", () => {
   });
 
   // Test 4: Delete Click -> Cancel
-  it("should NOT call executeDeleteAccount when confirmation modal is cancelled", async () => {
+  it('should NOT call executeDeleteAccount when confirmation modal is cancelled', async () => {
     // Arrange: Mock Swal to return 'isConfirmed: false'
     mockedSwalFire.mockResolvedValue({
       isConfirmed: false, // User clicked "Batal"
     });
 
     renderSettings(false);
-    const deleteButton = screen.getByRole("button", {
+    const deleteButton = screen.getByRole('button', {
       name: /hapus akun saya/i,
     });
 
@@ -195,10 +185,10 @@ describe("Profile Setting Integration Testing", () => {
   });
 
   // Test 5: Delete button disabled while deleting
-  it("should not trigger Swal if delete button is clicked while already deleting", async () => {
+  it('should not trigger Swal if delete button is clicked while already deleting', async () => {
     renderSettings(true); // Render in deleting state
 
-    const deleteButton = screen.getByRole("button", {
+    const deleteButton = screen.getByRole('button', {
       name: /menghapus akun.../i,
     });
     expect(deleteButton).toBeDisabled();

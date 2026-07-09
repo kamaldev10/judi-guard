@@ -1,6 +1,6 @@
-import React from "react";
-import { ErrorBoundary } from "react-error-boundary";
-import ErrorFallback from "./ErrorFallback";
+import React from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
+import ErrorFallback from './ErrorFallback';
 
 const AppErrorBoundary = ({ children }) => {
   return (
@@ -10,7 +10,7 @@ const AppErrorBoundary = ({ children }) => {
         window.location.reload();
       }}
       onError={(error, info) => {
-        console.error("Unhandled error:", error, info);
+        console.error('Unhandled error:', error, info);
       }}
     >
       {children}

@@ -8,9 +8,9 @@ import {
   FileText,
   Search,
   CheckCircle2,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 
 export default function Guide() {
   return (
@@ -21,8 +21,8 @@ export default function Guide() {
           Panduan & Dokumentasi Sistem
         </h1>
         <p className="mt-2 text-gray-500 dark:text-gray-400">
-          Pahami cara kerja "Hybrid Engine" Judi Guard dan pelajari langkah demi
-          langkah membersihkan channel Anda dari spam.
+          Pahami cara kerja "Hybrid Engine" Judi Guard dan pelajari langkah demi langkah
+          membersihkan channel Anda dari spam.
         </p>
       </div>
 
@@ -46,16 +46,15 @@ export default function Guide() {
               <li className="flex gap-2  bg-gray-50 p-3 dark:bg-gray-900 rounded-lg">
                 <CheckCircle2 size={16} className="text-green-500 mt-0.5" />
                 <span>
-                  <strong>AI Probabilistik (Python) :</strong> Memahami konteks
-                  kalimat (misal: "Gacor", "Pola", "Maxwin") meskipun
-                  disamarkan.
+                  <strong>AI Probabilistik (Python) :</strong> Memahami konteks kalimat (misal:
+                  "Gacor", "Pola", "Maxwin") meskipun disamarkan.
                 </span>
               </li>
               <li className="flex gap-2 bg-gray-50 p-3 dark:bg-gray-900 rounded-lg">
                 <CheckCircle2 size={16} className="text-green-500 mt-0.5" />
                 <span>
-                  <strong>Rule-Based Deterministik :</strong> Pengecekan pasti
-                  berdasarkan Whitelist, Blacklist, dan pola Regex (No HP/Link).
+                  <strong>Rule-Based Deterministik :</strong> Pengecekan pasti berdasarkan
+                  Whitelist, Blacklist, dan pola Regex (No HP/Link).
                 </span>
               </li>
             </ul>
@@ -70,22 +69,22 @@ export default function Guide() {
               <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-900">
                 <Youtube size={20} className="text-red-600" />
                 <span>
-                  <strong>Harvesting : </strong> Mengambil data komentar via
-                  YouTube API secara legal.
+                  <strong>Harvesting : </strong> Mengambil data komentar via YouTube API secara
+                  legal.
                 </span>
               </div>
               <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-900">
                 <Database size={20} className="text-purple-600" />
                 <span>
-                  <strong>Processing : </strong> Analisis dilakukan di server
-                  kami, hasil disimpan di database terenkripsi.
+                  <strong>Processing : </strong> Analisis dilakukan di server kami, hasil disimpan
+                  di database terenkripsi.
                 </span>
               </div>
               <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-900">
                 <ShieldCheck size={20} className="text-blue-600" />
                 <span>
-                  <strong>Action :</strong> Aksi Hapus/Blokir hanya dilakukan
-                  atas perintah Anda (User Triggered).
+                  <strong>Action :</strong> Aksi Hapus/Blokir hanya dilakukan atas perintah Anda
+                  (User Triggered).
                 </span>
               </div>
             </div>
@@ -111,21 +110,18 @@ export default function Guide() {
                 Persiapan & Koneksi (Wajib)
               </h3>
               <p className="mt-1 text-gray-600 dark:text-gray-400 text-sm">
-                Sebelum memulai moderasi, sistem membutuhkan izin akses
-                ("Token") untuk menghapus komentar atas nama Anda.
+                Sebelum memulai moderasi, sistem membutuhkan izin akses ("Token") untuk menghapus
+                komentar atas nama Anda.
               </p>
               <div className="mt-4 grid gap-3 md:grid-cols-2">
                 <div className="bg-gray-50 p-3 rounded-md dark:bg-gray-900 text-sm">
-                  <strong>Langkah 1:</strong> Klik tombol{" "}
-                  <span className="text-red-600 font-bold">
-                    Connect Channel
-                  </span>{" "}
-                  di pojok kanan atas Dashboard.
+                  <strong>Langkah 1:</strong> Klik tombol{' '}
+                  <span className="text-red-600 font-bold">Connect Channel</span> di pojok kanan
+                  atas Dashboard.
                 </div>
                 <div className="bg-gray-50 p-3 rounded-md dark:bg-gray-900 text-sm">
-                  <strong>Langkah 2:</strong> Login dengan akun Google yang
-                  memiliki channel YouTube target. Izinkan akses kelola
-                  komentar.
+                  <strong>Langkah 2:</strong> Login dengan akun Google yang memiliki channel YouTube
+                  target. Izinkan akses kelola komentar.
                 </div>
               </div>
             </div>
@@ -143,8 +139,7 @@ export default function Guide() {
                 Konfigurasi Whitelist & Blacklist (Pencegahan)
               </h3>
               <p className="mt-1 text-gray-600 dark:text-gray-400 text-sm">
-                Ajari AI mana yang teman (aman) dan mana yang musuh (spam
-                spesifik).
+                Ajari AI mana yang teman (aman) dan mana yang musuh (spam spesifik).
               </p>
 
               <div className="mt-4 space-y-4">
@@ -154,17 +149,12 @@ export default function Guide() {
                   </h4>
                   <ul className="mt-2 list-disc pl-5 text-sm text-gray-600 dark:text-gray-400">
                     <li>
-                      Komentar dari channel ini{" "}
-                      <strong>TIDAK AKAN PERNAH</strong> dianggap spam.
+                      Komentar dari channel ini <strong>TIDAK AKAN PERNAH</strong> dianggap spam.
                     </li>
                     <li>
-                      <span className="font-semibold text-blue-600">
-                        Fitur Cerdas:
-                      </span>{" "}
-                      Anda bisa memasukkan Username (contoh:{" "}
-                      <code className="bg-gray-100 px-1 rounded">
-                        @gadgetin
-                      </code>
+                      <span className="font-semibold text-blue-600">Fitur Cerdas:</span> Anda bisa
+                      memasukkan Username (contoh:{' '}
+                      <code className="bg-gray-100 px-1 rounded">@gadgetin</code>
                       ), sistem akan otomatis mencari Channel ID-nya.
                     </li>
                   </ul>
@@ -176,12 +166,12 @@ export default function Guide() {
                   </h4>
                   <ul className="mt-2 list-disc pl-5 text-sm text-gray-600 dark:text-gray-400">
                     <li>
-                      Tambahkan kata kunci spesifik yang sering lolos (misal
-                      singkatan judi baru: "J-P", "S-L-O-T").
+                      Tambahkan kata kunci spesifik yang sering lolos (misal singkatan judi baru:
+                      "J-P", "S-L-O-T").
                     </li>
                     <li>
-                      Mendukung <strong>Bulk Input</strong>: Masukkan banyak
-                      kata sekaligus dan tekan simpan.
+                      Mendukung <strong>Bulk Input</strong>: Masukkan banyak kata sekaligus dan
+                      tekan simpan.
                     </li>
                   </ul>
                 </div>
@@ -201,20 +191,16 @@ export default function Guide() {
                 Eksekusi Analisis & Moderasi
               </h3>
               <p className="mt-1 text-gray-600 dark:text-gray-400 text-sm">
-                Inti dari aplikasi ini. Tempel link, tunggu hasil, dan
-                bersihkan.
+                Inti dari aplikasi ini. Tempel link, tunggu hasil, dan bersihkan.
               </p>
               <ol className="mt-4 list-decimal pl-5 text-sm text-gray-600 dark:text-gray-400 space-y-2">
                 <li>
                   Buka menu <strong>Analisis Video</strong>.
                 </li>
                 <li>Tempel (Paste) URL video YouTube Anda.</li>
+                <li>Tunggu Loading Bar selesai (Sistem sedang membaca ribuan komentar).</li>
                 <li>
-                  Tunggu Loading Bar selesai (Sistem sedang membaca ribuan
-                  komentar).
-                </li>
-                <li>
-                  Lihat hasil di tabel. Anda bisa memfilter berdasarkan{" "}
+                  Lihat hasil di tabel. Anda bisa memfilter berdasarkan{' '}
                   <strong>Risk Level (High/Medium)</strong>.
                 </li>
                 <li>
@@ -248,18 +234,15 @@ export default function Guide() {
               </p>
               <ul className="mt-4 list-disc pl-5 text-sm text-gray-600 dark:text-gray-400 space-y-2">
                 <li>
-                  <strong>History:</strong> Lihat kembali video mana saja yang
-                  sudah dibersihkan.
+                  <strong>History:</strong> Lihat kembali video mana saja yang sudah dibersihkan.
                 </li>
                 <li>
-                  <strong>Undo Action:</strong> Tidak sengaja menghapus komentar
-                  fans? Gunakan fitur Undo di halaman detail analisis untuk
-                  mengembalikannya.
+                  <strong>Undo Action:</strong> Tidak sengaja menghapus komentar fans? Gunakan fitur
+                  Undo di halaman detail analisis untuk mengembalikannya.
                 </li>
                 <li>
-                  <strong>Export PDF:</strong> Unduh laporan resmi hasil
-                  moderasi untuk keperluan dokumentasi atau laporan ke
-                  atasan/klien.
+                  <strong>Export PDF:</strong> Unduh laporan resmi hasil moderasi untuk keperluan
+                  dokumentasi atau laporan ke atasan/klien.
                 </li>
               </ul>
             </div>
@@ -270,10 +253,7 @@ export default function Guide() {
       {/* --- CTA BOTTOM --- */}
       <div className="mt-8 flex justify-center pt-6">
         <Link to="/dashboard/analysis">
-          <Button
-            size="lg"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8"
-          >
+          <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8">
             <Search className="mr-2 h-5 w-5" />
             Saya Mengerti, Mulai Analisis Sekarang
           </Button>

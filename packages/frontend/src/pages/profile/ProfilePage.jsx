@@ -1,14 +1,14 @@
-import React, { useEffect, useRef } from "react";
-import { motion } from "framer-motion";
-import { AlertTriangle } from "lucide-react";
-import { useLocation } from "react-router-dom";
-import { useProfilePresenter } from "@/hooks/profile/useProfilePresenter";
-import PageLoader from "@/components/layout/PageLoader";
-import NotLogin from "@/components/status/NotLogin";
+import React, { useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
+import { AlertTriangle } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+import { useProfilePresenter } from '@/hooks/profile/useProfilePresenter';
+import PageLoader from '@/components/layout/PageLoader';
+import NotLogin from '@/components/status/NotLogin';
 
-import { ProfileHeader } from "@/components/profile/ProfileHeader";
-import { ProfileConnection } from "@/components/profile/ProfileConnection";
-import { ProfileSetting } from "@/components/profile/ProfileSetting";
+import { ProfileHeader } from '@/components/profile/ProfileHeader';
+import { ProfileConnection } from '@/components/profile/ProfileConnection';
+import { ProfileSetting } from '@/components/profile/ProfileSetting';
 
 // Varian animasi Framer Motion
 const pageVariants = {
@@ -25,7 +25,7 @@ export const sectionItemVariants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { type: "spring", stiffness: 100, damping: 15, duration: 0.5 },
+    transition: { type: 'spring', stiffness: 100, damping: 15, duration: 0.5 },
   },
 };
 
@@ -42,15 +42,10 @@ const UserProfilePage = () => {
   useEffect(() => {
     let timerId;
 
-    if (
-      location.pathname === "/profile" &&
-      !isLoading &&
-      user &&
-      profilePageRef.current
-    ) {
+    if (location.pathname === '/profile' && !isLoading && user && profilePageRef.current) {
       timerId = setTimeout(() => {
         if (profilePageRef.current && profilePageRef.current.scrollIntoView) {
-          profilePageRef.current.scrollIntoView({ behavior: "smooth" });
+          profilePageRef.current.scrollIntoView({ behavior: 'smooth' });
         }
       }, 100);
     }
@@ -71,7 +66,7 @@ const UserProfilePage = () => {
     return (
       <div
         className=" bg-[#d8f6ff] flex items-center justify-center p-4 text-center"
-        style={{ minHeight: "calc(100vh - 4.5rem)" }}
+        style={{ minHeight: 'calc(100vh - 4.5rem)' }}
         role="alert"
       >
         <motion.div
@@ -84,7 +79,7 @@ const UserProfilePage = () => {
             Oops! Terjadi Kesalahan
           </h2>
           <p className="text-slate-700 text-sm md:text-base">
-            {fetchError.message || "Tidak dapat memuat data profil."}
+            {fetchError.message || 'Tidak dapat memuat data profil.'}
           </p>
           <button
             onClick={() => window.location.reload()} // Reload sederhana, atau panggil fungsi fetch ulang dari presenter

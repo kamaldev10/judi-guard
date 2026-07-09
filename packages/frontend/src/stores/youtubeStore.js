@@ -1,5 +1,5 @@
 // stores/useYoutubeStore.js
-import { create } from "zustand";
+import { create } from 'zustand';
 import {
   initiateYoutubeOAuthRedirectApi,
   disconnectYoutubeAccountApi,
@@ -8,8 +8,8 @@ import {
   handleGoogleCallbackApi,
   getGoogleAuthUrlApi,
   getConnectedChannelProfileApi,
-} from "@/lib/services/youtubeApi";
-import { useUserStore } from "./userStore";
+} from '@/lib/services/youtubeApi';
+import { useUserStore } from './userStore';
 
 export const useYoutubeStore = create((set, get) => ({
   isLoading: false,

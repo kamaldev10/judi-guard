@@ -1,16 +1,16 @@
-import React from "react";
-import { render, screen, act } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { MemoryRouter } from "react-router-dom"; // Impor MemoryRouter
-import GoogleSignInButton from "../GoogleSignInButton";
-import { create } from "zustand";
-import { toast } from "react-toastify";
+import React from 'react';
+import { render, screen, act } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { MemoryRouter } from 'react-router-dom'; // Impor MemoryRouter
+import GoogleSignInButton from '../GoogleSignInButton';
+import { create } from 'zustand';
+import { toast } from 'react-toastify';
 
 // --- Mocking Dependencies ---
 
 // 1. Mock 'react-toastify'
-vi.mock("react-toastify", () => ({
+vi.mock('react-toastify', () => ({
   toast: {
     success: vi.fn(),
     error: vi.fn(),
@@ -19,7 +19,7 @@ vi.mock("react-toastify", () => ({
 
 // 2. Mock 'react-router-dom' (useNavigate)
 const mockNavigate = vi.fn();
-vi.mock("react-router-dom", async (importOriginal) => {
+vi.mock('react-router-dom', async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
@@ -35,12 +35,12 @@ const createMockAuthStore = () =>
     // Tambahkan state lain jika perlu diuji
   }));
 let mockAuthStore;
-vi.mock("@/stores/authStore", () => ({
+vi.mock('@/stores/authStore', () => ({
   useAuthStore: (selector) => mockAuthStore(selector),
 }));
 
 // 4. Mock '@iconify/react'
-vi.mock("@iconify/react", () => ({
+vi.mock('@iconify/react', () => ({
   Icon: (props) => <span data-testid="google-icon" icon={props.icon}></span>,
 }));
 
@@ -50,7 +50,7 @@ let googleOnSuccessCallback = null;
 let googleOnErrorCallback = null;
 let googleRenderProps = {}; // Untuk menyimpan onClick dan disabled dari GoogleLogin
 
-vi.mock("@react-oauth/google", () => ({
+vi.mock('@react-oauth/google', () => ({
   GoogleLogin: ({ onSuccess, onError, render }) => {
     // Simpan callback untuk dipicu nanti
     googleOnSuccessCallback = onSuccess;
@@ -71,7 +71,7 @@ vi.mock("@react-oauth/google", () => ({
 
 // --- Test Suite ---
 
-describe("Google Sign In Button Integration Testing", () => {
+describe('Google Sign In Button Integration Testing', () => {
   const user = userEvent.setup();
   const mockOnSuccessCustom = vi.fn();
   const mockOnErrorCustom = vi.fn();
@@ -82,7 +82,7 @@ describe("Google Sign In Button Integration Testing", () => {
     return render(
       <MemoryRouter>
         <GoogleSignInButton {...props} />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
   };
 
@@ -95,24 +95,22 @@ describe("Google Sign In Button Integration Testing", () => {
   });
 
   // Tes 1: Render Awal
-  it("should render the button correctly", () => {
-    const buttonText = "Masuk via Google";
+  it('should render the button correctly', () => {
+    const buttonText = 'Masuk via Google';
     renderButton({ buttonText });
 
-    const button = screen.getByRole("button", { name: buttonText });
+    const button = screen.getByRole('button', { name: buttonText });
     expect(button).toBeInTheDocument();
     expect(button).toBeEnabled();
-    expect(screen.getByTestId("google-icon")).toBeInTheDocument();
+    expect(screen.getByTestId('google-icon')).toBeInTheDocument();
     // Pastikan spinner tidak ada
-    expect(
-      screen.queryByRole("status", { name: /loading/i })
-    ).not.toBeInTheDocument(); // Cari spinner berdasarkan peran
+    expect(screen.queryByRole('status', { name: /loading/i })).not.toBeInTheDocument(); // Cari spinner berdasarkan peran
   });
 
   // Tes 2: Render Disabled
-  it("should render disabled when disabled prop is true", () => {
+  it('should render disabled when disabled prop is true', () => {
     renderButton({ disabled: true });
-    expect(screen.getByRole("button")).toBeDisabled();
+    expect(screen.getByRole('button')).toBeDisabled();
   });
 
   // Tes 3: Flow Sukses (Default - Navigate)
@@ -218,22 +216,19 @@ describe("Google Sign In Button Integration Testing", () => {
   // });
 
   // Tes 6: Flow Gagal (Google Callback Error)
-  it("should show error toast and call onErrorCustom on Google onError callback", async () => {
+  it('should show error toast and call onErrorCustom on Google onError callback', async () => {
     renderButton({ onErrorCustom: mockOnErrorCustom });
-    const button = screen.getByRole("button", { name: /masuk dengan google/i });
+    const button = screen.getByRole('button', { name: /masuk dengan google/i });
 
     await user.click(button);
 
-    const mockError = { error: "popup_closed_by_user" };
+    const mockError = { error: 'popup_closed_by_user' };
     await act(async () => {
       googleOnErrorCallback(mockError); // Simulasikan Google error
     });
 
     // Verifikasi toast error yang sesuai
-    expect(toast.error).toHaveBeenCalledWith(
-      "Proses login Google dibatalkan.",
-      expect.any(Object)
-    );
+    expect(toast.error).toHaveBeenCalledWith('Proses login Google dibatalkan.', expect.any(Object));
     // Verifikasi onErrorCustom dipanggil
     expect(mockOnErrorCustom).toHaveBeenCalledTimes(1);
     expect(mockOnErrorCustom).toHaveBeenCalledWith(mockError);
@@ -243,9 +238,9 @@ describe("Google Sign In Button Integration Testing", () => {
   });
 
   // Tes 7: Flow Gagal (Google Success tapi tanpa token)
-  it("should show error toast if Google onSuccess provides no credential", async () => {
+  it('should show error toast if Google onSuccess provides no credential', async () => {
     renderButton({ onErrorCustom: mockOnErrorCustom });
-    const button = screen.getByRole("button", { name: /masuk dengan google/i });
+    const button = screen.getByRole('button', { name: /masuk dengan google/i });
 
     await user.click(button);
 
@@ -255,10 +250,7 @@ describe("Google Sign In Button Integration Testing", () => {
     });
 
     // Verifikasi toast error spesifik
-    expect(toast.error).toHaveBeenCalledWith(
-      "Google ID Token tidak diterima",
-      expect.any(Object)
-    );
+    expect(toast.error).toHaveBeenCalledWith('Google ID Token tidak diterima', expect.any(Object));
     // Verifikasi onErrorCustom dipanggil
     expect(mockOnErrorCustom).toHaveBeenCalledTimes(1);
     expect(mockOnErrorCustom).toHaveBeenCalledWith(expect.any(Error));

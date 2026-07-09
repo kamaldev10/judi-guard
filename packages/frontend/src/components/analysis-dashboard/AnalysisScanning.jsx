@@ -1,4 +1,4 @@
-import { useVideoAnalysisStore } from "@/stores/videoAnalysisStore";
+import { useVideoAnalysisStore } from '@/stores/videoAnalysisStore';
 import {
   Loader2,
   Search,
@@ -7,8 +7,8 @@ import {
   XCircle,
   AlertTriangle,
   ArrowLeft,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function AnalysisScanning() {
   const {
@@ -20,7 +20,7 @@ export default function AnalysisScanning() {
   } = useVideoAnalysisStore();
 
   // --- LOGIC 1: TAMPILAN ERROR ---
-  if (analysisStatus === "FAILED" || error) {
+  if (analysisStatus === 'FAILED' || error) {
     return (
       <div className="flex min-h-[500px] w-full flex-col items-center justify-center space-y-6 py-12 animate-in zoom-in-95 duration-300">
         {/* Icon Error Besar */}
@@ -33,13 +33,11 @@ export default function AnalysisScanning() {
 
         {/* Pesan Error */}
         <div className="text-center max-w-md space-y-2 px-4">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Analisis Gagal
-          </h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Analisis Gagal</h2>
           <div className="rounded-lg bg-red-50 p-4 text-sm text-red-700 border border-red-100 dark:bg-red-900/30 dark:border-red-800 dark:text-red-300">
             <div className="flex items-start gap-2 text-left">
               <AlertTriangle size={18} className="shrink-0 mt-0.5" />
-              <p>{error || "Terjadi kesalahan sistem yang tidak diketahui."}</p>
+              <p>{error || 'Terjadi kesalahan sistem yang tidak diketahui.'}</p>
             </div>
           </div>
           <p className="text-gray-500 text-sm pt-2">
@@ -61,13 +59,12 @@ export default function AnalysisScanning() {
   // --- LOGIC 2: TAMPILAN NORMAL (RADAR) ---
 
   const getStatusText = () => {
-    if (!analysisStats) return "Memulai sistem...";
-    if (analysisStats.totalCommentsFetched === 0)
-      return "Menghubungkan ke YouTube API...";
+    if (!analysisStats) return 'Memulai sistem...';
+    if (analysisStats.totalCommentsFetched === 0) return 'Menghubungkan ke YouTube API...';
     if (analysisStats.totalCommentsAnalyzed === 0)
       // return `Mengambil komentar (${analysisStats.totalCommentsFetched} fetched)...`;
       return `Sistem sedang mengambil komentar`;
-    return "Menganalisis dengan AI & Config...";
+    return 'Menganalisis dengan AI & Config...';
   };
 
   return (

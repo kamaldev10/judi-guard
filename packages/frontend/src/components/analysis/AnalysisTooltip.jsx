@@ -1,6 +1,6 @@
 // src/features/video-analysis/views/components/AnalysisTooltip.jsx
-import React from "react";
-import PropTypes from "prop-types";
+import React from 'react';
+import PropTypes from 'prop-types';
 
 /**
  * Komponen kustom untuk menampilkan tooltip pada PieChart Recharts.
@@ -20,13 +20,12 @@ const AnalysisTooltip = ({ active, payload }) => {
         </p>
         <p className="text-slate-700">
           {/* Nilai numerik (jumlah komentar) */}
-          <span className="font-medium">Jumlah:</span>{" "}
-          {data.value.toLocaleString()}
+          <span className="font-medium">Jumlah:</span> {data.value.toLocaleString()}
         </p>
         <p className="text-slate-500">
           {/* Persentase */}
-          <span className="font-medium">Persentase:</span>{" "}
-          {(data.payload.percent * 100).toFixed(1)}%
+          <span className="font-medium">Persentase:</span> {(data.payload.percent * 100).toFixed(1)}
+          %
         </p>
       </div>
     );
@@ -47,7 +46,7 @@ AnalysisTooltip.propTypes = {
         // Data objek asli
         percent: PropTypes.number, // Persentase (0-1)
       }),
-    })
+    }),
   ),
 };
 

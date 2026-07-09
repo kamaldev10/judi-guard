@@ -1,33 +1,29 @@
-import React from "react";
-import { motion } from "framer-motion";
+import React from 'react';
+import { motion } from 'motion/react';
 
 export default function TestimonialCard({ testimonial }) {
   return (
     <motion.div
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.97 }}
-      className="relative w-[90%] sm:w-[70%] max-w-md h-[85%] sm:h-[90%] p-8 
-      rounded-2xl shadow-2xl cursor-pointer flex flex-col justify-between 
-      bg-white/70 dark:bg-gray-800/70 backdrop-blur-md border border-slate-200 dark:border-gray-700
-      transition-all duration-300"
+      whileHover={{ scale: 1.02, y: -4 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ type: 'spring', stiffness: 250, damping: 20 }}
+      className="relative w-full h-full p-8 rounded-[2rem] shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)] border border-border/50 cursor-pointer flex flex-col justify-between glass-surface overflow-hidden group"
     >
-      <p className="text-gray-800 dark:text-gray-100 text-xs sm:text-base mb-6 line-clamp-6">
-        “{testimonial.quote}”
+      {/* Subtle shimmer effect on hover */}
+      <div className="absolute -inset-[1px] bg-gradient-to-br from-brand-500/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-[2rem] pointer-events-none" />
+      <p className="text-foreground text-xs sm:text-base mb-6 line-clamp-6">
+        &ldquo;{testimonial.quote}&rdquo;
       </p>
 
       <div className="flex items-center gap-4 mt-auto">
         <img
           src={testimonial.avatarUrl}
           alt={testimonial.author}
-          className="w-14 h-14 rounded-full object-cover border-2 border-sky-400"
+          className="w-14 h-14 rounded-full object-cover border-2 border-brand-400"
         />
         <div>
-          <p className="font-semibold text-sky-700 dark:text-sky-300">
-            {testimonial.author}
-          </p>
-          <p className="text-gray-600 dark:text-gray-400 text-sm">
-            {testimonial.title}
-          </p>
+          <p className="font-semibold text-brand-700 dark:text-brand-400">{testimonial.author}</p>
+          <p className="text-muted-foreground text-sm">{testimonial.title}</p>
         </div>
       </div>
     </motion.div>

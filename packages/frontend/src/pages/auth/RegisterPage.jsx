@@ -1,7 +1,7 @@
-import React from "react";
-import { Title } from "react-head";
-import { LogoWithSlogan } from "@/assets/images";
-import RegisterForm from "@/components/auth/RegisterForm";
+import React from 'react';
+import { Title } from 'react-head';
+import { LogoWithSlogan } from '@/assets/images';
+import RegisterForm from '@/components/auth/RegisterForm';
 
 const Register = () => {
   return (

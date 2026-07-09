@@ -1,5 +1,5 @@
-import { NotLoginImage } from "@/assets/images";
-import React from "react";
+import { NotLoginImage } from '@/assets/images';
+import React from 'react';
 
 const NotLogin = () => {
   return (
@@ -10,15 +10,12 @@ const NotLogin = () => {
           alt="Not Login Image"
           className="w-48 max-w-[60%] sm:w-64 sm:max-w-[50%] md:w-80 md:max-w-[40%] mb-8"
         />
-        <h2 className="text-2xl sm:text-3xl font-bold text-red-600 mb-4">
-          Anda Belum Login
-        </h2>
+        <h2 className="text-2xl sm:text-3xl font-bold text-red-600 mb-4">Anda Belum Login</h2>
         <p className="text-base leading-relaxed mb-2 max-w-md">
           Untuk mengakses fitur ini, Anda perlu login terlebih dahulu.
         </p>
         <p className="text-base leading-relaxed mb-6 max-w-md">
-          Silakan kembali ke halaman login atau daftar jika Anda belum memiliki
-          akun.
+          Silakan kembali ke halaman login atau daftar jika Anda belum memiliki akun.
         </p>
 
         {/* Opsional: Tombol untuk navigasi ke halaman login */}

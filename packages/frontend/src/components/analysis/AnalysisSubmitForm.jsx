@@ -1,8 +1,8 @@
 /* eslint-disable react/prop-types */
 // src/features/video-analysis/views/components/AnalysisSubmitForm.jsx
-import React from "react";
-import PropTypes from "prop-types";
-import { motion } from "framer-motion";
+import React from 'react';
+import PropTypes from 'prop-types';
+import { motion } from 'framer-motion';
 
 const AnalysisSubmitForm = ({
   videoUrl,
@@ -29,12 +29,7 @@ const AnalysisSubmitForm = ({
 
   // Komponen untuk ikon "Loading Spinner"
   const LoadingSpinner = ({ className }) => (
-    <svg
-      className={className}
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-    >
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
       <circle
         className="opacity-25"
         cx="12"
@@ -65,10 +60,7 @@ const AnalysisSubmitForm = ({
       </h1>
       <div className="space-y-3 sm:space-y-6">
         <div>
-          <label
-            htmlFor="videoUrl"
-            className="block text-teal-700 font-semibold mb-1.5"
-          >
+          <label htmlFor="videoUrl" className="block text-teal-700 font-semibold mb-1.5">
             Link Video :
           </label>
           <input
@@ -139,9 +131,7 @@ const AnalysisSubmitForm = ({
       </div>
 
       {loadingMessage && (
-        <p className="text-teal-600 text-sm mt-4 text-center animate-pulse">
-          {loadingMessage}
-        </p>
+        <p className="text-teal-600 text-sm mt-4 text-center animate-pulse">{loadingMessage}</p>
       )}
     </motion.section>
   );

@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import { useConfigStore } from "@/stores/configStore";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState } from 'react';
+import { useConfigStore } from '@/stores/configStore';
+import { Button } from '@/components/ui/button';
 import {
   Trash2,
   ShieldCheck,
@@ -11,8 +11,8 @@ import {
   ChevronUp,
   User,
   StickyNote,
-} from "lucide-react";
-import { toast } from "sonner";
+} from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function WhitelistManager() {
   const {
@@ -26,9 +26,9 @@ export default function WhitelistManager() {
 
   // State diganti object untuk menampung multiple fields
   const [formData, setFormData] = useState({
-    channelId: "",
-    channelName: "",
-    note: "",
+    channelId: '',
+    channelName: '',
+    note: '',
   });
 
   const [showOptions, setShowOptions] = useState(false);
@@ -57,10 +57,10 @@ export default function WhitelistManager() {
         note: formData.note,
       });
 
-      toast.success("Channel berhasil ditambahkan");
+      toast.success('Channel berhasil ditambahkan');
 
       // Reset Form
-      setFormData({ channelId: "", channelName: "", note: "" });
+      setFormData({ channelId: '', channelName: '', note: '' });
       setShowOptions(false);
     } catch (error) {
       setLocalError(error.message);
@@ -71,9 +71,9 @@ export default function WhitelistManager() {
   const handleDelete = async (id) => {
     try {
       await removeFromWhitelist(id);
-      toast.success("Channel dihapus");
+      toast.success('Channel dihapus');
     } catch (error) {
-      toast.error("Gagal menghapus channel");
+      toast.error('Gagal menghapus channel');
     }
   };
 
@@ -89,9 +89,7 @@ export default function WhitelistManager() {
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
               Whitelist Channel/Akun
             </h3>
-            <p className="text-sm text-gray-500">
-              Channel/Akun ini akan aman dari deteksi spam.
-            </p>
+            <p className="text-sm text-gray-500">Channel/Akun ini akan aman dari deteksi spam.</p>
           </div>
         </div>
       </div>
@@ -109,8 +107,8 @@ export default function WhitelistManager() {
               onChange={handleChange}
               className={`flex-1 rounded-lg border px-4 py-2 focus:outline-none dark:bg-gray-900 dark:text-white ${
                 localError
-                  ? "border-red-500 focus:border-red-500"
-                  : "border-gray-300 focus:border-green-500"
+                  ? 'border-red-500 focus:border-red-500'
+                  : 'border-gray-300 focus:border-green-500'
               }`}
             />
             <Button
@@ -118,7 +116,7 @@ export default function WhitelistManager() {
               className="bg-green-600 hover:bg-green-700 text-white min-w-[100px]"
             >
               {isSubmitting ? (
-                "..."
+                '...'
               ) : (
                 <>
                   <Plus size={18} className="mr-2" /> Tambah
@@ -134,14 +132,8 @@ export default function WhitelistManager() {
               onClick={() => setShowOptions(!showOptions)}
               className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
             >
-              {showOptions ? (
-                <ChevronUp size={14} />
-              ) : (
-                <ChevronDown size={14} />
-              )}
-              {showOptions
-                ? "Sembunyikan Opsi"
-                : "Isi Detail Opsional (Nama/Catatan)"}
+              {showOptions ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+              {showOptions ? 'Sembunyikan Opsi' : 'Isi Detail Opsional (Nama/Catatan)'}
             </button>
           </div>
 
@@ -150,10 +142,7 @@ export default function WhitelistManager() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 animate-in slide-in-from-top-2 pt-2">
               {/* Nama Channel */}
               <div className="relative">
-                <User
-                  size={14}
-                  className="absolute left-3 top-3 text-gray-400"
-                />
+                <User size={14} className="absolute left-3 top-3 text-gray-400" />
                 <input
                   type="text"
                   name="channelName"
@@ -166,10 +155,7 @@ export default function WhitelistManager() {
 
               {/* Catatan */}
               <div className="relative">
-                <StickyNote
-                  size={14}
-                  className="absolute left-3 top-3 text-gray-400"
-                />
+                <StickyNote size={14} className="absolute left-3 top-3 text-gray-400" />
                 <input
                   type="text"
                   name="note"
@@ -221,7 +207,7 @@ export default function WhitelistManager() {
                       />
                     ) : (
                       <div className="h-9 w-9 rounded-full bg-green-100 flex items-center justify-center text-green-600 text-xs font-bold shrink-0">
-                        {(item.channelName || "U").charAt(0)}
+                        {(item.channelName || 'U').charAt(0)}
                       </div>
                     )}
 
@@ -229,12 +215,9 @@ export default function WhitelistManager() {
                     <div className="min-w-0">
                       <div className="flex items-center gap-1">
                         <p className="font-medium text-sm text-gray-900 dark:text-white truncate">
-                          {item.channelName || "Unknown Channel"}
+                          {item.channelName || 'Unknown Channel'}
                         </p>
-                        <CheckCircle2
-                          size={12}
-                          className="text-blue-500 shrink-0"
-                        />
+                        <CheckCircle2 size={12} className="text-blue-500 shrink-0" />
                       </div>
 
                       <p className="text-[11px] text-gray-500 truncate font-mono">

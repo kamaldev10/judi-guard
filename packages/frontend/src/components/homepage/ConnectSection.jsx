@@ -1,122 +1,94 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import { motion } from "motion/react";
-import { Youtube } from "lucide-react";
-import { IlustrasiAnalisis } from "@/assets/images";
-
-// Varian animasi untuk Framer Motion
-const sectionVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.3, // Munculkan children satu per satu
-      duration: 0.5,
-    },
-  },
-};
-
-const itemVariantsLeft = {
-  hidden: { opacity: 0, x: -50 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: { type: "spring", stiffness: 80, duration: 0.8 },
-  },
-};
-
-const itemVariantsRight = {
-  hidden: { opacity: 0, x: 50, scale: 0.9 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    scale: 1,
-    transition: { type: "spring", stiffness: 80, duration: 0.8 },
-  },
-};
-
-const buttonVariants = {
-  hover: {
-    scale: 1.05,
-    boxShadow: "0px 0px 12px rgb(20, 184, 166)", // Bayangan dengan warna teal-500
-    transition: { type: "spring", stiffness: 300 },
-  },
-  tap: { scale: 0.95 },
-};
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { motion } from 'motion/react';
+import { Youtube } from 'lucide-react';
+import { IlustrasiAnalisis } from '@/assets/images';
+import { viewportOnce } from '@/lib/utils/motion';
 
 const ConnectSection = () => {
   return (
     <section
-      id="analisis-section" // ID untuk ScrollLink dari HeroSection
-      className="flex py-4 min-h-dvh  items-center lg:ps-24 bg-linear-to-r bg-[#B9E6FD] via-[#caedff] to-slate-100"
+      id="analisis-section"
+      className="w-full py-24 sm:py-32 flex items-center justify-center"
     >
-      <motion.div
-        className="container mx-auto px-4 sm:px-6 lg:px-8 "
-        variants={sectionVariants}
-        initial="hidden"
-        whileInView="visible" // Animasi terpicu saat section masuk viewport
-        viewport={{ once: true, amount: 0.2 }} // Picu sekali saat 20% terlihat
-      >
-        <div className="flex flex-col lg:flex-row items-center justify-center lg:justify-between gap-5 lg:gap-7 ">
-          {/* Konten Teks (Mobile: Atas, Desktop: Kiri) */}
-          <motion.div
-            className="w-full lg:w-1/3 text-center lg:text-left "
-            variants={itemVariantsLeft} // Menggunakan variant yang sama atau buat baru jika perlu arah berbeda
-          >
-            <motion.h2
-              className="text-2xl sm:text-3xl md:text-4xl font-bold text-teal-700 mb-3 sm:mb-10 leading-tight text-balance"
-              variants={itemVariantsLeft} // Bisa juga varian individual
-            >
-              Siap Mengamankan Ruang Digital Anda
-            </motion.h2>
-            <motion.p
-              className="text-gray-600 text-sm sm:text-base md:text-lg mb-4 md:mb-8 px-6 md:px-0 leading-6 sm:leading-8 indent-8 md:indent-0 text-justify"
-              variants={itemVariantsLeft}
-            >
-              Fitur analisis canggih kami membantu Anda mengidentifikasi dan
-              memahami pola komentar spam judi secara otomatis. Dapatkan wawasan
-              mendalam dan ambil tindakan cepat untuk menjaga komunitas Anda
-              tetap bersih dan aman.
-            </motion.p>
-            <motion.div
-              className="flex justify-center md:justify-center lg:justify-start "
-              variants={itemVariantsLeft}
-            >
-              <Link to="/profile#connections-heading">
-                <motion.button
-                  className="flex gap-1 bg-rose-600 text-gray-300 font-semibold px-3 sm:px-4 md:px-5 py-3 sm:py-3 md:py-4 rounded-lg text-sm sm:text-base  mx-6
-                             hover:bg-rose-700 shadow-md hover:shadow-lg
-                             focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50
-                             transition-all duration-300 ease-in-out align-middle
-                             "
-                  variants={buttonVariants}
-                  whileHover="hover"
-                  whileTap="tap"
-                >
-                  <Youtube className="" />
-                  Hubungkan youtube anda sekarang
-                </motion.button>
-              </Link>
-            </motion.div>
-          </motion.div>
+      <div className="max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Massive Horizontal Bento Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={viewportOnce}
+          transition={{ type: 'spring', stiffness: 60, damping: 20 }}
+          className="relative w-full rounded-[2.5rem] glass-surface border border-border/50 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] overflow-hidden"
+        >
+          {/* Subtle inner reflection */}
+          <div className="absolute inset-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] rounded-[2.5rem] pointer-events-none z-20" />
 
-          {/* Gambar Ilustrasi (Mobile: Bawah, Desktop: Kanan) */}
-          <motion.div
-            className="flex-1 w-full sm:w-3/4 md:w-2/3 lg:w-1/2 mt-5 lg:mt-0 lg:pe-10 flex justify-center lg:justify-end"
-            variants={itemVariantsRight}
-          >
-            <img
-              src={IlustrasiAnalisis}
-              alt="Ilustrasi Analisis Komentar Judi Guard"
-              className="rounded-lg shadow-xl object-cover max-h-[300px] sm:max-h-[350px] md:max-h-[400px] lg:max-h-[500px] w-auto"
-              style={{
-                filter:
-                  "drop-shadow(0 10px 8px rgba(0,0,0,0.04)) drop-shadow(0 4px 3px rgba(0,0,0,0.1))",
-              }}
-            />
-          </motion.div>
-        </div>
-      </motion.div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 h-full">
+            {/* Left Content Area */}
+            <div className="p-8 sm:p-12 md:p-16 flex flex-col justify-center relative z-10">
+              <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={viewportOnce}
+                transition={{ delay: 0.2, type: 'spring', stiffness: 80, damping: 20 }}
+              >
+                <div className="inline-flex items-center px-3 py-1 mb-6 rounded-full bg-accent text-accent-foreground text-xs font-semibold tracking-wide uppercase">
+                  Integrasi Otomatis
+                </div>
+
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-6 leading-tight tracking-tight text-balance heading-gradient">
+                  Siap Mengamankan Ruang Digital Anda
+                </h2>
+
+                <p className="text-muted-foreground text-base md:text-lg mb-10 leading-relaxed text-balance">
+                  Fitur analisis canggih kami membantu Anda mengidentifikasi dan memahami pola
+                  komentar spam judi secara otomatis. Dapatkan wawasan mendalam dan ambil tindakan
+                  cepat untuk menjaga komunitas Anda tetap bersih.
+                </p>
+
+                <div>
+                  <Link to="/profile#connections-heading" className="inline-block">
+                    <motion.button
+                      className="group relative flex items-center gap-3 px-6 py-4 bg-foreground text-background rounded-2xl font-semibold overflow-hidden shadow-lg shadow-foreground/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.96 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                    >
+                      {/* Hover effect background */}
+                      <div className="absolute inset-0 bg-brand-500 translate-y-[100%] group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+
+                      <Youtube className="w-5 h-5 relative z-10 transition-colors duration-300 group-hover:text-white" />
+                      <span className="relative z-10 transition-colors duration-300 group-hover:text-white">
+                        Hubungkan YouTube
+                      </span>
+                    </motion.button>
+                  </Link>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Right Image Area - overflowing slightly for 3D effect */}
+            <div className="relative flex items-center justify-center p-8 lg:p-0 min-h-[300px] lg:min-h-[500px] bg-muted/20 dark:bg-muted/10">
+              {/* Decorative circle */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-brand-500/10 rounded-full blur-3xl" />
+
+              <motion.div
+                className="relative z-10 w-full max-w-[400px] lg:max-w-none lg:w-[120%] lg:-mr-[10%] drop-shadow-2xl"
+                initial={{ opacity: 0, scale: 0.9, x: 30 }}
+                whileInView={{ opacity: 1, scale: 1, x: 0 }}
+                viewport={viewportOnce}
+                transition={{ delay: 0.3, type: 'spring', stiffness: 60, damping: 15 }}
+              >
+                <img
+                  src={IlustrasiAnalisis}
+                  alt="Ilustrasi Analisis Komentar Judi Guard"
+                  className="rounded-xl object-cover w-full h-auto transform lg:translate-x-4 lg:-translate-y-4 shadow-2xl border border-border/40"
+                />
+              </motion.div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
     </section>
   );
 };

@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
-import { useAuthStore } from "@/stores/authStore";
-import { ShieldAlert, LayoutDashboard } from "lucide-react";
-import { Button } from "@/components/ui/Button";
+import { useEffect, useState } from 'react';
+import { Outlet, useNavigate } from 'react-router-dom';
+import { useAuthStore } from '@/stores/authStore';
+import { ShieldAlert, LayoutDashboard } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
 
 const ProtectedRoute = () => {
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ const ProtectedRoute = () => {
 
   // Handler tombol di modal
   const handleRedirect = () => {
-    navigate("/login");
+    navigate('/login');
   };
 
   // Tampilan Loading (Opsional: Bisa ganti skeleton/spinner)
@@ -49,12 +49,10 @@ const ProtectedRoute = () => {
 
           {/* Content */}
           <div className="space-y-2">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-              Akses Dibatasi
-            </h2>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Akses Dibatasi</h2>
             <p className="text-gray-500 dark:text-gray-400">
-              Anda tidak memiliki izin untuk mengakses halaman ini. Silakan
-              kembali ke halaman utama.
+              Anda tidak memiliki izin untuk mengakses halaman ini. Silakan kembali ke halaman
+              utama.
             </p>
           </div>
 

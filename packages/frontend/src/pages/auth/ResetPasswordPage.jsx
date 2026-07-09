@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
-import { toast } from "react-toastify";
-import ResetPasswordForm from "@/components/auth/ResetPasswordForm";
-import { Title } from "react-head";
+import React, { useState, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import ResetPasswordForm from '@/components/auth/ResetPasswordForm';
+import { Title } from 'react-head';
 
 const ResetPasswordPage = () => {
   const { token } = useParams();
@@ -11,8 +11,8 @@ const ResetPasswordPage = () => {
   useEffect(() => {
     if (!token) {
       setIsTokenValid(false);
-      toast.error("Token reset tidak ditemukan atau tidak lengkap di URL.", {
-        position: "bottom-right",
+      toast.error('Token reset tidak ditemukan atau tidak lengkap di URL.', {
+        position: 'bottom-right',
       });
     }
   }, [token]);
@@ -26,13 +26,10 @@ const ResetPasswordPage = () => {
       <>
         <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4 py-8">
           <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md text-center">
-            <h2 className="text-3xl font-bold text-red-600 mb-6">
-              Token Tidak Valid
-            </h2>
+            <h2 className="text-3xl font-bold text-red-600 mb-6">Token Tidak Valid</h2>
             <p className="text-gray-600 mb-8">
-              Token reset kata sandi yang Anda gunakan tidak valid, tidak
-              ditemukan, atau sudah kedaluwarsa. Silakan minta tautan reset
-              baru.
+              Token reset kata sandi yang Anda gunakan tidak valid, tidak ditemukan, atau sudah
+              kedaluwarsa. Silakan minta tautan reset baru.
             </p>
             <Link
               to="/forgot-password"
@@ -40,10 +37,7 @@ const ResetPasswordPage = () => {
             >
               Minta Reset Kata Sandi Baru
             </Link>
-            <Link
-              to="/login"
-              className="mt-4 block text-sm text-gray-600 hover:text-gray-800"
-            >
+            <Link to="/login" className="mt-4 block text-sm text-gray-600 hover:text-gray-800">
               Kembali ke Login
             </Link>
           </div>

@@ -1,9 +1,9 @@
-import { motion, useScroll, useTransform } from "framer-motion";
-import { AboutFeatures } from "@/assets/images";
-import { useEffect, useRef } from "react";
-import { useLocation } from "react-router-dom";
-import { Title } from "react-head";
-import { membersData } from "@/constants";
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { AboutFeatures } from '@/assets/images';
+import { useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
+import { Title } from 'react-head';
+import { membersData } from '@/constants';
 
 const AboutUs = () => {
   const location = useLocation();
@@ -12,7 +12,7 @@ const AboutUs = () => {
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
-    offset: ["start start", "end start"],
+    offset: ['start start', 'end start'],
   });
 
   const opacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
@@ -21,9 +21,9 @@ const AboutUs = () => {
   useEffect(() => {
     let timerId;
 
-    if (location.pathname === "/about-us" && introSectionRef.current) {
+    if (location.pathname === '/about-us' && introSectionRef.current) {
       timerId = setTimeout(() => {
-        introSectionRef.current?.scrollIntoView({ behavior: "smooth" });
+        introSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
       }, 100);
     }
 
@@ -65,7 +65,7 @@ const AboutUs = () => {
       transition: {
         delay: i * 0.1,
         duration: 0.5,
-        ease: "easeOut",
+        ease: 'easeOut',
       },
     }),
   };
@@ -88,7 +88,7 @@ const AboutUs = () => {
           transition={{
             duration: 20,
             repeat: Infinity,
-            ease: "linear",
+            ease: 'linear',
           }}
           className="absolute -top-40 -right-40 w-96 h-96 bg-teal-200/20 rounded-full blur-3xl"
         />
@@ -100,7 +100,7 @@ const AboutUs = () => {
           transition={{
             duration: 25,
             repeat: Infinity,
-            ease: "linear",
+            ease: 'linear',
           }}
           className="absolute -bottom-40 -left-40 w-96 h-96 bg-blue-200/20 rounded-full blur-3xl"
         />
@@ -115,7 +115,7 @@ const AboutUs = () => {
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
         >
           <motion.h1
             id="intro-header"
@@ -140,10 +140,9 @@ const AboutUs = () => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.6 }}
           >
-            Judi Guard adalah aplikasi berbasis AI yang mampu mendeteksi
-            komentar yang mengandung unsur judi online secara cepat, akurat, dan
-            efisien. Kami berkomitmen untuk menjaga ruang digital Anda tetap
-            aman dari konten berbahaya.
+            Judi Guard adalah aplikasi berbasis AI yang mampu mendeteksi komentar yang mengandung
+            unsur judi online secara cepat, akurat, dan efisien. Kami berkomitmen untuk menjaga
+            ruang digital Anda tetap aman dari konten berbahaya.
           </motion.p>
         </motion.div>
       </motion.div>
@@ -152,7 +151,7 @@ const AboutUs = () => {
       <motion.div
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
+        viewport={{ once: true, margin: '-100px' }}
         variants={containerVariants}
         className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 lg:gap-16 items-center mb-20 md:mb-32"
       >
@@ -169,11 +168,11 @@ const AboutUs = () => {
 
           <ul className="space-y-4 md:space-y-5">
             {[
-              "Analisis Komentar Berbasis AI: Menggunakan model machine learning untuk mengidentifikasi pola dan kata kunci terkait judi online dengan akurasi tinggi.",
-              "Integrasi YouTube API: Terhubung langsung dengan YouTube Data API v3 untuk mengambil data komentar dari video secara real-time.",
-              "Otentikasi Pengguna Aman: Sistem login dan registrasi menggunakan OAuth untuk memastikan keamanan data pengguna.",
-              "Dashboard Interaktif: Antarmuka yang ramah pengguna untuk memvisualisasikan hasil analisis, melacak komentar, dan mengelola video yang dipantau.",
-              "Penanganan Error: Dirancang dengan sistem penanganan error yang tangguh untuk memastikan pengalaman pengguna yang mulus.",
+              'Analisis Komentar Berbasis AI: Menggunakan model machine learning untuk mengidentifikasi pola dan kata kunci terkait judi online dengan akurasi tinggi.',
+              'Integrasi YouTube API: Terhubung langsung dengan YouTube Data API v3 untuk mengambil data komentar dari video secara real-time.',
+              'Otentikasi Pengguna Aman: Sistem login dan registrasi menggunakan OAuth untuk memastikan keamanan data pengguna.',
+              'Dashboard Interaktif: Antarmuka yang ramah pengguna untuk memvisualisasikan hasil analisis, melacak komentar, dan mengelola video yang dipantau.',
+              'Penanganan Error: Dirancang dengan sistem penanganan error yang tangguh untuk memastikan pengalaman pengguna yang mulus.',
             ].map((feature, i) => (
               <motion.li
                 key={i}
@@ -217,7 +216,7 @@ const AboutUs = () => {
         id="team"
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, margin: "-50px" }}
+        viewport={{ once: true, margin: '-50px' }}
         variants={containerVariants}
         className="relative z-10 text-center"
       >

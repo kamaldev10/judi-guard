@@ -1,12 +1,12 @@
-import React from "react";
-import { render, screen, act } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { MemoryRouter } from "react-router-dom";
-import { HeadProvider, Title } from "react-head";
-import AnalysisPage from "../AnalysisPage";
+import React from 'react';
+import { render, screen, act } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { MemoryRouter } from 'react-router-dom';
+import { HeadProvider, Title } from 'react-head';
+import AnalysisPage from '../AnalysisPage';
 
 // Mock 'framer-motion'
-vi.mock("framer-motion", () => ({
+vi.mock('framer-motion', () => ({
   motion: {
     div: React.forwardRef(({ children, ...props }, ref) => (
       <div ref={ref} {...props}>
@@ -19,7 +19,7 @@ vi.mock("framer-motion", () => ({
 }));
 
 // Mock 'react-head' (Title component)
-vi.mock("react-head", async (importOriginal) => {
+vi.mock('react-head', async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
@@ -31,36 +31,32 @@ vi.mock("react-head", async (importOriginal) => {
 });
 
 // Mock child components
-vi.mock("@/components/work-guide/WorkGuideSection", () => ({
-  default: vi.fn(() => (
-    <div data-testid="mock-work-guide">Work Guide Section</div>
-  )),
+vi.mock('@/components/work-guide/WorkGuideSection', () => ({
+  default: vi.fn(() => <div data-testid="mock-work-guide">Work Guide Section</div>),
 }));
-vi.mock("@/components/analysis/AnalysisFormSection", () => ({
-  default: vi.fn(() => (
-    <div data-testid="mock-analysis-form">Analysis Form Section</div>
-  )),
+vi.mock('@/components/analysis/AnalysisFormSection', () => ({
+  default: vi.fn(() => <div data-testid="mock-analysis-form">Analysis Form Section</div>),
 }));
 
 // --- Test Suite ---
-describe("Analysis Page Integration Testing", () => {
+describe('Analysis Page Integration Testing', () => {
   const mockScrollIntoView = vi.fn();
 
   // Helper render
-  const renderPage = (route = "/analysis") => {
+  const renderPage = (route = '/analysis') => {
     return render(
       <HeadProvider>
         <MemoryRouter initialEntries={[route]}>
           <AnalysisPage />
         </MemoryRouter>
-      </HeadProvider>
+      </HeadProvider>,
     );
   };
 
   beforeEach(() => {
     vi.useFakeTimers(); // Use fake timers for setTimeout
     vi.clearAllMocks();
-    document.title = "";
+    document.title = '';
     window.HTMLElement.prototype.scrollIntoView = mockScrollIntoView;
   });
 
@@ -70,17 +66,17 @@ describe("Analysis Page Integration Testing", () => {
   });
 
   // Test 1: Initial Render and Title
-  it("should render the title and all child sections", () => {
+  it('should render the title and all child sections', () => {
     renderPage();
 
-    expect(document.title).toBe("Analisis | Judi Guard");
-    expect(screen.getByTestId("mock-work-guide")).toBeInTheDocument();
-    expect(screen.getByTestId("mock-analysis-form")).toBeInTheDocument();
+    expect(document.title).toBe('Analisis | Judi Guard');
+    expect(screen.getByTestId('mock-work-guide')).toBeInTheDocument();
+    expect(screen.getByTestId('mock-analysis-form')).toBeInTheDocument();
   });
 
   // Test 2: Default Scrolling (to work-guide)
   it("should scroll to the 'work-guide' section by default on load (no hash)", () => {
-    renderPage("/analysis"); // Render without a hash
+    renderPage('/analysis'); // Render without a hash
 
     act(() => {
       vi.advanceTimersByTime(100);
@@ -88,7 +84,7 @@ describe("Analysis Page Integration Testing", () => {
 
     // Check if scrollIntoView was called (by the ref logic)
     expect(mockScrollIntoView).toHaveBeenCalledTimes(1);
-    expect(mockScrollIntoView).toHaveBeenCalledWith({ behavior: "smooth" });
+    expect(mockScrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth' });
   });
 
   // Test 3: Hash Scrolling (to analysis-results)
@@ -104,8 +100,8 @@ describe("Analysis Page Integration Testing", () => {
   // });
 
   // Test 4: No Scroll on Invalid Hash
-  it("should not scroll if hash is present but element does not exist", () => {
-    renderPage("/analysis#non-existent-id");
+  it('should not scroll if hash is present but element does not exist', () => {
+    renderPage('/analysis#non-existent-id');
 
     act(() => {
       vi.advanceTimersByTime(100);

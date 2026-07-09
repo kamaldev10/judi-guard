@@ -1,21 +1,17 @@
 //--------------------------NEW LOGIC------------------------------
-import { create } from "zustand";
+import { create } from 'zustand';
 import {
   startAnalysisApi,
   getAnalysisStatusApi,
   getAnalysisResultsApi,
   executeActionApi,
   undoActionApi,
-} from "@/lib/services/videoAnalysisApi";
-import {
-  getMyVideosApi,
-  searchVideoApi,
-  getVideoCommentsApi,
-} from "@/lib/services/channelApi"; // Import dari service baru
-import { toast } from "sonner";
+} from '@/lib/services/videoAnalysisApi';
+import { getMyVideosApi, searchVideoApi, getVideoCommentsApi } from '@/lib/services/channelApi'; // Import dari service baru
+import { toast } from 'sonner';
 
 export const useVideoAnalysisStore = create((set, get) => ({
-  step: "SELECTION", // 'SELECTION' | 'PREVIEW' | 'SCANNING' | 'RESULTS'
+  step: 'SELECTION', // 'SELECTION' | 'PREVIEW' | 'SCANNING' | 'RESULTS'
 
   // --- STATE DATA ---
   myVideos: [], // List video grid
@@ -32,8 +28,8 @@ export const useVideoAnalysisStore = create((set, get) => ({
   filters: {
     page: 1,
     limit: 10,
-    riskLevel: "",
-    search: "",
+    riskLevel: '',
+    search: '',
   },
 
   // --- STATE LOADING ---
@@ -46,7 +42,7 @@ export const useVideoAnalysisStore = create((set, get) => ({
   // --- INITIATE ACTIONS ---
 
   // 1. Fetch Video Channel (Load Initial / Load More)
-  fetchMyVideos: async (pageToken = "") => {
+  fetchMyVideos: async (pageToken = '') => {
     const { isLoadingList } = get();
     if (isLoadingList) return; // guard clause dulu
 
@@ -57,14 +53,12 @@ export const useVideoAnalysisStore = create((set, get) => ({
       const data = await getMyVideosApi(pageToken);
 
       set((state) => ({
-        myVideos: isLoadMore
-          ? [...state.myVideos, ...data.videos]
-          : data.videos,
+        myVideos: isLoadMore ? [...state.myVideos, ...data.videos] : data.videos,
         nextPageToken: data.nextPageToken,
       }));
     } catch (err) {
       console.error(err);
-      toast.error("Gagal memuat daftar video.");
+      toast.error('Gagal memuat daftar video.');
     } finally {
       set({ isLoadingList: false });
     }
@@ -90,7 +84,7 @@ export const useVideoAnalysisStore = create((set, get) => ({
 
       get().selectVideoForPreview(formattedVideo);
     } catch (err) {
-      const msg = err.response?.data?.message || "Video tidak ditemukan.";
+      const msg = err.response?.data?.message || 'Video tidak ditemukan.';
       toast.error(msg);
     } finally {
       set({ isSearching: false });
@@ -101,7 +95,7 @@ export const useVideoAnalysisStore = create((set, get) => ({
   selectVideoForPreview: async (videoData) => {
     set({
       selectedVideo: videoData,
-      step: "PREVIEW",
+      step: 'PREVIEW',
       previewComments: [],
       isLoadingPreview: true,
     });
@@ -111,7 +105,7 @@ export const useVideoAnalysisStore = create((set, get) => ({
       const data = await getVideoCommentsApi(videoData.id); // Ingat pakai .id bukan .youtubeVideoId
       set({ previewComments: data.comments });
     } catch (err) {
-      toast.error("Gagal memuat preview komentar.");
+      toast.error('Gagal memuat preview komentar.');
     } finally {
       set({ isLoadingPreview: false });
     }
@@ -125,7 +119,7 @@ export const useVideoAnalysisStore = create((set, get) => ({
     if (!selectedVideo) return;
 
     // Move to Scanning UI
-    set({ step: "SCANNING", isScanning: true, error: null });
+    set({ step: 'SCANNING', isScanning: true, error: null });
 
     try {
       // Call Backend to create ticket
@@ -133,14 +127,14 @@ export const useVideoAnalysisStore = create((set, get) => ({
 
       set({
         activeAnalysisId: ticket.analysisId,
-        analysisStatus: "PROCESSING",
+        analysisStatus: 'PROCESSING',
       });
 
       // Start Polling
       get().startPolling(ticket.analysisId);
     } catch (err) {
-      const msg = err.response?.data?.message || "Gagal memulai analisis.";
-      set({ error: msg, isScanning: false, step: "PREVIEW" });
+      const msg = err.response?.data?.message || 'Gagal memulai analisis.';
+      set({ error: msg, isScanning: false, step: 'PREVIEW' });
       toast.error(msg);
     }
   },
@@ -155,24 +149,24 @@ export const useVideoAnalysisStore = create((set, get) => ({
         analysisStats: statusData, // Update UI with progress (e.g. totalCommentsFetched)
       });
 
-      if (statusData.status === "COMPLETED") {
+      if (statusData.status === 'COMPLETED') {
         // SUCCESS: Move to Results
-        set({ isScanning: false, step: "RESULTS" });
-        toast.success("Analisis Selesai!");
+        set({ isScanning: false, step: 'RESULTS' });
+        toast.success('Analisis Selesai!');
         get().fetchResults(); // Load initial results
-      } else if (statusData.status === "FAILED") {
+      } else if (statusData.status === 'FAILED') {
         // FAIL: Show Error
         set({ isScanning: false, error: statusData.errorMessage });
         toast.error(`Analisis Gagal: ${statusData.errorMessage}`);
       } else {
         // STILL PROCESSING: Retry in 2s
-        if (get().step === "SCANNING") {
+        if (get().step === 'SCANNING') {
           // Guard clause if user navigated away
           setTimeout(() => get().startPolling(analysisId), 2000);
         }
       }
     } catch (err) {
-      console.warn("Polling error, retrying...", err);
+      console.warn('Polling error, retrying...', err);
       // Retry on network glitch
       setTimeout(() => get().startPolling(analysisId), 3000);
     }
@@ -181,7 +175,7 @@ export const useVideoAnalysisStore = create((set, get) => ({
   cancelScanning: () => {
     // Kembalikan ke step PREVIEW agar user bisa coba lagi atau pilih video lain
     set({
-      step: "PREVIEW",
+      step: 'PREVIEW',
       isScanning: false,
       error: null,
       activeAnalysisId: null, // Reset ID agar tidak polling lagi
@@ -209,7 +203,7 @@ export const useVideoAnalysisStore = create((set, get) => ({
       });
     } catch (err) {
       console.error(err);
-      toast.error("Gagal memuat hasil komentar.");
+      toast.error('Gagal memuat hasil komentar.');
     } finally {
       set({ isLoadingResults: false });
     }
@@ -226,7 +220,7 @@ export const useVideoAnalysisStore = create((set, get) => ({
     try {
       const result = await executeActionApi(activeAnalysisId, {
         commentIds: selectedIds,
-        action: "DELETE", // Backend Anda support DELETE/HOLD
+        action: 'DELETE', // Backend Anda support DELETE/HOLD
         banAuthor: banAuthor,
       });
 
@@ -235,7 +229,7 @@ export const useVideoAnalysisStore = create((set, get) => ({
 
       return true; // Signal success
     } catch (err) {
-      const msg = err.response?.data?.message || "Gagal menghapus komentar";
+      const msg = err.response?.data?.message || 'Gagal menghapus komentar';
       toast.error(msg);
       return false;
     } finally {
@@ -256,7 +250,7 @@ export const useVideoAnalysisStore = create((set, get) => ({
 
       return true;
     } catch (err) {
-      const msg = err.response?.data?.message || "Gagal mengembalikan komentar";
+      const msg = err.response?.data?.message || 'Gagal mengembalikan komentar';
       toast.error(msg); // Tampilkan error jika gagal
       throw err; // Throw agar toast.promise di UI tahu ini gagal
     } finally {
@@ -276,7 +270,7 @@ export const useVideoAnalysisStore = create((set, get) => ({
 
   // Navigation Helper
   resetToSelection: () => {
-    set({ step: "SELECTION", activeAnalysisId: null, comments: [] });
+    set({ step: 'SELECTION', activeAnalysisId: null, comments: [] });
   },
 }));
 

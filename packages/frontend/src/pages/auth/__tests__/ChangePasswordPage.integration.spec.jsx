@@ -1,15 +1,15 @@
-import React from "react";
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { MemoryRouter } from "react-router-dom";
-import { HeadProvider, Title } from "react-head";
-import ChangePasswordPage from "../ChangePasswordPage";
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { MemoryRouter } from 'react-router-dom';
+import { HeadProvider, Title } from 'react-head';
+import ChangePasswordPage from '../ChangePasswordPage';
 
 // --- 3. Mocking Dependencies ---
 
 // Mock 'react-head' (Title component)
-vi.mock("react-head", async (importOriginal) => {
+vi.mock('react-head', async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
@@ -21,13 +21,13 @@ vi.mock("react-head", async (importOriginal) => {
 });
 
 // Mock 'lucide-react' (ArrowLeft icon)
-vi.mock("lucide-react", () => ({
+vi.mock('lucide-react', () => ({
   ArrowLeft: (props) => <svg data-testid="arrow-left-icon" {...props} />,
 }));
 
 // Mock 'react-router-dom' (useNavigate)
 const mockNavigate = vi.fn();
-vi.mock("react-router-dom", async (importOriginal) => {
+vi.mock('react-router-dom', async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
@@ -36,39 +36,37 @@ vi.mock("react-router-dom", async (importOriginal) => {
 });
 
 // Mock the child component
-vi.mock("@/components/auth/ChangePasswordForm", () => ({
-  default: vi.fn(() => (
-    <div data-testid="mock-change-password-form">Mock Form</div>
-  )),
+vi.mock('@/components/auth/ChangePasswordForm', () => ({
+  default: vi.fn(() => <div data-testid="mock-change-password-form">Mock Form</div>),
 }));
 
 // Mock 'useAuthStore'
 const mockUseAuthStore = vi.fn();
-vi.mock("@/stores/authStore", () => ({
+vi.mock('@/stores/authStore', () => ({
   useAuthStore: (selector) => mockUseAuthStore(selector),
 }));
 
 // --- Test Suite ---
 
-describe("Change Password Page Integration Testing", () => {
+describe('Change Password Page Integration Testing', () => {
   const user = userEvent.setup();
-  const mockUser = { username: "testuser" };
-  const mockGuest = { username: "Pengguna" }; // Default
+  const mockUser = { username: 'testuser' };
+  const mockGuest = { username: 'Pengguna' }; // Default
 
   // Helper render
-  const renderPage = (route = "/change-password") => {
+  const renderPage = (route = '/change-password') => {
     return render(
       <HeadProvider>
         <MemoryRouter initialEntries={[route]}>
           <ChangePasswordPage />
         </MemoryRouter>
-      </HeadProvider>
+      </HeadProvider>,
     );
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
-    document.title = "";
+    document.title = '';
 
     // Set default mock for authStore (logged in user)
     mockUseAuthStore.mockImplementation((selector) => {
@@ -76,7 +74,7 @@ describe("Change Password Page Integration Testing", () => {
         currentUser: mockUser, // (Tambahkan state lain jika perlu, misal: isAuthenticated: true)
       };
 
-      if (typeof selector === "function") {
+      if (typeof selector === 'function') {
         return selector(state);
       }
       return state;
@@ -84,18 +82,18 @@ describe("Change Password Page Integration Testing", () => {
   });
 
   // Test 1: Document Title
-  it("should set the document title correctly", () => {
+  it('should set the document title correctly', () => {
     renderPage();
-    expect(document.title).toBe("Ganti Password | Judi Guard");
+    expect(document.title).toBe('Ganti Password | Judi Guard');
   });
 
   // Test 2: Render Content (User Logged In)
-  it("should render header, welcome message, and the form when user is logged in", () => {
+  it('should render header, welcome message, and the form when user is logged in', () => {
     renderPage();
 
     // Check heading
     expect(
-      screen.getByRole("heading", { level: 1, name: /ganti kata sandi/i })
+      screen.getByRole('heading', { level: 1, name: /ganti kata sandi/i }),
     ).toBeInTheDocument();
 
     // Check welcome message with specific username
@@ -103,21 +101,19 @@ describe("Change Password Page Integration Testing", () => {
     expect(screen.getByText(mockUser.username)).toBeInTheDocument();
 
     // Check back button
-    expect(
-      screen.getByRole("button", { name: /kembali ke profil/i })
-    ).toBeInTheDocument();
-    expect(screen.getByTestId("arrow-left-icon")).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /kembali ke profil/i })).toBeInTheDocument();
+    expect(screen.getByTestId('arrow-left-icon')).toBeInTheDocument();
 
     // Check that the mock form component is rendered
-    expect(screen.getByTestId("mock-change-password-form")).toBeInTheDocument();
+    expect(screen.getByTestId('mock-change-password-form')).toBeInTheDocument();
   });
 
   // Test 3: Render Content (User Not Logged In / Guest)
-  it("should render with default username if currentUser is null", () => {
+  it('should render with default username if currentUser is null', () => {
     // Override mock for this test
     mockUseAuthStore.mockImplementation((selector) => {
       const state = { currentUser: null }; // State dengan user null
-      if (typeof selector === "function") {
+      if (typeof selector === 'function') {
         return selector(state);
       }
       return state; // Kembalikan seluruh state
@@ -134,7 +130,7 @@ describe("Change Password Page Integration Testing", () => {
   it("should call navigate to '/profile' when back button is clicked", async () => {
     renderPage();
 
-    const backButton = screen.getByRole("button", {
+    const backButton = screen.getByRole('button', {
       name: /kembali ke profil/i,
     });
 
@@ -143,6 +139,6 @@ describe("Change Password Page Integration Testing", () => {
 
     // Verify navigation
     expect(mockNavigate).toHaveBeenCalledTimes(1);
-    expect(mockNavigate).toHaveBeenCalledWith("/profile");
+    expect(mockNavigate).toHaveBeenCalledWith('/profile');
   });
 });

@@ -1,13 +1,13 @@
-import React from "react";
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { PasswordInput } from "../PasswordInput";
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { PasswordInput } from '../PasswordInput';
 
 // --- Mocking Dependencies ---
 
 // 1. Mock 'lucide-react' icons
-vi.mock("lucide-react", () => ({
+vi.mock('lucide-react', () => ({
   Eye: (props) => <svg data-testid="eye-icon" {...props} />,
   EyeOff: (props) => <svg data-testid="eye-off-icon" {...props} />,
   KeyRound: (props) => <svg data-testid="key-icon" {...props} />,
@@ -15,7 +15,7 @@ vi.mock("lucide-react", () => ({
 
 // --- Test Suite ---
 
-describe("PasswordInput Component", () => {
+describe('PasswordInput Component', () => {
   const user = userEvent.setup();
 
   // 2. Siapkan mock functions untuk props
@@ -24,9 +24,9 @@ describe("PasswordInput Component", () => {
 
   // 3. Props default
   const defaultProps = {
-    id: "password",
-    label: "Kata Sandi",
-    value: "",
+    id: 'password',
+    label: 'Kata Sandi',
+    value: '',
     onChange: mockOnChange,
     show: false, // Default tersembunyi
     setShow: mockSetShow,
@@ -39,7 +39,7 @@ describe("PasswordInput Component", () => {
   });
 
   // Tes 1: Render Awal (Password Tersembunyi)
-  it("should render correctly with initial props (password hidden)", () => {
+  it('should render correctly with initial props (password hidden)', () => {
     render(<PasswordInput {...defaultProps} />);
 
     // Cek Label
@@ -48,29 +48,29 @@ describe("PasswordInput Component", () => {
     // Cek Input
     const input = screen.getByLabelText(defaultProps.label);
     expect(input).toBeInTheDocument();
-    expect(input).toHaveAttribute("id", defaultProps.id);
-    expect(input).toHaveAttribute("type", "password"); // Tipe awal password
-    expect(input).toHaveValue(""); // Nilai awal kosong
+    expect(input).toHaveAttribute('id', defaultProps.id);
+    expect(input).toHaveAttribute('type', 'password'); // Tipe awal password
+    expect(input).toHaveValue(''); // Nilai awal kosong
     expect(input).toBeEnabled(); // Tidak loading
 
     // Cek Tombol Toggle
     // Cari berdasarkan peran (button), mungkin perlu label aksesibilitas
     // Kita cari berdasarkan ikon di dalamnya untuk sementara
-    const toggleButton = screen.getByRole("button");
+    const toggleButton = screen.getByRole('button');
     expect(toggleButton).toBeInTheDocument();
 
     // Cek Ikon
-    expect(screen.getByTestId("key-icon")).toBeInTheDocument(); // Ikon kunci
-    expect(screen.getByTestId("eye-icon")).toBeInTheDocument(); // Ikon mata (tersembunyi)
-    expect(screen.queryByTestId("eye-off-icon")).not.toBeInTheDocument(); // Ikon mata coret tidak ada
+    expect(screen.getByTestId('key-icon')).toBeInTheDocument(); // Ikon kunci
+    expect(screen.getByTestId('eye-icon')).toBeInTheDocument(); // Ikon mata (tersembunyi)
+    expect(screen.queryByTestId('eye-off-icon')).not.toBeInTheDocument(); // Ikon mata coret tidak ada
   });
 
   // Tes 2: Interaksi Mengetik (onChange)
-  it("should call onChange prop with correct event when user types", async () => {
+  it('should call onChange prop with correct event when user types', async () => {
     render(<PasswordInput {...defaultProps} value="current" />); // Beri nilai awal
     const input = screen.getByLabelText(defaultProps.label);
 
-    await user.type(input, "abc");
+    await user.type(input, 'abc');
 
     // Verifikasi onChange dipanggil 3x
     expect(mockOnChange).toHaveBeenCalledTimes(3);
@@ -81,11 +81,11 @@ describe("PasswordInput Component", () => {
   });
 
   // Tes 3: Interaksi Toggle Klik (setShow)
-  it("should call setShow prop with the opposite value when toggle button is clicked", async () => {
+  it('should call setShow prop with the opposite value when toggle button is clicked', async () => {
     render(<PasswordInput {...defaultProps} show={false} />); // Mulai dari false
 
     // Cari tombol toggle (mungkin perlu aria-label jika ada tombol lain)
-    const toggleButton = screen.getByRole("button");
+    const toggleButton = screen.getByRole('button');
     await user.click(toggleButton);
 
     // Verifikasi setShow dipanggil dengan true
@@ -99,15 +99,15 @@ describe("PasswordInput Component", () => {
 
     // Cek tipe input
     const input = screen.getByLabelText(defaultProps.label);
-    expect(input).toHaveAttribute("type", "text");
+    expect(input).toHaveAttribute('type', 'text');
 
     // Cek ikon tombol toggle
-    expect(screen.getByTestId("eye-off-icon")).toBeInTheDocument(); // Ikon mata coret ada
-    expect(screen.queryByTestId("eye-icon")).not.toBeInTheDocument(); // Ikon mata tidak ada
+    expect(screen.getByTestId('eye-off-icon')).toBeInTheDocument(); // Ikon mata coret ada
+    expect(screen.queryByTestId('eye-icon')).not.toBeInTheDocument(); // Ikon mata tidak ada
   });
 
   // Tes 5: Render State Loading
-  it("should disable the input when isLoading prop is true", () => {
+  it('should disable the input when isLoading prop is true', () => {
     render(<PasswordInput {...defaultProps} isLoading={true} />); // Render dengan isLoading=true
 
     // Cek input disabled
@@ -115,7 +115,7 @@ describe("PasswordInput Component", () => {
     expect(input).toBeDisabled();
 
     // (Opsional) Tombol toggle biasanya tidak perlu disabled saat loading input
-    const toggleButton = screen.getByRole("button");
+    const toggleButton = screen.getByRole('button');
     expect(toggleButton).toBeEnabled();
   });
 });

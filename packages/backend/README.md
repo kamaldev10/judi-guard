@@ -24,7 +24,7 @@ Dokumentasi ini berfokus **khusus pada aspek teknis backend**.
 
 ### 1. Prasyarat
 
-- Node.js ≥ 18.x
+- Node.js ≥ 20.x
 - MongoDB (local / cloud)
 - Akun Google Developer (YouTube API)
 
@@ -85,39 +85,83 @@ Server berjalan di:
 http://localhost:3001
 ```
 
-## 🌐 API Endpoint (Ringkas)
-
-| Method | Endpoint                      | Deskripsi         | Auth |
-| :----- | :---------------------------- | ----------------- | ---- |
-| POST   | /api/auth/register            | Registrasi user   | ❌   |
-| POST   | /api/auth/login               | Login & JWT       | ❌   |
-| GET    | /api/users/me                 | Profil user       | ✅   |
-| GET    | /api/videos/:videoId/comments | Ambil komentar    | ✅   |
-| POST   | /api/analysis/comments        | Analisis komentar | ✅   |
-| POST   | /api/moderation/action        | Moderasi komentar | ✅   |
-| GET    | /api/moderation/history       | Riwayat moderasi  | ✅   |
-
 ---
 
 ## 📂 Struktur Folder
 
 ```bash
 backend/
-├── docs/
-├── src/
-│ ├── api/
-│ │ ├── controllers/
-│ │ ├── services/
-│ │ ├── models/
-│ │ ├── routes/
-│ │ ├── middlewares/
-│ │ └── validators/
-│ ├── config/
-│ ├── core/
-│ ├── utils/
-│ ├── app.js
-│ └── server.js
-├── .env.example
+├── src
+│   ├── app
+│   │   ├── api.routes.js
+│   │   ├── app.js
+│   │   └── server.js
+│   ├── config
+│   │   ├── database.js
+│   │   └── environment.js
+│   ├── middlewares
+│   │   ├── ensure-youtube-access.js
+│   │   ├── error-handler.js
+│   │   ├── is-authenticated.js
+│   │   └── validate-request.js
+│   ├── modules
+│   │   ├── auth
+│   │   │   ├── auth.controller.js
+│   │   │   ├── auth.routes.js
+│   │   │   ├── auth.service.js
+│   │   │   ├── auth.validator.js
+│   │   │   └── password-reset.model.js
+│   │   ├── channel
+│   │   │   ├── channel.controller.js
+│   │   │   ├── channel.routes.js
+│   │   │   ├── channel.service.js
+│   │   │   └── channel.validator.js
+│   │   ├── configuration
+│   │   │   ├── configuration.controller.js
+│   │   │   ├── configuration.model.js
+│   │   │   ├── configuration.routes.js
+│   │   │   └── configuration.service.js
+│   │   ├── studio
+│   │   │   ├── studio.controller.js
+│   │   │   ├── studio.routes.js
+│   │   │   └── studio.service.js
+│   │   ├── text-predict
+│   │   │   ├── textPredict.controller.js
+│   │   │   └── textPredict.routes.js
+│   │   ├── user
+│   │   │   ├── user.controller.js
+│   │   │   ├── user.model.js
+│   │   │   ├── user.routes.js
+│   │   │   └── user.service.js
+│   │   └── video-analysis
+│   │       ├── video-analysis.model.js
+│   │       ├── videoAnalysis.controller.js
+│   │       ├── videoAnalysis.routes.js
+│   │       └── videoAnalysis.service.js
+│   └── shared
+│       ├── clients
+│       │   └── ml-api.client.js
+│       ├── constants
+│       │   └── gambling-keywords.js
+│       ├── services
+│       │   ├── ai.service.js
+│       │   └── youtube.service.js
+│       └── utils
+│           ├── commentProcessor.js
+│           ├── emailSender.js
+│           ├── errors.js
+│           ├── googleOAuth2Client.js
+│           ├── jwt.js
+│           ├── pdf-generator.js
+│           └── youtubeHelper.js
+├── test
+│   ├── comment-deletion.test.js
+│   └── setup.js
+├── Dockerfile
+├── eslint.config.mjs
+├── jest.setup.js
+├── jsconfig.json
+├── package-lock.json
 ├── package.json
 └── README.md
 ```

@@ -1,19 +1,12 @@
-import React from "react";
-import PropTypes from "prop-types";
-import { motion } from "framer-motion";
-import { Loader2, Trash2 } from "lucide-react";
-import { FormattedDate } from "@/lib/utils/formatters";
-import { useVideoAnalysisStore } from "@/stores/videoAnalysisStore";
+import React from 'react';
+import PropTypes from 'prop-types';
+import { motion } from 'framer-motion';
+import { Loader2, Trash2 } from 'lucide-react';
+import { FormattedDate } from '@/lib/utils/formatters';
+import { useVideoAnalysisStore } from '@/stores/videoAnalysisStore';
 
-const CommentList = ({
-  comments,
-  onDeleteSingle,
-  isActionInProgress,
-  isLoadingInitial,
-}) => {
-  const deleteSingleComment = useVideoAnalysisStore(
-    (state) => state.deleteSingleComment
-  );
+const CommentList = ({ comments, onDeleteSingle, isActionInProgress, isLoadingInitial }) => {
+  const deleteSingleComment = useVideoAnalysisStore((state) => state.deleteSingleComment);
 
   const handleDelete = async (commentId, commentText) => {
     try {
@@ -26,9 +19,7 @@ const CommentList = ({
 
   return (
     <div id="comment-list" className="space-y-4">
-      <h3 className="text-lg font-semibold text-teal-700">
-        Daftar Komentar ({comments.length})
-      </h3>
+      <h3 className="text-lg font-semibold text-teal-700">Daftar Komentar ({comments.length})</h3>
 
       {isLoadingInitial && comments.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-10 text-gray-500">
@@ -44,16 +35,16 @@ const CommentList = ({
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, delay: index * 0.05 }}
               className={`p-4 rounded-lg border-l-4 ${
-                comment.classification === "JUDI"
-                  ? "border-pink-500 bg-pink-50 hover:bg-pink-100"
-                  : "border-blue-500 bg-blue-50 hover:bg-blue-100"
+                comment.classification === 'JUDI'
+                  ? 'border-pink-500 bg-pink-50 hover:bg-pink-100'
+                  : 'border-blue-500 bg-blue-50 hover:bg-blue-100'
               } transition-colors duration-150 shadow-sm`}
             >
               <div className="flex justify-between items-start gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-xs font-medium text-gray-600">
-                      {comment.commentAuthorDisplayName || "Anonim"}
+                      {comment.commentAuthorDisplayName || 'Anonim'}
                     </span>
                     <span className="text-xs text-gray-400">
                       <FormattedDate isoDate={comment.commentPublishedAt} />
@@ -88,12 +79,12 @@ const CommentList = ({
               <div className="mt-2 flex justify-between items-center">
                 <span
                   className={`text-xs font-medium px-2 py-1 rounded ${
-                    comment.classification === "JUDI"
-                      ? "bg-pink-100 text-pink-800"
-                      : "bg-blue-100 text-blue-800"
+                    comment.classification === 'JUDI'
+                      ? 'bg-pink-100 text-pink-800'
+                      : 'bg-blue-100 text-blue-800'
                   }`}
                 >
-                  {comment.classification || "N/A"}
+                  {comment.classification || 'N/A'}
                 </span>
                 {comment.aiConfidenceScore && (
                   <span className="text-xs text-gray-500">
@@ -123,7 +114,7 @@ CommentList.propTypes = {
       commentPublishedAt: PropTypes.string.isRequired,
       classification: PropTypes.string.isRequired,
       aiConfidenceScore: PropTypes.number,
-    })
+    }),
   ).isRequired,
   deleteSingleComment: PropTypes.func.isRequired,
   isActionInProgress: PropTypes.bool.isRequired,

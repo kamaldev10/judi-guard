@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wdth,wght@0,75..100,100..900;1,75..100,100..900&display=swap');
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -98,7 +98,6 @@
   --color-brand-700: var(--brand-700);
 }
 
-
 .dark {
   --background: oklch(0.141 0.005 285.823);
   --foreground: oklch(0.985 0 0);
@@ -182,7 +181,6 @@
 
 /* Respect user's motion preferences */
 @media (prefers-reduced-motion: reduce) {
-
   *,
   *::before,
   *::after {
@@ -195,7 +193,7 @@
 
 /* Glassmorphism surface — frosted, translucent, works in both themes */
 .glass-surface {
-  background: oklch(1 0 0 / 55%);
+  background: oklch(95% 0.05 181);
   backdrop-filter: blur(20px) saturate(160%);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
   border: 1px solid oklch(1 0 0 / 45%);
@@ -203,7 +201,7 @@
 }
 
 .dark .glass-surface {
-  background: oklch(0.21 0.01 260 / 55%);
+  background: oklch(44% 0.07 188);
   border: 1px solid oklch(1 0 0 / 8%);
   box-shadow: 0 8px 32px oklch(0 0 0 / 45%);
 }
@@ -307,7 +305,7 @@
 /* ---------------------------------------------------------------------- */
 
 .heading-gradient {
-  background-image: linear-gradient(to right, var(--brand-700), var(--brand-400));
+  background-image: linear-gradient(to right, var(--brand-700), var(--brand-600));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -369,7 +367,7 @@
 
 .scan-pulse::before,
 .scan-pulse::after {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   border-radius: inherit;
@@ -382,7 +380,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-
   .scan-pulse::before,
   .scan-pulse::after {
     animation: none;

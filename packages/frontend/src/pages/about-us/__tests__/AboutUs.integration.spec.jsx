@@ -1,15 +1,15 @@
-import React from "react";
-import { act, render, screen } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { MemoryRouter } from "react-router-dom";
-import { HeadProvider, Title } from "react-head";
-import AboutUs from "../AboutUs";
+import React from 'react';
+import { act, render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { MemoryRouter } from 'react-router-dom';
+import { HeadProvider, Title } from 'react-head';
+import AboutUs from '../AboutUs';
 
 // --- 3. Mocking Dependencies ---
 
 // Mock 'framer-motion' (components and hooks)
 
-vi.mock("framer-motion", () => ({
+vi.mock('framer-motion', () => ({
   motion: {
     section: React.forwardRef(({ children, ...props }, ref) => (
       <section ref={ref} {...props}>
@@ -57,7 +57,7 @@ vi.mock("framer-motion", () => ({
 }));
 
 // Mock 'react-head' (Title component)
-vi.mock("react-head", async (importOriginal) => {
+vi.mock('react-head', async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
@@ -73,61 +73,61 @@ vi.mock("react-head", async (importOriginal) => {
 // Mock 'lucide-react' (if any are used, though not in this file)
 
 // Mock image assets
-vi.mock("@/assets/images", () => ({
-  AboutFeatures: "mock-about-features.png",
+vi.mock('@/assets/images', () => ({
+  AboutFeatures: 'mock-about-features.png',
 }));
 
-vi.mock("@/constants", () => ({
+vi.mock('@/constants', () => ({
   membersData: [
     {
       id: 1,
-      name: "Ferdian Sakti Sudrajat Akbar",
-      cohortID: "MC209D5Y0290",
-      university: "Universitas Hasyim Asy’ari Tebuireng Jombang",
-      role: "Machine Learning",
-      image: "mock-ferdian-image.png",
+      name: 'Ferdian Sakti Sudrajat Akbar',
+      cohortID: 'MC209D5Y0290',
+      university: 'Universitas Hasyim Asy’ari Tebuireng Jombang',
+      role: 'Machine Learning',
+      image: 'mock-ferdian-image.png',
     },
     {
       id: 2,
-      name: "Ali Musthafa Kamal",
-      cohortID: "FC844D5Y0671",
-      university: "Universitas Riau",
-      role: "FrontEnd BackEnd",
-      image: "mock-ali-image.png,",
+      name: 'Ali Musthafa Kamal',
+      cohortID: 'FC844D5Y0671',
+      university: 'Universitas Riau',
+      role: 'FrontEnd BackEnd',
+      image: 'mock-ali-image.png,',
     },
   ],
 }));
 
 // --- Test Suite ---
 
-describe("About Us Page Integration Testing", () => {
+describe('About Us Page Integration Testing', () => {
   const mockMembersDataForTest = [
     {
       id: 1,
-      name: "Ferdian Sakti Sudrajat Akbar",
-      cohortID: "MC209D5Y0290",
-      university: "Universitas Hasyim Asy’ari Tebuireng Jombang",
-      role: "Machine Learning",
-      image: "mock-ferdian-image.png",
+      name: 'Ferdian Sakti Sudrajat Akbar',
+      cohortID: 'MC209D5Y0290',
+      university: 'Universitas Hasyim Asy’ari Tebuireng Jombang',
+      role: 'Machine Learning',
+      image: 'mock-ferdian-image.png',
     },
     {
       id: 2,
-      name: "Ali Musthafa Kamal",
-      cohortID: "FC844D5Y0671",
-      university: "Universitas Riau",
-      role: "FrontEnd BackEnd",
-      image: "mock-ali-image.png,",
+      name: 'Ali Musthafa Kamal',
+      cohortID: 'FC844D5Y0671',
+      university: 'Universitas Riau',
+      role: 'FrontEnd BackEnd',
+      image: 'mock-ali-image.png,',
     },
   ];
 
   // Helper render
-  const renderPage = (route = "/about-us") => {
+  const renderPage = (route = '/about-us') => {
     return render(
       <HeadProvider>
         <MemoryRouter initialEntries={[route]}>
           <AboutUs />
         </MemoryRouter>
-      </HeadProvider>
+      </HeadProvider>,
     );
   };
 
@@ -136,7 +136,7 @@ describe("About Us Page Integration Testing", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    document.title = "";
+    document.title = '';
     // Silence React errors about "act"
     console.error = mockConsoleError;
   });
@@ -146,52 +146,47 @@ describe("About Us Page Integration Testing", () => {
   });
 
   // Test 1: Document Title
-  it("should set the document title correctly", () => {
+  it('should set the document title correctly', () => {
     renderPage();
-    expect(document.title).toBe("Tentang Kami | Judi Guard");
+    expect(document.title).toBe('Tentang Kami | Judi Guard');
   });
 
   // Test 2: Intro Section Content
-  it("should render the intro section content", () => {
+  it('should render the intro section content', () => {
     renderPage();
-    expect(
-      screen.getByRole("heading", { level: 1, name: /judi guard/i })
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/aplikasi berbasis AI yang mampu mendeteksi/i)
-    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: /judi guard/i })).toBeInTheDocument();
+    expect(screen.getByText(/aplikasi berbasis AI yang mampu mendeteksi/i)).toBeInTheDocument();
   });
 
   // Test 3: Features Section Content
-  it("should render the features section content", () => {
+  it('should render the features section content', () => {
     renderPage();
 
     // Check heading
     expect(
-      screen.getByRole("heading", { level: 2, name: /apa yang kami tawarkan/i })
+      screen.getByRole('heading', {
+        level: 2,
+        name: /apa yang kami tawarkan/i,
+      }),
     ).toBeInTheDocument();
 
     // Check illustration image
     const featureImage = screen.getByAltText(/fitur judi guard/i);
     expect(featureImage).toBeInTheDocument();
-    expect(featureImage).toHaveAttribute("src", "mock-about-features.png");
+    expect(featureImage).toHaveAttribute('src', 'mock-about-features.png');
 
     // Check for a few feature list items
-    expect(
-      screen.getByText(/Analisis Komentar Berbasis AI/i)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Analisis Komentar Berbasis AI/i)).toBeInTheDocument();
     expect(screen.getByText(/Integrasi YouTube API/i)).toBeInTheDocument();
     expect(screen.getByText(/Dashboard Interaktif/i)).toBeInTheDocument();
   });
 
   // Test 4: Team Section Content
-  it("should render the team section and all mock team members", () => {
+  it('should render the team section and all mock team members', () => {
     renderPage();
 
     // Check heading
-    expect(
-      screen.getByRole("heading", { level: 2, name: /tim kami/i })
-    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: /tim kami/i })).toBeInTheDocument();
 
     // Check that all mock members are rendered
     mockMembersDataForTest.forEach((member) => {
@@ -202,18 +197,18 @@ describe("About Us Page Integration Testing", () => {
 
       const memberImage = screen.getByAltText(member.name);
       expect(memberImage).toBeInTheDocument();
-      expect(memberImage).toHaveAttribute("src", member.image);
+      expect(memberImage).toHaveAttribute('src', member.image);
     });
 
     // Check total number of members rendered
-    const memberImages = screen.getAllByRole("img", {
+    const memberImages = screen.getAllByRole('img', {
       name: /(Ferdian Sakti Sudrajat Akbar|Ali Musthafa Kamal)/i,
     });
     expect(memberImages).toHaveLength(mockMembersDataForTest.length);
   });
 
   // Test 5: Scrolling behavior (useEffect)
-  it("should attempt to scroll to intro-section", () => {
+  it('should attempt to scroll to intro-section', () => {
     // Mock scrollIntoView
     const mockScrollIntoView = vi.fn();
     window.HTMLElement.prototype.scrollIntoView = mockScrollIntoView;
@@ -221,7 +216,7 @@ describe("About Us Page Integration Testing", () => {
     // Use fake timers to control setTimeout
     vi.useFakeTimers();
 
-    renderPage("/about-us");
+    renderPage('/about-us');
 
     // Advance the timer by 100ms
     act(() => {
@@ -230,7 +225,7 @@ describe("About Us Page Integration Testing", () => {
 
     // Check if scrollIntoView was called
     expect(mockScrollIntoView).toHaveBeenCalledTimes(1);
-    expect(mockScrollIntoView).toHaveBeenCalledWith({ behavior: "smooth" });
+    expect(mockScrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth' });
 
     // Clean up timer mock
     vi.useRealTimers();

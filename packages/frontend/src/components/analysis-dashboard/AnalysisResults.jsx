@@ -1,5 +1,5 @@
-import { useEffect, useState, useRef } from "react";
-import { useVideoAnalysisStore } from "@/stores/videoAnalysisStore";
+import { useEffect, useState, useRef } from 'react';
+import { useVideoAnalysisStore } from '@/stores/videoAnalysisStore';
 import {
   ArrowLeft,
   ShieldCheck,
@@ -14,8 +14,8 @@ import {
   Filter,
   Undo2,
   Ban,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,8 +25,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"; // Pastikan komponen UI ini ada (Shadcn)
-import { toast } from "sonner";
+} from '@/components/ui/alert-dialog'; // Pastikan komponen UI ini ada (Shadcn)
+import { toast } from 'sonner';
 
 export default function AnalysisResults() {
   const {
@@ -44,7 +44,7 @@ export default function AnalysisResults() {
   } = useVideoAnalysisStore();
 
   const [selectedIds, setSelectedIds] = useState([]);
-  const [searchInput, setSearchInput] = useState("");
+  const [searchInput, setSearchInput] = useState('');
   const searchTimeout = useRef(null); // Debounce search
 
   // State untuk Dialog Konfirmasi Hapus
@@ -63,7 +63,7 @@ export default function AnalysisResults() {
   // Jika ya, kita tampilkan tombol Undo. Jika belum, tampilkan tombol Delete.
   const isSelectionDeleted =
     selectedIds.length > 0 &&
-    comments.find((c) => c._id === selectedIds[0])?.actionTaken === "DELETE";
+    comments.find((c) => c._id === selectedIds[0])?.actionTaken === 'DELETE';
 
   const toggleSelectAll = (e) => {
     if (e.target.checked) {
@@ -72,9 +72,7 @@ export default function AnalysisResults() {
           (c) =>
             // Pilih yang JUDI dan statusnya BUKAN Delete/Hold.
             // Jadi 'NONE' dan 'RESTORED' akan masuk.
-            c.classification === "JUDI" &&
-            c.actionTaken !== "DELETE" &&
-            c.actionTaken !== "HOLD",
+            c.classification === 'JUDI' && c.actionTaken !== 'DELETE' && c.actionTaken !== 'HOLD',
         )
         .map((c) => c._id);
       setSelectedIds(actionableIds);
@@ -84,9 +82,7 @@ export default function AnalysisResults() {
   };
 
   const toggleSelectOne = (id) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   };
 
   // --- HANDLERS ---
@@ -112,18 +108,18 @@ export default function AnalysisResults() {
       // 4. Tampilkan Toast dengan Logic Undo yang Lebih Kuat
       toast.success(`Berhasil menghapus ${count} komentar`, {
         duration: 8000,
-        description: "Salah hapus? Klik Undo untuk membatalkan.",
+        description: 'Salah hapus? Klik Undo untuk membatalkan.',
         action: {
-          label: "UNDO SEKARANG",
+          label: 'UNDO SEKARANG',
           onClick: () => {
             // Panggil fungsi undo
             const promise = executeUndo(idsToDelete);
 
             // Beri feedback visual saat proses Undo berjalan
             toast.promise(promise, {
-              loading: "Mengembalikan komentar...",
-              success: "Komentar berhasil dikembalikan!",
-              error: "Gagal melakukan undo",
+              loading: 'Mengembalikan komentar...',
+              success: 'Komentar berhasil dikembalikan!',
+              error: 'Gagal melakukan undo',
             });
           },
         },
@@ -145,7 +141,7 @@ export default function AnalysisResults() {
     if (searchTimeout.current) clearTimeout(searchTimeout.current);
 
     searchTimeout.current = setTimeout(() => {
-      setFilter("search", val);
+      setFilter('search', val);
     }, 500);
   };
 
@@ -161,9 +157,7 @@ export default function AnalysisResults() {
           >
             <ArrowLeft size={18} /> Analisis Baru
           </Button>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Hasil Analisis Video
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Hasil Analisis Video</h1>
         </div>
         {/* <div className="flex gap-2">
           <Button
@@ -185,9 +179,7 @@ export default function AnalysisResults() {
               <MessageSquare size={22} />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-500">
-                Total Komentar
-              </p>
+              <p className="text-sm font-medium text-gray-500">Total Komentar</p>
               <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
                 {analysisStats?.totalCommentsAnalyzed || 0}
               </h3>
@@ -202,9 +194,7 @@ export default function AnalysisResults() {
               <AlertTriangle size={22} />
             </div>
             <div>
-              <p className="text-sm font-medium text-red-600/80">
-                Potensi Spam
-              </p>
+              <p className="text-sm font-medium text-red-600/80">Potensi Spam</p>
               <h3 className="text-2xl font-bold text-red-700 dark:text-red-500">
                 {analysisStats?.totalSpamDetected || 0}
               </h3>
@@ -219,13 +209,9 @@ export default function AnalysisResults() {
               <ShieldCheck size={22} />
             </div>
             <div>
-              <p className="text-sm font-medium text-green-600/80">
-                Status Moderasi
-              </p>
+              <p className="text-sm font-medium text-green-600/80">Status Moderasi</p>
               <h3 className="text-xl font-bold text-green-700 dark:text-green-500">
-                {analysisStats?.moderationStatus === "CLEANED"
-                  ? "BERSIH"
-                  : "BUTUH TINDAKAN"}
+                {analysisStats?.moderationStatus === 'CLEANED' ? 'BERSIH' : 'BUTUH TINDAKAN'}
               </h3>
             </div>
           </div>
@@ -238,17 +224,17 @@ export default function AnalysisResults() {
         <div className="flex flex-col gap-4 border-b p-4 md:flex-row md:items-center md:justify-between bg-gray-50/50 dark:bg-gray-900/50 rounded-t-xl">
           {/* Filter Tabs */}
           <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0">
-            {["", "HIGH", "MEDIUM", "LOW"].map((level) => (
+            {['', 'HIGH', 'MEDIUM', 'LOW'].map((level) => (
               <button
                 key={level}
-                onClick={() => setFilter("riskLevel", level)}
+                onClick={() => setFilter('riskLevel', level)}
                 className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all border ${
                   filters.riskLevel === level
-                    ? "bg-gray-900 text-white border-gray-900 dark:bg-white dark:text-gray-900"
-                    : "bg-white text-gray-600 border-gray-200 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700"
+                    ? 'bg-gray-900 text-white border-gray-900 dark:bg-white dark:text-gray-900'
+                    : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700'
                 }`}
               >
-                {level === "" ? "Semua" : `${level} Risk`}
+                {level === '' ? 'Semua' : `${level} Risk`}
               </button>
             ))}
           </div>
@@ -271,7 +257,7 @@ export default function AnalysisResults() {
                     className="gap-2 text-blue-600 border-blue-200 hover:bg-blue-50"
                   >
                     {isExecuting ? (
-                      "Mengembalikan..."
+                      'Mengembalikan...'
                     ) : (
                       <>
                         <Undo2 size={16} /> Kembalikan (Undo)
@@ -351,7 +337,7 @@ export default function AnalysisResults() {
                 comments.map((item) => (
                   <tr
                     key={item._id}
-                    className={`group transition-colors ${selectedIds.includes(item._id) ? "bg-blue-50 dark:bg-blue-900/20" : "hover:bg-gray-50 dark:hover:bg-gray-900/30"}`}
+                    className={`group transition-colors ${selectedIds.includes(item._id) ? 'bg-blue-50 dark:bg-blue-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-900/30'}`}
                   >
                     <td className="px-6 py-4 text-center">
                       <input
@@ -363,10 +349,10 @@ export default function AnalysisResults() {
                         disabled={
                           (selectedIds.length > 0 &&
                             isSelectionDeleted &&
-                            item.actionTaken === "NONE") ||
+                            item.actionTaken === 'NONE') ||
                           (selectedIds.length > 0 &&
                             !isSelectionDeleted &&
-                            item.actionTaken === "DELETE")
+                            item.actionTaken === 'DELETE')
                         }
                       />
                     </td>
@@ -381,9 +367,7 @@ export default function AnalysisResults() {
                             {item.commentAuthorDisplayName}
                           </p>
                           <p className="text-xs text-gray-400 mt-0.5">
-                            {new Date(
-                              item.commentPublishedAt,
-                            ).toLocaleDateString()}
+                            {new Date(item.commentPublishedAt).toLocaleDateString()}
                           </p>
                         </div>
                       </div>
@@ -431,15 +415,15 @@ export default function AnalysisResults() {
                       </div>
                     </td>
                     <td className="px-6 py-4 align-top text-center">
-                      {item.actionTaken === "DELETE" ? (
+                      {item.actionTaken === 'DELETE' ? (
                         <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800 dark:bg-gray-800 dark:text-gray-300">
                           Dihapus
                         </span>
-                      ) : item.actionTaken === "HOLD" ? (
+                      ) : item.actionTaken === 'HOLD' ? (
                         <span className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-800">
                           Ditahan
                         </span>
-                      ) : item.classification === "JUDI" ? (
+                      ) : item.classification === 'JUDI' ? (
                         <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800 animate-pulse">
                           Perlu Review
                         </span>
@@ -466,9 +450,7 @@ export default function AnalysisResults() {
                 size="sm"
                 className="h-8 w-8 p-0"
                 disabled={pagination.currentPage === 1}
-                onClick={() =>
-                  fetchResults({ page: pagination.currentPage - 1 })
-                }
+                onClick={() => fetchResults({ page: pagination.currentPage - 1 })}
               >
                 <ChevronLeft size={16} />
               </Button>
@@ -480,9 +462,7 @@ export default function AnalysisResults() {
                 size="sm"
                 className="h-8 w-8 p-0"
                 disabled={pagination.currentPage === pagination.totalPages}
-                onClick={() =>
-                  fetchResults({ page: pagination.currentPage + 1 })
-                }
+                onClick={() => fetchResults({ page: pagination.currentPage + 1 })}
               >
                 <ChevronRight size={16} />
               </Button>
@@ -492,12 +472,9 @@ export default function AnalysisResults() {
         <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>
-                Hapus {selectedIds.length} Komentar?
-              </AlertDialogTitle>
+              <AlertDialogTitle>Hapus {selectedIds.length} Komentar?</AlertDialogTitle>
               <AlertDialogDescription>
-                Tindakan ini akan memindahkan komentar ke folder Spam/Rejected
-                di YouTube.
+                Tindakan ini akan memindahkan komentar ke folder Spam/Rejected di YouTube.
               </AlertDialogDescription>
             </AlertDialogHeader>
 
@@ -515,8 +492,7 @@ export default function AnalysisResults() {
                     Blokir Penulis Juga (Ban Author)
                   </span>
                   <span className="text-xs text-gray-500">
-                    User ini tidak akan bisa berkomentar lagi di channel Anda
-                    selamanya.{" "}
+                    User ini tidak akan bisa berkomentar lagi di channel Anda selamanya.{' '}
                   </span>
                 </div>
               </label>
@@ -524,21 +500,13 @@ export default function AnalysisResults() {
               {banAuthor && (
                 <div className="rounded-md bg-orange-50 p-3 text-sm text-orange-800 border border-orange-200 animate-in slide-in-from-top-2 fade-in">
                   <div className="flex gap-2">
-                    <AlertTriangle
-                      size={18}
-                      className="shrink-0 mt-0.5 text-orange-600"
-                    />
+                    <AlertTriangle size={18} className="shrink-0 mt-0.5 text-orange-600" />
                     <div className="space-y-1">
-                      <p className="font-bold">
-                        Perhatian: Fitur Undo Terbatas!
-                      </p>
+                      <p className="font-bold">Perhatian: Fitur Undo Terbatas!</p>
                       <p className="text-xs leading-relaxed">
-                        Jika penulis diblokir, mengembalikan komentar (Undo){" "}
-                        <strong>
-                          tidak akan membuat komentar muncul kembali
-                        </strong>{" "}
-                        di publik kecuali Anda membuka blokir user tersebut
-                        secara manual di YouTube Studio.
+                        Jika penulis diblokir, mengembalikan komentar (Undo){' '}
+                        <strong>tidak akan membuat komentar muncul kembali</strong> di publik
+                        kecuali Anda membuka blokir user tersebut secara manual di YouTube Studio.
                       </p>
                     </div>
                   </div>
@@ -559,7 +527,7 @@ export default function AnalysisResults() {
                 onClick={handleDeleteConfirm}
                 className="bg-red-600 hover:bg-red-700 text-white"
               >
-                {isExecuting ? "Memproses..." : "Ya, Hapus Sekarang"}
+                {isExecuting ? 'Memproses...' : 'Ya, Hapus Sekarang'}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -573,18 +541,18 @@ export default function AnalysisResults() {
 
 function RiskBadge({ level, score, ...props }) {
   const config = {
-    HIGH: { color: "bg-red-100 text-red-700 border-red-200", label: "TINGGI" },
+    HIGH: { color: 'bg-red-100 text-red-700 border-red-200', label: 'TINGGI' },
     MEDIUM: {
-      color: "bg-orange-100 text-orange-700 border-orange-200",
-      label: "SEDANG",
+      color: 'bg-orange-100 text-orange-700 border-orange-200',
+      label: 'SEDANG',
     },
     LOW: {
-      color: "bg-yellow-100 text-yellow-700 border-yellow-200",
-      label: "RENDAH",
+      color: 'bg-yellow-100 text-yellow-700 border-yellow-200',
+      label: 'RENDAH',
     },
     NONE: {
-      color: "bg-green-100 text-green-700 border-green-200",
-      label: "AMAN",
+      color: 'bg-green-100 text-green-700 border-green-200',
+      label: 'AMAN',
     },
   };
 
@@ -598,9 +566,7 @@ function RiskBadge({ level, score, ...props }) {
         {style.label}
       </span>
       {score > 0 && (
-        <span className="text-[10px] text-gray-400">
-          AI: {(score * 100).toFixed(0)}%
-        </span>
+        <span className="text-[10px] text-gray-400">AI: {(score * 100).toFixed(0)}%</span>
       )}
     </div>
   );

@@ -1,24 +1,18 @@
-import { Eye, EyeOff, KeyRound } from "lucide-react";
-import React, { memo } from "react";
-import PropTypes from "prop-types";
+import { Eye, EyeOff, KeyRound } from 'lucide-react';
+import React, { memo } from 'react';
+import PropTypes from 'prop-types';
 
 export const PasswordInput = memo(
   ({ id, label, value, onChange, show, setShow, isLoading, ...props }) => (
     <div className="relative">
-      <label
-        htmlFor={id}
-        className="block text-sm font-semibold text-gray-600 mb-2"
-      >
+      <label htmlFor={id} className="block text-sm font-semibold text-gray-600 mb-2">
         {label}
       </label>
       <div className="relative">
-        <KeyRound
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-          size={20}
-        />
+        <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
         <input
           {...props}
-          type={show ? "text" : "password"}
+          type={show ? 'text' : 'password'}
           id={id}
           value={value}
           onChange={onChange}
@@ -37,7 +31,7 @@ export const PasswordInput = memo(
         </button>
       </div>
     </div>
-  )
+  ),
 );
 PasswordInput.propTypes = {
   id: PropTypes.string,

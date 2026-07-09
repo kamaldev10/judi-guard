@@ -1,16 +1,16 @@
-import React from "react";
-import { render, screen } from "@testing-library/react";
-import { describe, it, expect } from "vitest";
-import AnalysisTooltip from "../AnalysisTooltip"; // <-- Sesuaikan path impor Anda
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
+import AnalysisTooltip from '../AnalysisTooltip'; // <-- Sesuaikan path impor Anda
 
 // --- Mock Data ---
 
 // 1. Buat data payload tiruan (struktur sesuai propTypes)
 const mockPayload = [
   {
-    name: "JUDI", // Nama kategori
+    name: 'JUDI', // Nama kategori
     value: 1500, // Nilai numerik (jumlah)
-    color: "#EF4444", // Warna slice (merah)
+    color: '#EF4444', // Warna slice (merah)
     payload: {
       // Data objek asli
       percent: 0.75, // Persentase (0-1) -> 75.0%
@@ -22,9 +22,9 @@ const mockPayload = [
 
 const mockPayloadNonJudi = [
   {
-    name: "NON_JUDI",
+    name: 'NON_JUDI',
     value: 500,
-    color: "#22C55E", // Warna slice (hijau)
+    color: '#22C55E', // Warna slice (hijau)
     payload: {
       percent: 0.25, // -> 25.0%
     },
@@ -33,13 +33,11 @@ const mockPayloadNonJudi = [
 
 // --- Test Suite ---
 
-describe("Analysis Tooltip Component Testing", () => {
+describe('Analysis Tooltip Component Testing', () => {
   // Tes 1: State Tidak Aktif
   it("should render null when 'active' prop is false", () => {
     // Render dengan active=false. 'container' adalah elemen div terluar
-    const { container } = render(
-      <AnalysisTooltip active={false} payload={mockPayload} />
-    );
+    const { container } = render(<AnalysisTooltip active={false} payload={mockPayload} />);
     // Komponen harus me-return null, jadi 'container' harus kosong
     expect(container.firstChild).toBeNull();
   });
@@ -47,26 +45,22 @@ describe("Analysis Tooltip Component Testing", () => {
   // Tes 2: Payload Kosong
   it("should render null when 'payload' prop is empty or null", () => {
     // Tes dengan payload array kosong
-    const { container: containerEmpty } = render(
-      <AnalysisTooltip active={true} payload={[]} />
-    );
+    const { container: containerEmpty } = render(<AnalysisTooltip active={true} payload={[]} />);
     expect(containerEmpty.firstChild).toBeNull();
 
     // Tes dengan payload null
-    const { container: containerNull } = render(
-      <AnalysisTooltip active={true} payload={null} />
-    );
+    const { container: containerNull } = render(<AnalysisTooltip active={true} payload={null} />);
     expect(containerNull.firstChild).toBeNull();
   });
 
   // Tes 3: State Aktif - Render Data
-  describe("when active and payload are valid", () => {
+  describe('when active and payload are valid', () => {
     beforeEach(() => {
       // Render komponen dengan props aktif untuk tes di dalam describe ini
       render(<AnalysisTooltip active={true} payload={mockPayload} />);
     });
 
-    it("should render the category name with the correct color", () => {
+    it('should render the category name with the correct color', () => {
       // Cari elemen berdasarkan nama kategori
       const nameElement = screen.getByText(mockPayload[0].name); // "JUDI"
       expect(nameElement).toBeInTheDocument();
@@ -74,7 +68,7 @@ describe("Analysis Tooltip Component Testing", () => {
       expect(nameElement).toHaveStyle(`color: ${mockPayload[0].color}`);
     });
 
-    it("should render the formatted value (count)", () => {
+    it('should render the formatted value (count)', () => {
       // Cari elemen berdasarkan teks "Jumlah:" lalu cek sibling/parentnya
       // Atau cari langsung teks value yang sudah diformat
       const valueText = mockPayload[0].value.toLocaleString(); // "1,500"
@@ -83,7 +77,7 @@ describe("Analysis Tooltip Component Testing", () => {
       expect(screen.getByText(/jumlah:/i)).toBeInTheDocument();
     });
 
-    it("should render the formatted percentage", () => {
+    it('should render the formatted percentage', () => {
       // Hitung dan format persentase
       const percentageText = `${(mockPayload[0].payload.percent * 100).toFixed(1)}%`; // "75.0%"
       expect(screen.getByText(percentageText)).toBeInTheDocument();
@@ -93,7 +87,7 @@ describe("Analysis Tooltip Component Testing", () => {
   });
 
   // Tes 4: State Aktif - Data Berbeda (opsional, untuk memastikan fleksibilitas)
-  it("should render correctly with different payload data", () => {
+  it('should render correctly with different payload data', () => {
     render(<AnalysisTooltip active={true} payload={mockPayloadNonJudi} />);
 
     const nameElement = screen.getByText(mockPayloadNonJudi[0].name); // "NON_JUDI"

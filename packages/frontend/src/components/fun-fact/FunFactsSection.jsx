@@ -1,16 +1,16 @@
-import React, { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { factsData } from "@/constants";
-import { FactCard } from "./FactCard";
+import React, { useRef } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { factsData } from '@/constants';
+import { FactCard } from './FactCard';
 
 // Komponen Utama
 const FunFactsSection = () => {
   const targetRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: targetRef,
-    offset: ["start end", "end start"],
+    offset: ['start end', 'end start'],
   });
-  const pathHeight = useTransform(scrollYProgress, [0.05, 0.9], ["0%", "100%"]);
+  const pathHeight = useTransform(scrollYProgress, [0.05, 0.9], ['0%', '100%']);
 
   return (
     <section
@@ -76,11 +76,7 @@ const FunFactsSection = () => {
                 />
 
                 {/* Kontainer Kartu (Logic Responsif ada di sini) */}
-                <div
-                  className={`w-1/2 ${
-                    isLeft ? "pr-4 sm:pr-8" : "pl-4 sm:pl-8 ml-auto"
-                  }`}
-                >
+                <div className={`w-1/2 ${isLeft ? 'pr-4 sm:pr-8' : 'pl-4 sm:pl-8 ml-auto'}`}>
                   <FactCard fact={fact} />
                 </div>
               </motion.div>

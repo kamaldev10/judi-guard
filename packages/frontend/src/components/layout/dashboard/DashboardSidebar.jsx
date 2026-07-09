@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   ScanSearch,
@@ -7,22 +7,22 @@ import {
   LogOut,
   BookOpen,
   Globe,
-} from "lucide-react";
-import { LogoWithSlogan } from "@/assets/images";
-import { Button } from "@/components/ui/button";
+} from 'lucide-react';
+import { LogoWithSlogan } from '@/assets/images';
+import { Button } from '@/components/ui/button';
 
 export default function DashboardSidebar() {
   const navigate = useNavigate();
   const handleDirectToPublicSite = () => {
-    navigate("/");
+    navigate('/');
   };
 
   const navItems = [
-    { name: "Overview", path: "/dashboard", icon: LayoutDashboard, end: true },
-    { name: "Analisis Video", path: "/dashboard/analysis", icon: ScanSearch },
-    { name: "Riwayat", path: "/dashboard/history", icon: History },
-    { name: "Konfigurasi", path: "/dashboard/config", icon: ShieldAlert },
-    { name: "Panduan Penggunaan", path: "/dashboard/guide", icon: BookOpen },
+    { name: 'Overview', path: '/dashboard', icon: LayoutDashboard, end: true },
+    { name: 'Analisis Video', path: '/dashboard/analysis', icon: ScanSearch },
+    { name: 'Riwayat', path: '/dashboard/history', icon: History },
+    { name: 'Konfigurasi', path: '/dashboard/config', icon: ShieldAlert },
+    { name: 'Panduan Penggunaan', path: '/dashboard/guide', icon: BookOpen },
   ];
 
   return (
@@ -42,8 +42,8 @@ export default function DashboardSidebar() {
             className={({ isActive }) =>
               `flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                 isActive
-                  ? "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
-                  : "text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+                  ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
+                  : 'text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
               }`
             }
           >

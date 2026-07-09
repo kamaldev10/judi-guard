@@ -1,10 +1,6 @@
-import { create } from "zustand";
-import {
-  updateMyProfileApi,
-  deleteMyAccountApi,
-  getCurrentUserApi,
-} from "@/lib/services/userApi";
-import { useAuthStore } from "./authStore";
+import { create } from 'zustand';
+import { updateMyProfileApi, deleteMyAccountApi, getCurrentUserApi } from '@/lib/services/userApi';
+import { useAuthStore } from './authStore';
 
 export const useUserStore = create((set) => ({
   isLoadingUser: false,
@@ -20,7 +16,7 @@ export const useUserStore = create((set) => ({
     try {
       const res = await getCurrentUserApi();
 
-      if (res?.status === "success" && res.data?.user) {
+      if (res?.status === 'success' && res.data?.user) {
         // Update auth store jika data user valid
         const { token, setSession } = useAuthStore.getState();
         if (token) {
@@ -39,8 +35,7 @@ export const useUserStore = create((set) => ({
 
   // Refresh user session
   refreshUser: async () => {
-    const token =
-      useAuthStore.getState().token || localStorage.getItem("judiGuardToken");
+    const token = useAuthStore.getState().token || localStorage.getItem('judiGuardToken');
     if (!token) {
       useAuthStore.getState().clearSession();
       return null;
@@ -49,7 +44,7 @@ export const useUserStore = create((set) => ({
     set({ isLoadingUser: true, error: null });
     try {
       const res = await getCurrentUserApi();
-      if (res?.status === "success" && res.data?.user) {
+      if (res?.status === 'success' && res.data?.user) {
         useAuthStore.getState().setSession(res.data.user, token); // Use the existing token
         return res.data.user;
       }
@@ -75,7 +70,7 @@ export const useUserStore = create((set) => ({
     try {
       const res = await updateMyProfileApi(profileData);
 
-      if (res?.status === "success" && res.data?.user) {
+      if (res?.status === 'success' && res.data?.user) {
         const { token, setSession } = useAuthStore.getState();
         if (token) {
           setSession(res.data.user, token);

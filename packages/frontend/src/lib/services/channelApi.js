@@ -1,11 +1,11 @@
-import { apiClient } from "./apiClient";
+import { apiClient } from './apiClient';
 
 /**
  * 1. Ambil Daftar Video Channel Saya (Grid Video)
  * GET /api/videos?pageToken=...
  */
-export const getMyVideosApi = async (pageToken = "") => {
-  const response = await apiClient.get("/videos", {
+export const getMyVideosApi = async (pageToken = '') => {
+  const response = await apiClient.get('/videos', {
     params: { pageToken },
   });
   // Return struktur: { videos: [], nextPageToken, totalResults }
@@ -17,7 +17,7 @@ export const getMyVideosApi = async (pageToken = "") => {
  * GET /api/videos/search?query=...
  */
 export const searchVideoApi = async (query) => {
-  const response = await apiClient.get("/videos/search", {
+  const response = await apiClient.get('/videos/search', {
     params: { query },
   });
   // Return single video object
@@ -28,7 +28,7 @@ export const searchVideoApi = async (query) => {
  * 3. Ambil Preview Komentar
  * GET /api/videos/:videoId/comments?pageToken=...
  */
-export const getVideoCommentsApi = async (videoId, pageToken = "") => {
+export const getVideoCommentsApi = async (videoId, pageToken = '') => {
   const response = await apiClient.get(`/videos/${videoId}/comments`, {
     params: { pageToken },
   });

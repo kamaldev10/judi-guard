@@ -1,7 +1,7 @@
-import { useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { useYoutubeStore } from "@/stores/youtubeStore";
-import { Bell, Youtube, LogOut, ChevronDown } from "lucide-react";
+import { useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useYoutubeStore } from '@/stores/youtubeStore';
+import { Bell, Youtube, LogOut, ChevronDown } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,7 +9,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/DropdownMenu";
+} from '@/components/ui/DropdownMenu';
 
 export default function DashboardHeader() {
   const location = useLocation();
@@ -38,25 +38,21 @@ export default function DashboardHeader() {
   // Helper: Generate Breadcrumb Title dari URL
   const getPageTitle = () => {
     const path = location.pathname;
-    if (path === "/dashboard" || path === "/dashboard/") return "Overview";
-    if (path.includes("/analysis")) return "Analisis Video";
-    if (path.includes("/history")) return "Riwayat Analisis";
-    if (path.includes("/config")) return "Konfigurasi (Whitelist/Blacklist)";
-    if (path.includes("/settings")) return "Pengaturan Akun";
-    if (path.includes("/guide")) return "Panduan Penggunaan";
-    return "Dashboard";
+    if (path === '/dashboard' || path === '/dashboard/') return 'Overview';
+    if (path.includes('/analysis')) return 'Analisis Video';
+    if (path.includes('/history')) return 'Riwayat Analisis';
+    if (path.includes('/config')) return 'Konfigurasi (Whitelist/Blacklist)';
+    if (path.includes('/settings')) return 'Pengaturan Akun';
+    if (path.includes('/guide')) return 'Panduan Penggunaan';
+    return 'Dashboard';
   };
 
   return (
     <header className="sticky top-0 z-30 flex h-20 w-full items-center justify-between border-b bg-white px-10 shadow-sm dark:bg-gray-950 dark:border-gray-800">
       {/* Left: Breadcrumbs */}
       <div className="flex flex-col">
-        <span className="text-xs text-gray-500 dark:text-gray-400">
-          Pages / Dashboard
-        </span>
-        <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
-          {getPageTitle()}
-        </h1>
+        <span className="text-xs text-gray-500 dark:text-gray-400">Pages / Dashboard</span>
+        <h1 className="text-lg font-semibold text-gray-900 dark:text-white">{getPageTitle()}</h1>
       </div>
 
       {/* Right: Actions & Profile */}

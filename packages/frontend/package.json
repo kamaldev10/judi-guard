@@ -19,6 +19,7 @@
     "cy:run:chrome": "cypress run --browser chrome"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.62.0",
     "@formspree/react": "^3.0.0",
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
     "@fortawesome/react-fontawesome": "^0.2.2",

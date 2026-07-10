@@ -78,7 +78,7 @@ const options = {
       { name: 'Text Predict', description: 'Prediksi teks tunggal' },
     ],
   },
-  apis: ['./src/modules/**/*.controller.js'],
+  apis: ['./src/modules/**/*.controller.js', './src/app/api.routes.js'],
 };
 
 export const swaggerSpec = swaggerJsdoc(options);

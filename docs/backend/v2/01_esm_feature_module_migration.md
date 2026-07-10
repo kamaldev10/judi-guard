@@ -71,24 +71,26 @@ Untuk memisahkan logika bisnis dari mekanisme penyimpanan data (database), kita 
 ```
 src/
 ├── app/
+│   ├── api.routes.js              # Router utama (/api/*)
 │   ├── app.js
 │   └── server.js
 ├── config/
 │   ├── database.js
 │   └── environment.js
-├── middlewares/              # Shared middlewares
-│   ├── ensure-youtube-access.js
+├── middlewares/                    # Shared middlewares
 │   ├── error-handler.js
-│   ├── is-authenticated.js
-│   └── validate-request.js
-├── modules/                  # FEATURE MODULES (Kebab-Case)
+│   ├── require-auth.js             # JWT auth + workspace auto-init
+│   ├── require-permission.js       # RBAC permission checker
+│   ├── require-youtube-access.js   # YouTube token verify & auto-refresh
+│   └── validate-request.js         # Joi validation wrapper
+├── modules/                        # FEATURE MODULES (Kebab-Case)
 │   ├── auth/
 │   │   ├── auth.controller.js
 │   │   ├── auth.routes.js
 │   │   ├── auth.service.js
-│   │   ├── auth.repository.js
 │   │   ├── auth.validator.js
 │   │   └── password-reset.model.js
+│   │   └── password-reset.repository.js
 │   ├── user/
 │   │   ├── user.controller.js
 │   │   ├── user.service.js
@@ -100,13 +102,13 @@ src/
 │   │   ├── video-analysis.service.js
 │   │   ├── video-analysis.repository.js
 │   │   ├── video-analysis.validator.js
-│   │   └── video-analysis.model.js
+│   │   ├── video-analysis.model.js
+│   │   ├── analyzed-comment.model.js
+│   │   ├── analyzed-comment.repository.js
+│   │   └── comment-processor.service.js
 │   ├── text-predict/
 │   │   ├── text-predict.controller.js
-│   │   ├── text-predict.routes.js
-│   │   ├── text-predict.service.js
-│   │   ├── text-predict.repository.js
-│   │   └── analyzed-comment.model.js
+│   │   └── text-predict.routes.js
 │   ├── studio/
 │   │   ├── studio.controller.js
 │   │   ├── studio.routes.js
@@ -115,26 +117,36 @@ src/
 │   │   ├── channel.controller.js
 │   │   ├── channel.routes.js
 │   │   ├── channel.service.js
-│   │   ├── channel.repository.js
-│   │   └── channel.model.js
-│   └── configuration/
-│       ├── configuration.controller.js
-│       ├── configuration.routes.js
-│       ├── configuration.service.js
-│       ├── configuration.repository.js
-│       └── configuration.model.js
-├── shared/                   # Shared logic & services
+│   │   └── channel.validator.js
+│   ├── configuration/
+│   │   ├── configuration.controller.js
+│   │   ├── configuration.routes.js
+│   │   ├── configuration.service.js
+│   │   ├── configuration.repository.js
+│   │   └── configuration.model.js
+│   └── workspace/                   # BARU: RBAC multi-tenant
+│       ├── workspace.controller.js
+│       ├── workspace.routes.js
+│       ├── workspace.service.js
+│       ├── workspace.repository.js
+│       ├── workspace.model.js
+│       └── workspace.validator.js
+├── shared/
 │   ├── clients/
-│   │   └── ml-api.client.js       # Instance Axios terkonfigurasi untuk ML API
+│   │   ├── google-oauth2.client.js # Google OAuth 2.0 client
+│   │   └── ml-api.client.js        # Instance Axios untuk ML API
+│   ├── constants/
+│   │   └── gambling-keywords.js
 │   ├── services/
-│   │   ├── youtube.service.js     # Shared YouTube API wrapper
-│   │   └── ai.service.js          # Shared AI core processing (jika relevan lintas modul)
+│   │   ├── youtube.service.js      # Shared YouTube API wrapper
+│   │   └── ai.service.js           # Shared AI core processing
 │   └── utils/
+│       ├── comment-processor.js
 │       ├── email-sender.js
 │       ├── errors.js
-│       ├── google-oauth2-client.js
 │       ├── jwt.js
-│       └── pdf-generator.js
+│       ├── pdf-generator.js
+│       └── youtube-helper.js
 ```
 
 ---
@@ -205,3 +217,6 @@ src/
 2. [x] Jalankan unit test (`npm run test`) dan server dev (`npm run dev`) untuk memverifikasi fungsionalitas aplikasi (Selesai ✅).
 
 ---
+
+_Spesifikasi Selesai: 10 Juli 2026_
+_🔒 Dokumen ini telah diverifikasi dan dikunci — semua fase (1–6) telah selesai dilaksanakan._

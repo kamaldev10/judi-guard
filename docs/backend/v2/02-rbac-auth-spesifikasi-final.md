@@ -289,19 +289,19 @@ Field audit: `actorId`, `workspaceId`, `action`, `resourceType`, `resourceId`, `
 
 ### Fase 1 — Auth & middleware
 
-- [ ] Tambah field `role` di `User` (default `member`; user pertama / registrasi mandiri = `owner` workspace implisit)
-- [ ] Buat `require-auth.js`, `require-permission.js`, `require-youtube-access.js`
-- [ ] Hapus fallback guest di `ensure-youtube-access.js`
-- [ ] Perbaiki inkonsistensi JWT payload (`userId` vs `id`)
-- [ ] Terapkan matrix permission ke semua route inti
-- [ ] Deprecate route analysis lama & guest auth routes
-- [ ] Integration test: 401 / 403 / 409 matrix
+- [x] Tambah field `role` di `User` (default `member`; user pertama / registrasi mandiri = `owner` workspace implisit)
+- [x] Buat `require-auth.js`, `require-permission.js`, `require-youtube-access.js`
+- [x] Hapus fallback guest di `ensure-youtube-access.js`
+- [x] Perbaiki inkonsistensi JWT payload (`userId` vs `id`)
+- [x] Terapkan matrix permission ke semua route inti
+- [x] Deprecate route analysis lama & guest auth routes
+- [x] Integration test: 401 / 403 / 409 matrix
 
 ### Fase 2 — Workspace
 
-- [ ] Model `Workspace`, `WorkspaceMember`
-- [ ] Endpoint `/api/workspace/members/*`
-- [ ] Owner UI untuk kelola anggota & permission
+- [x] Model `Workspace`, `WorkspaceMember`
+- [x] Endpoint `/api/workspace/members/*`
+- [x] Owner UI untuk kelola anggota & permission
 
 ---
 
@@ -319,3 +319,4 @@ Field audit: `actorId`, `workspaceId`, `action`, `resourceType`, `resourceId`, `
 ---
 
 _Spesifikasi terkunci: Juli 2026_
+_🔒 Dokumen ini telah diverifikasi dan dikunci — semua Fase 1 & 2 telah selesai dilaksanakan dan diuji (22/22 integration test PASS)._

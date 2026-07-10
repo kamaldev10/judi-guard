@@ -5,10 +5,14 @@ let mongoServer;
 
 // Dijalankan sekali sebelum semua tes dimulai
 beforeAll(async () => {
-  mongoServer = await MongoMemoryServer.create();
+  mongoServer = await MongoMemoryServer.create({
+    instance: {
+      launchTimeout: 60000,
+    },
+  });
   const mongoUri = mongoServer.getUri();
   await mongoose.connect(mongoUri);
-});
+}, 180_000);
 
 // Dijalankan sekali setelah semua tes selesai
 afterAll(async () => {

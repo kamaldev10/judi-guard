@@ -270,4 +270,4 @@ const generatePeriodReport = (reportData, res) => {
   doc.end();
 };
 
-export default { generateModerationReport, generatePeriodReport };
+export { generateModerationReport, generatePeriodReport };

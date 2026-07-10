@@ -26,4 +26,4 @@ const getYouTubeVideoId = (urlOrId) => {
   return null;
 };
 
-export default { getYouTubeVideoId };
+export { getYouTubeVideoId };

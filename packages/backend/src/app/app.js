@@ -5,6 +5,8 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import cookieParser from 'cookie-parser';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from '#config/swagger.js';
 import errorHandler from '#middlewares/error-handler.js';
 import { NotFoundError } from '#shared/utils/errors.js';
 
@@ -72,6 +74,15 @@ app.use(cookieParser());
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
+
+// Swagger documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  explorer: true,
+  customSiteTitle: 'Judi Guard API Docs',
+  swaggerOptions: {
+    persistAuthorization: true,
+  },
+}));
 
 app.use('/api', apiRouter);
 

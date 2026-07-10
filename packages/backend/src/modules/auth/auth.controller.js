@@ -8,7 +8,52 @@ const GUEST_CALLBACK_URL = `${config.apiUrl || 'http://localhost:3001'}/api/auth
 const USER_CALLBACK_URL = `${config.apiUrl || 'http://localhost:3001'}/api/auth/youtube/callback`;
 
 /**
- * Menangani registrasi pengguna baru.
+ * @openapi
+ * /auth/register:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Registrasi pengguna baru
+ *     description: Mendaftarkan user baru, mengirim OTP ke email untuk verifikasi
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [username, email, password]
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 minLength: 3
+ *                 example: johndoe
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: john@example.com
+ *               password:
+ *                 type: string
+ *                 minLength: 6
+ *                 example: rahasia123
+ *     responses:
+ *       201:
+ *         description: Registrasi berhasil, OTP dikirim
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status: { type: string, example: success }
+ *                 message: { type: string }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     user: { type: object }
+ *       400:
+ *         description: Validasi gagal
+ *         $ref: '#/components/schemas/ValidationError'
+ *       409:
+ *         description: Email/username sudah terdaftar
+ *         $ref: '#/components/schemas/Error'
  */
 const handleRegister = async (req, res, next) => {
   try {
@@ -28,7 +73,33 @@ const handleRegister = async (req, res, next) => {
 };
 
 /**
- * Menangani verifikasi OTP.
+ * @openapi
+ * /auth/verify-otp:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Verifikasi kode OTP
+ *     description: Verifikasi email menggunakan kode OTP yang dikirim saat registrasi
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, otpCode]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: john@example.com
+ *               otpCode:
+ *                 type: string
+ *                 example: '123456'
+ *     responses:
+ *       200:
+ *         description: OTP valid, akun terverifikasi
+ *       400:
+ *         description: OTP salah/kedaluwarsa
+ *         $ref: '#/components/schemas/Error'
  */
 const handleVerifyOtp = async (req, res, next) => {
   try {
@@ -50,7 +121,30 @@ const handleVerifyOtp = async (req, res, next) => {
 };
 
 /**
- * Menangani permintaan pengiriman ulang OTP.
+ * @openapi
+ * /auth/resend-otp:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Kirim ulang kode OTP
+ *     description: Mengirim ulang kode OTP ke email user
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: john@example.com
+ *     responses:
+ *       200:
+ *         description: OTP baru berhasil dikirim
+ *       429:
+ *         description: Terlalu banyak permintaan
+ *         $ref: '#/components/schemas/Error'
  */
 const handleResendOtp = async (req, res, next) => {
   try {
@@ -67,7 +161,44 @@ const handleResendOtp = async (req, res, next) => {
 };
 
 /**
- * Menangani login pengguna dengan email dan password.
+ * @openapi
+ * /auth/login:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Login pengguna
+ *     description: Login menggunakan email dan password, mengembalikan JWT token
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, password]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: john@example.com
+ *               password:
+ *                 type: string
+ *                 example: rahasia123
+ *     responses:
+ *       200:
+ *         description: Login berhasil
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status: { type: string, example: success }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     token: { type: string }
+ *                     user: { type: object }
+ *       401:
+ *         description: Email/password salah
+ *         $ref: '#/components/schemas/Error'
  */
 const handleLogin = async (req, res, next) => {
   try {
@@ -89,7 +220,31 @@ const handleLogin = async (req, res, next) => {
 };
 
 /**
- * Menangani login atau registrasi pengguna menggunakan Google ID Token dari frontend.
+ * @openapi
+ * /auth/google/signin:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Login/Register dengan Google
+ *     description: Autentikasi menggunakan Google ID Token dari frontend (Google Sign-In)
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [idToken]
+ *             properties:
+ *               idToken:
+ *                 type: string
+ *                 description: Google ID Token dari client
+ *     responses:
+ *       200:
+ *         description: Login Google berhasil
+ *       201:
+ *         description: Pendaftaran Google berhasil (user baru)
+ *       400:
+ *         description: ID Token tidak valid
+ *         $ref: '#/components/schemas/Error'
  */
 const handleGoogleAuth = async (req, res, next) => {
   try {
@@ -117,8 +272,29 @@ const handleGoogleAuth = async (req, res, next) => {
 };
 
 /**
- * Mengarahkan pengguna ke halaman persetujuan OAuth Google untuk menghubungkan akun YouTube.
- * Frontend akan menerima URL redirect dari respons JSON ini.
+ * @openapi
+ * /auth/youtube/connect:
+ *   get:
+ *     tags: [Auth]
+ *     summary: Mulai koneksi YouTube OAuth
+ *     description: Mengembalikan URL untuk redirect ke Google OAuth consent page
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: URL OAuth berhasil dibuat
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status: { type: string, example: success }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     redirectUrl: { type: string }
+ *       401:
+ *         description: Tidak terautentikasi
  */
 const redirectToGoogleOAuth = (req, res, next) => {
   try {
@@ -151,8 +327,28 @@ const redirectToGoogleOAuth = (req, res, next) => {
 };
 
 /**
- * Menangani callback dari Google OAuth setelah pengguna memberikan izin.
- * Menyimpan token YouTube dan mengarahkan pengguna kembali ke frontend.
+ * @openapi
+ * /auth/youtube/callback:
+ *   get:
+ *     tags: [Auth]
+ *     summary: Callback OAuth YouTube
+ *     description: Menerima callback dari Google setelah user memberikan izin (redirect)
+ *     parameters:
+ *       - in: query
+ *         name: code
+ *         schema:
+ *           type: string
+ *         description: Authorization code dari Google
+ *       - in: query
+ *         name: state
+ *         schema:
+ *           type: string
+ *         description: User ID yang dikirim saat redirect
+ *     responses:
+ *       302:
+ *         description: Redirect ke halaman frontend (channel)
+ *       400:
+ *         description: Parameter callback tidak valid
  */
 const handleGoogleOAuthCallback = async (req, res, next) => {
   // URL Frontend (Ganti sesuai env Anda)
@@ -182,7 +378,19 @@ const handleGoogleOAuthCallback = async (req, res, next) => {
 };
 
 /**
- * Menangani pemutusan koneksi akun YouTube dari akun Judi Guard.
+ * @openapi
+ * /auth/youtube/disconnect:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Putuskan koneksi YouTube
+ *     description: Menghapus token YouTube dari database user
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Koneksi YouTube berhasil diputuskan
+ *       401:
+ *         description: Tidak terautentikasi
  */
 const handleDisconnectYouTube = async (req, res, next) => {
   try {
@@ -289,7 +497,33 @@ const handleGuestDisconnect = (req, res) => {
   });
 };
 
-// --- Handler untuk Lupa, Reset, Ganti Password (sudah baik dari sebelumnya) ---
+// --- Handler untuk Lupa, Reset, Ganti Password ---
+
+/**
+ * @openapi
+ * /auth/forgot-password:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Lupa password
+ *     description: Mengirim email reset password ke alamat email user
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: john@example.com
+ *     responses:
+ *       200:
+ *         description: Email reset password terkirim (jika email terdaftar)
+ *       429:
+ *         description: Terlalu banyak permintaan
+ */
 const handleForgotPassword = async (req, res, next) => {
   try {
     const { email } = req.body;
@@ -356,6 +590,42 @@ const handleForgotPassword = async (req, res, next) => {
   }
 };
 
+/**
+ * @openapi
+ * /auth/reset-password/{token}:
+ *   put:
+ *     tags: [Auth]
+ *     summary: Reset password dengan token
+ *     description: Mereset password menggunakan token dari email reset password
+ *     parameters:
+ *       - in: path
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Token reset password dari email
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [password, confirmPassword]
+ *             properties:
+ *               password:
+ *                 type: string
+ *                 minLength: 6
+ *                 example: passwordBaru123
+ *               confirmPassword:
+ *                 type: string
+ *                 example: passwordBaru123
+ *     responses:
+ *       200:
+ *         description: Password berhasil direset
+ *       400:
+ *         description: Token tidak valid/kedaluwarsa
+ *         $ref: '#/components/schemas/Error'
+ */
 const handleResetPassword = async (req, res, next) => {
   try {
     const { token } = req.params;
@@ -374,6 +644,37 @@ const handleResetPassword = async (req, res, next) => {
   }
 };
 
+/**
+ * @openapi
+ * /auth/change-password:
+ *   patch:
+ *     tags: [Auth]
+ *     summary: Ganti password
+ *     description: Mengganti password user yang sedang login
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [currentPassword, newPassword]
+ *             properties:
+ *               currentPassword:
+ *                 type: string
+ *                 example: rahasia123
+ *               newPassword:
+ *                 type: string
+ *                 minLength: 6
+ *                 example: passwordBaru123
+ *     responses:
+ *       200:
+ *         description: Password berhasil diubah
+ *       401:
+ *         description: Password saat ini salah
+ *         $ref: '#/components/schemas/Error'
+ */
 const handleChangePassword = async (req, res, next) => {
   try {
     const userId = req.user._id;

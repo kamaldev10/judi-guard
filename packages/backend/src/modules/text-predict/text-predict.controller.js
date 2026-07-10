@@ -2,8 +2,28 @@ import { BadRequestError } from '#shared/utils/errors.js';
 import * as aiService from '#shared/services/ai.service.js';
 
 /**
- * Menerima satu buah teks dari body request, menganalisisnya menggunakan ai.service,
- * dan mengembalikan hasilnya secara langsung.
+ * @openapi
+ * /predict:
+ *   post:
+ *     tags: [Text Predict]
+ *     summary: Prediksi teks
+ *     description: Menganalisis satu teks menggunakan AI untuk mendeteksi konten judi
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [text]
+ *             properties:
+ *               text:
+ *                 type: string
+ *                 example: Kunjungi situs kami untuk judi online terpercaya
+ *     responses:
+ *       200:
+ *         description: Hasil analisis teks
+ *       400:
+ *         description: Input text tidak valid
  */
 export const textPredictController = async (req, res, next) => {
   try {

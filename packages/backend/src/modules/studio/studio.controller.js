@@ -1,7 +1,23 @@
 import * as studioService from './studio.service.js';
 
 /**
- * Menangani permintaan untuk mendapatkan link YouTube Studio.
+ * @openapi
+ * /studio/comments-link/{analysisId}:
+ *   get:
+ *     tags: [Studio]
+ *     summary: Link YouTube Studio
+ *     description: Mendapatkan link langsung ke halaman moderasi komentar di YouTube Studio
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: analysisId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Link YouTube Studio
  */
 export const getYouTubeStudioCommentLink = async (req, res, next) => {
   try {

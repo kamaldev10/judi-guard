@@ -7,6 +7,27 @@ import {
   getMyChannelId,
 } from '#shared/services/youtube.service.js';
 
+/**
+ * @openapi
+ * /videos/:
+ *   get:
+ *     tags: [Channels]
+ *     summary: Daftar video channel
+ *     description: Mengambil daftar video dari channel YouTube yang terhubung
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: pageToken
+ *         schema:
+ *           type: string
+ *         description: Token paginasi YouTube
+ *     responses:
+ *       200:
+ *         description: Daftar video
+ *       409:
+ *         description: YouTube belum terhubung
+ */
 const getMyVideos = async (req, res, next) => {
   try {
     const tokens = req.youtubeTokens;
@@ -23,6 +44,29 @@ const getMyVideos = async (req, res, next) => {
   }
 };
 
+/**
+ * @openapi
+ * /videos/{videoId}/comments:
+ *   get:
+ *     tags: [Channels]
+ *     summary: Preview komentar video
+ *     description: Mengambil komentar dari video YouTube tertentu
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: videoId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: pageToken
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Komentar video
+ */
 const getVideoComments = async (req, res, next) => {
   try {
     const tokens = req.youtubeTokens;
@@ -40,6 +84,28 @@ const getVideoComments = async (req, res, next) => {
   }
 };
 
+/**
+ * @openapi
+ * /videos/search:
+ *   get:
+ *     tags: [Channels]
+ *     summary: Cari video
+ *     description: Mencari video berdasarkan URL/ID (hanya milik channel sendiri)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: query
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: URL atau ID video YouTube
+ *     responses:
+ *       200:
+ *         description: Data video
+ *       403:
+ *         description: Video bukan milik channel Anda
+ */
 const searchVideoById = async (req, res, next) => {
   try {
     const { query } = req.query;

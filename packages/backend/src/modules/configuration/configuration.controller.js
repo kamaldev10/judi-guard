@@ -1,7 +1,33 @@
 import * as configService from './configuration.service.js';
 import { AppError } from '#shared/utils/errors.js';
 
-// --- CONTROLLER WHITELIST ---
+/**
+ * @openapi
+ * /config/whitelist:
+ *   post:
+ *     tags: [Configuration]
+ *     summary: Tambah whitelist
+ *     description: Menambahkan channel ID ke whitelist (komentarnya akan diabaikan)
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [channelId]
+ *             properties:
+ *               channelId:
+ *                 type: string
+ *               channelName:
+ *                 type: string
+ *               note:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Berhasil ditambahkan
+ */
 export const addWhitelist = async (req, res, next) => {
   try {
     const userId = req.user._id; // Middleware sets _id
@@ -14,6 +40,18 @@ export const addWhitelist = async (req, res, next) => {
   }
 };
 
+/**
+ * @openapi
+ * /config/whitelist:
+ *   get:
+ *     tags: [Configuration]
+ *     summary: Daftar whitelist
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Daftar whitelist
+ */
 export const getWhitelist = async (req, res, next) => {
   try {
     const userId = req.user._id;
@@ -24,6 +62,24 @@ export const getWhitelist = async (req, res, next) => {
   }
 };
 
+/**
+ * @openapi
+ * /config/whitelist/{id}:
+ *   delete:
+ *     tags: [Configuration]
+ *     summary: Hapus whitelist
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       204:
+ *         description: Berhasil dihapus
+ */
 export const deleteWhitelist = async (req, res, next) => {
   try {
     const userId = req.user._id;
@@ -39,7 +95,32 @@ export const deleteWhitelist = async (req, res, next) => {
   }
 };
 
-// --- CONTROLLER BLACKLIST ---
+/**
+ * @openapi
+ * /config/blacklist:
+ *   post:
+ *     tags: [Configuration]
+ *     summary: Tambah blacklist
+ *     description: Menambahkan kata kunci ke blacklist
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               keywords:
+ *                 type: array
+ *                 items: { type: string }
+ *                 example: ["slot", "togel"]
+ *               keyword:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Berhasil ditambahkan
+ */
 export const addBlacklist = async (req, res, next) => {
   try {
     const userId = req.user._id;
@@ -58,6 +139,18 @@ export const addBlacklist = async (req, res, next) => {
   }
 };
 
+/**
+ * @openapi
+ * /config/blacklist:
+ *   get:
+ *     tags: [Configuration]
+ *     summary: Daftar blacklist
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Daftar blacklist
+ */
 export const getBlacklist = async (req, res, next) => {
   try {
     const userId = req.user._id;
@@ -68,6 +161,24 @@ export const getBlacklist = async (req, res, next) => {
   }
 };
 
+/**
+ * @openapi
+ * /config/blacklist/{id}:
+ *   delete:
+ *     tags: [Configuration]
+ *     summary: Hapus blacklist
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       204:
+ *         description: Berhasil dihapus
+ */
 export const deleteBlacklist = async (req, res, next) => {
   try {
     const userId = req.user._id;

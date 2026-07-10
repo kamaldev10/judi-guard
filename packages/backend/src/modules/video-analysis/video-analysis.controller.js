@@ -8,9 +8,26 @@ import * as youtubeService from '#shared/services/youtube.service.js';
 //* --- NEW LOGIC ---
 
 /**
- * @desc    Memulai proses analisis video (Fetch -> Store -> AI)
- * @route   POST /api/analysis/:videoId
- * @access  Private (User/Guest)
+ * @openapi
+ * /analysis/{videoId}:
+ *   post:
+ *     tags: [Analysis]
+ *     summary: Mulai analisis video
+ *     description: Memulai proses analisis komentar untuk video YouTube
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: videoId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: YouTube Video ID
+ *     responses:
+ *       202:
+ *         description: Analisis diterima dan diproses di background
+ *       409:
+ *         description: Video sedang dalam proses analisis
  */
 const startAnalysis = async (req, res, next) => {
   try {
@@ -63,9 +80,23 @@ const startAnalysis = async (req, res, next) => {
 };
 
 /**
- * @desc    Cek Status Analisis (Polling Endpoint)
- * @route   GET /api/analysis/status/:analysisId
- * @access  Private (User/Guest)
+ * @openapi
+ * /analysis/status/{analysisId}:
+ *   get:
+ *     tags: [Analysis]
+ *     summary: Cek status analisis
+ *     description: Endpoint polling untuk mengecek status analisis
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: analysisId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Status analisis
  */
 const getAnalysisStatus = async (req, res, next) => {
   try {
@@ -89,8 +120,33 @@ const getAnalysisStatus = async (req, res, next) => {
 };
 
 /**
- * @desc    Ambil detail hasil analisis (List Komentar)
- * @route   GET /api/analysis/:analysisId/results?page=1&type=spam
+ * @openapi
+ * /analysis/{analysisId}/results:
+ *   get:
+ *     tags: [Analysis]
+ *     summary: Ambil hasil analisis
+ *     description: Mengambil detail komentar hasil analisis
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: analysisId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum: [all, spam, safe]
+ *     responses:
+ *       200:
+ *         description: Hasil analisis
  */
 const getAnalysisResults = async (req, res, next) => {
   try {
@@ -113,7 +169,40 @@ const getAnalysisResults = async (req, res, next) => {
 };
 
 /**
- * @body { commentIds: [...], action: "DELETE", banAuthor: true }
+ * @openapi
+ * /analysis/{analysisId}/action:
+ *   post:
+ *     tags: [Analysis]
+ *     summary: Eksekusi aksi moderasi
+ *     description: Menghapus/menyembunyikan komentar spam via YouTube API
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: analysisId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [commentIds, action]
+ *             properties:
+ *               commentIds:
+ *                 type: array
+ *                 items: { type: string }
+ *               action:
+ *                 type: string
+ *                 enum: [DELETE, HOLD, MARK_AS_SPAM]
+ *               banAuthor:
+ *                 type: boolean
+ *                 default: false
+ *     responses:
+ *       200:
+ *         description: Aksi berhasil diproses
  */
 const executeAction = async (req, res, next) => {
   try {
@@ -147,9 +236,34 @@ const executeAction = async (req, res, next) => {
 };
 
 /**
- * @desc    Mengembalikan komentar ke status Published (Undo Delete/Hold)
- * @route   POST /api/analysis/:analysisId/undo
- * @body    { commentIds: ["id1", "id2"] }
+ * @openapi
+ * /analysis/{analysisId}/undo:
+ *   post:
+ *     tags: [Analysis]
+ *     summary: Undo aksi moderasi
+ *     description: Mengembalikan komentar yang telah dimoderasi ke status Published
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: analysisId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [commentIds]
+ *             properties:
+ *               commentIds:
+ *                 type: array
+ *                 items: { type: string }
+ *     responses:
+ *       200:
+ *         description: Undo berhasil
  */
 const undoAction = async (req, res, next) => {
   try {
@@ -174,8 +288,28 @@ const undoAction = async (req, res, next) => {
 };
 
 /**
- * @desc    menampilkan daftar video yang pernah dianalisis user beserta status akhirnya (Cleaned/Not Cleaned)
- * @route   GET /api/analysis/history
+ * @openapi
+ * /analysis/history:
+ *   get:
+ *     tags: [Analysis]
+ *     summary: Riwayat analisis
+ *     description: Menampilkan daftar video yang pernah dianalisis
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *     responses:
+ *       200:
+ *         description: Riwayat analisis
  */
 const getHistory = async (req, res, next) => {
   try {
@@ -209,8 +343,30 @@ const getHistory = async (req, res, next) => {
 };
 
 /**
- * 1. GET Report Preview (JSON Data)
- * Query: ?startDate=2023-01-01&endDate=2023-01-31
+ * @openapi
+ * /analysis/report/preview:
+ *   get:
+ *     tags: [Analysis]
+ *     summary: Preview laporan periodik
+ *     description: Menampilkan ringkasan laporan untuk periode tertentu
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: startDate
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: query
+ *         name: endDate
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *     responses:
+ *       200:
+ *         description: Preview laporan
  */
 const getReportPreview = async (req, res, next) => {
   try {
@@ -251,7 +407,35 @@ const getReportPreview = async (req, res, next) => {
 };
 
 /**
- * 2. GET Download Report (PDF Blob)
+ * @openapi
+ * /analysis/report/download:
+ *   get:
+ *     tags: [Analysis]
+ *     summary: Download laporan periodik (PDF)
+ *     description: Mendownload laporan lengkap periode tertentu dalam format PDF
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: startDate
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: query
+ *         name: endDate
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *     responses:
+ *       200:
+ *         description: File PDF laporan
+ *         content:
+ *           application/pdf:
+ *             schema:
+ *               type: string
+ *               format: binary
  */
 const downloadPeriodReport = async (req, res, next) => {
   try {
@@ -315,6 +499,30 @@ const downloadPeriodReport = async (req, res, next) => {
   }
 };
 
+/**
+ * @openapi
+ * /analysis/{analysisId}/report/pdf:
+ *   get:
+ *     tags: [Analysis]
+ *     summary: Download laporan per analisis (PDF)
+ *     description: Mendownload laporan detail komentar spam untuk satu analisis
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: analysisId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: File PDF laporan
+ *         content:
+ *           application/pdf:
+ *             schema:
+ *               type: string
+ *               format: binary
+ */
 const downloadReport = async (req, res, next) => {
   try {
     const { analysisId } = req.params;

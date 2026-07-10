@@ -3,7 +3,20 @@ import * as youtubeService from '#shared/services/youtube.service.js';
 import { NotFoundError, BadRequestError } from '#shared/utils/errors.js';
 
 /**
- * Mengambil profil YouTube yang sedang terhubung.
+ * @openapi
+ * /auth/youtube/profile:
+ *   get:
+ *     tags: [Users]
+ *     summary: Ambil profil YouTube
+ *     description: Mengambil identitas channel YouTube yang terhubung
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Data channel YouTube
+ *       409:
+ *         description: YouTube belum terhubung
+ *         $ref: '#/components/schemas/Error'
  */
 export const getYoutubeProfile = async (req, res, next) => {
   try {
@@ -22,7 +35,19 @@ export const getYoutubeProfile = async (req, res, next) => {
 // ------------------------------------------------
 
 /**
- * Mengambil data profil dari pengguna yang sedang login (Via DB).
+ * @openapi
+ * /users/me:
+ *   get:
+ *     tags: [Users]
+ *     summary: Ambil profil sendiri
+ *     description: Mengambil data profil user yang sedang login
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Data profil user
+ *       401:
+ *         description: Tidak terautentikasi
  */
 export const getMe = async (req, res, next) => {
   try {
@@ -58,8 +83,38 @@ export const getMe = async (req, res, next) => {
 };
 
 /**
- * Memperbarui data profil pengguna (misal: username, bio).
- * Mencegah pengguna mengubah field sensitif seperti email, role, atau password.
+ * @openapi
+ * /users/updateMe:
+ *   patch:
+ *     tags: [Users]
+ *     summary: Update profil sendiri
+ *     description: Memperbarui data profil (username, bio, profilePicture)
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 minLength: 3
+ *                 example: johndoe_baru
+ *               bio:
+ *                 type: string
+ *                 example: Saya suka coding
+ *               profilePicture:
+ *                 type: string
+ *                 description: URL foto profil
+ *     responses:
+ *       200:
+ *         description: Profil berhasil diperbarui
+ *       401:
+ *         description: Tidak terautentikasi
+ *       400:
+ *         description: Field tidak valid
  */
 export const updateMe = async (req, res, next) => {
   try {
@@ -137,8 +192,19 @@ export const updateMe = async (req, res, next) => {
 };
 
 /**
- * Menangani penghapusan akun oleh pengguna itu sendiri (soft delete).
- * Mengubah status 'active' menjadi false.
+ * @openapi
+ * /users/deleteMe:
+ *   delete:
+ *     tags: [Users]
+ *     summary: Nonaktifkan akun sendiri
+ *     description: Menonaktifkan akun user yang sedang login (soft delete)
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Akun berhasil dinonaktifkan
+ *       401:
+ *         description: Tidak terautentikasi
  */
 export const deleteMe = async (req, res, next) => {
   try {

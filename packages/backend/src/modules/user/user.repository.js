@@ -6,7 +6,9 @@ export class UserRepository {
   }
 
   static async findByIdWithTokens(userId) {
-    return User.findById(userId).select('+youtubeAccessToken +youtubeRefreshToken +youtubeTokenExpiresAt');
+    return User.findById(userId).select(
+      '+youtubeAccessToken +youtubeRefreshToken +youtubeTokenExpiresAt',
+    );
   }
 
   static async findByIdWithPassword(userId) {

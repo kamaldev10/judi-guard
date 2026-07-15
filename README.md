@@ -10,7 +10,7 @@
 [![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-yellow?logo=javascript&logoColor=black)](https://www.javascript.com/)
 [![Node.js](https://img.shields.io/badge/Node.js-18.x-green?logo=node.js)](https://nodejs.org/)
 [![React](https://img.shields.io/badge/React-18.x-blue?logo=react)](https://reactjs.org/)
-[![Express.js](https://img.shields.io/badge/Express.js-4.x-lightgrey?logo=express)](https://expressjs.com/)
+[![Express.js](https://img.shields.io/badge/Express.js-5.x-lightgrey?logo=express)](https://expressjs.com/)
 
 ---
 
@@ -30,6 +30,7 @@ Aplikasi ini dikembangkan berdasarkan **Product Requirements Document (PRD)** da
 - 🛠️ **Moderasi Komentar (Individual & Massal)**
 - 📋 **Riwayat & Laporan Moderasi**
 - ⚙️ **Whitelist Akun & Blacklist Kata/Pola**
+- 🔐 **RBAC + Workspace Multi-Tenant**
 - 🔗 **Integrasi YouTube Data API v3**
 
 ---
@@ -57,15 +58,17 @@ Pendekatan ini memungkinkan pengujian bertindak sebagai **Automated User Accepta
 
 ## 🛠️ Arsitektur & Teknologi
 
-Proyek ini menggunakan pendekatan **monorepo**, dengan pemisahan jelas antara frontend, backend, dan testing.
+Proyek ini menggunakan **monorepo** (npm workspaces), dengan pemisahan jelas antara frontend, backend, dan testing.
 
-| Layer         | Teknologi                   |
-| ------------- | --------------------------- |
-| Frontend      | React + Vite, Tailwind CSS  |
-| Backend       | Node.js, Express, MongoDB   |
-| AI / Analisis | ML API (integrated service) |
-| Testing       | Cypress (BDD – E2E)         |
-| External API  | YouTube Data API v3         |
+| Layer         | Teknologi                                   |
+| ------------- | ------------------------------------------- |
+| Frontend      | React + Vite, Tailwind CSS                  |
+| Backend       | Node.js, Express 5 (ESM), MongoDB           |
+| AI / Analisis | ML API (Python, Hugging Face Spaces)        |
+| RBAC          | Role-based + Workspace multi-tenant         |
+| Testing       | Cypress (BDD – E2E)                         |
+| External API  | YouTube Data API v3                         |
+| API Docs      | Swagger (swagger-jsdoc, swagger-ui-express) |
 
 ---
 
@@ -103,17 +106,25 @@ Git
 ### Setup Backend
 
 ```bash
-cd backend
+cd packages/backend
 npm install
-npm run dev
+npm run dev       # port 3001
 ```
 
 ### Setup Frontend
 
 ```bash
-cd frontend
+cd packages/frontend
 npm install
-npm run dev
+npm run dev       # port 5173
+```
+
+### Dokumentasi API (Swagger)
+
+Jika backend berjalan, buka:
+
+```
+http://localhost:3001/api-docs
 ```
 
 ## 🤝 Kontribusi

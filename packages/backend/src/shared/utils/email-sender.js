@@ -30,9 +30,7 @@ const sendEmailWithEthereal = async (options) => {
   });
 
   const message = {
-    from:
-      process.env.EMAIL_FROM ||
-      '"[Ethereal] Judi Guard " <noreply@judiguard.id>',
+    from: process.env.EMAIL_FROM || '"[Ethereal] Judi Guard " <noreply@judiguard.id>',
     to: options.email,
     subject: options.subject,
     text: options.text,
@@ -62,7 +60,7 @@ const sendEmailWithSmtp = async (options) => {
     config.email?.port === undefined
   ) {
     console.warn(
-      'Konfigurasi SMTP Email tidak lengkap di .env. Menggunakan Ethereal sebagai fallback.'
+      'Konfigurasi SMTP Email tidak lengkap di .env. Menggunakan Ethereal sebagai fallback.',
     );
     return sendEmailWithEthereal(options);
   }
@@ -95,9 +93,7 @@ const sendEmailWithSmtp = async (options) => {
     return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error('Error sending email with SMTP:', error);
-    console.warn(
-      'SMTP send failed. Trying Ethereal as fallback for development.'
-    );
+    console.warn('SMTP send failed. Trying Ethereal as fallback for development.');
     return sendEmailWithEthereal(options);
   }
 };
@@ -108,13 +104,9 @@ const sendEmailWithSmtp = async (options) => {
  * @returns {Promise<{success: boolean, messageId?: string, error?: Error}>}
  */
 const sendEmailWithMailgun = async (options) => {
-  if (
-    !config.mailgun?.apiKey ||
-    !config.mailgun?.domain ||
-    !config.mailgun?.senderEmail
-  ) {
+  if (!config.mailgun?.apiKey || !config.mailgun?.domain || !config.mailgun?.senderEmail) {
     console.warn(
-      'Konfigurasi Mailgun tidak lengkap (API Key, Domain, atau Sender Email). Mencoba fallback ke Ethereal.'
+      'Konfigurasi Mailgun tidak lengkap (API Key, Domain, atau Sender Email). Mencoba fallback ke Ethereal.',
     );
     return sendEmailWithEthereal(options);
   }
@@ -155,22 +147,18 @@ let emailSendingFunction;
 
 // Prioritas untuk Production
 if (process.env.NODE_ENV === 'production') {
-  if (
-    config.mailgun.apiKey &&
-    config.mailgun.domain &&
-    config.mailgun.senderEmail
-  ) {
+  if (config.mailgun.apiKey && config.mailgun.domain && config.mailgun.senderEmail) {
     emailSendingFunction = sendEmailWithMailgun;
     console.info('Email Service: Using Mailgun for production.');
   } else if (config.email.host && config.email.user && config.email.pass) {
     emailSendingFunction = sendEmailWithSmtp;
     console.warn(
-      'Email Service: Mailgun not fully configured for production, falling back to SMTP (Gmail/Custom). Not recommended for high volume.'
+      'Email Service: Mailgun not fully configured for production, falling back to SMTP (Gmail/Custom). Not recommended for high volume.',
     );
   } else {
     emailSendingFunction = sendEmailWithEthereal; // Fallback terakhir (seharusnya tidak terjadi di prod)
     console.error(
-      'Email Service: CRITICAL - No primary email service (Mailgun/SMTP) fully configured for production. Falling back to Ethereal.'
+      'Email Service: CRITICAL - No primary email service (Mailgun/SMTP) fully configured for production. Falling back to Ethereal.',
     );
   }
 } else {
@@ -178,12 +166,12 @@ if (process.env.NODE_ENV === 'production') {
   if (config.email.host && config.email.user && config.email.pass) {
     emailSendingFunction = sendEmailWithSmtp;
     console.info(
-      'Email Service: Mailgun not fully configured, using SMTP Postmark for development.'
+      'Email Service: Mailgun not fully configured, using SMTP Postmark for development.',
     );
   } else {
     emailSendingFunction = sendEmailWithEthereal;
     console.info(
-      'Email Service: No Mailgun/SMTP fully configured, using Ethereal for development.'
+      'Email Service: No Mailgun/SMTP fully configured, using Ethereal for development.',
     );
   }
 }

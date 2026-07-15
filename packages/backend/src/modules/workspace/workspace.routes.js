@@ -17,34 +17,34 @@ router.use(requireAuth);
 router.get(
   '/members',
   requirePermission('workspace:read'),
-  workspaceController.getMembersController
+  workspaceController.getMembersController,
 );
 
 router.post(
   '/members',
   requirePermission('workspace:invite'),
   validateRequest(inviteMemberSchema, 'body'),
-  workspaceController.inviteMemberController
+  workspaceController.inviteMemberController,
 );
 
 router.delete(
   '/members/:userId',
   requirePermission('workspace:remove'),
-  workspaceController.removeMemberController
+  workspaceController.removeMemberController,
 );
 
 router.patch(
   '/members/:userId/role',
   requirePermission('workspace:assign-role'),
   validateRequest(assignRoleSchema, 'body'),
-  workspaceController.assignRoleController
+  workspaceController.assignRoleController,
 );
 
 router.patch(
   '/members/:userId/permissions',
   requirePermission('rbac:assign-permission'),
   validateRequest(assignPermissionsSchema, 'body'),
-  workspaceController.assignPermissionsController
+  workspaceController.assignPermissionsController,
 );
 
 export default router;

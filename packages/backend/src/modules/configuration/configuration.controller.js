@@ -30,7 +30,7 @@ import { AppError } from '#shared/utils/errors.js';
  */
 export const addWhitelist = async (req, res, next) => {
   try {
-    const userId = req.user._id; // Middleware sets _id
+    const userId = req.auth.userId; // Middleware sets _id
     const { channelId } = req.body; // channelName & note opsional
     if (!channelId) throw new AppError('Channel ID wajib diisi', 400);
     const newItem = await configService.addToWhitelist(userId, req.body);
@@ -54,7 +54,7 @@ export const addWhitelist = async (req, res, next) => {
  */
 export const getWhitelist = async (req, res, next) => {
   try {
-    const userId = req.user._id;
+    const userId = req.auth.userId;
     const list = await configService.getUserWhitelist(userId);
     res.status(200).json({ status: 'success', count: list.length, data: list });
   } catch (error) {
@@ -82,7 +82,7 @@ export const getWhitelist = async (req, res, next) => {
  */
 export const deleteWhitelist = async (req, res, next) => {
   try {
-    const userId = req.user._id;
+    const userId = req.auth.userId;
     const { id } = req.params;
     await configService.removeFromWhitelist(id, userId);
     res.status(204).json({
@@ -123,7 +123,7 @@ export const deleteWhitelist = async (req, res, next) => {
  */
 export const addBlacklist = async (req, res, next) => {
   try {
-    const userId = req.user._id;
+    const userId = req.auth.userId;
     const inputData = req.body.keywords || req.body.keyword;
     if (!inputData) {
       throw new AppError("Field 'keywords' (array) atau 'keyword' (string) wajib diisi.", 400);
@@ -153,7 +153,7 @@ export const addBlacklist = async (req, res, next) => {
  */
 export const getBlacklist = async (req, res, next) => {
   try {
-    const userId = req.user._id;
+    const userId = req.auth.userId;
     const list = await configService.getUserBlacklist(userId);
     res.status(200).json({ status: 'success', count: list.length, data: list });
   } catch (error) {
@@ -181,7 +181,7 @@ export const getBlacklist = async (req, res, next) => {
  */
 export const deleteBlacklist = async (req, res, next) => {
   try {
-    const userId = req.user._id;
+    const userId = req.auth.userId;
     const { id } = req.params;
     await configService.removeFromBlacklist(id, userId);
     res.status(204).json({

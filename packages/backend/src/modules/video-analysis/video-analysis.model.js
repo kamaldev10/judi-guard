@@ -4,7 +4,7 @@ const videoAnalysisSchema = new mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       default: null,
     },
     isGuest: {
@@ -17,18 +17,18 @@ const videoAnalysisSchema = new mongoose.Schema(
     },
     videoTitle: {
       type: String,
-      default: "Unknown Title",
+      default: 'Unknown Title',
     },
 
     status: {
       type: String,
-      enum: ["PENDING", "PROCESSING", "COMPLETED", "FAILED"],
-      default: "PENDING",
+      enum: ['PENDING', 'PROCESSING', 'COMPLETED', 'FAILED'],
+      default: 'PENDING',
     },
     moderationStatus: {
       type: String,
-      enum: ["NONE", "CLEANED", "PARTIAL"],
-      default: "NONE",
+      enum: ['NONE', 'CLEANED', 'PARTIAL'],
+      default: 'NONE',
     },
 
     totalCommentsFetched: {
@@ -64,6 +64,6 @@ const videoAnalysisSchema = new mongoose.Schema(
 videoAnalysisSchema.index({ userId: 1, youtubeVideoId: 1 });
 videoAnalysisSchema.index({ status: 1 });
 
-const VideoAnalysis = mongoose.model("VideoAnalysis", videoAnalysisSchema);
+const VideoAnalysis = mongoose.model('VideoAnalysis', videoAnalysisSchema);
 
 export default VideoAnalysis;

@@ -6,7 +6,32 @@ import requireYoutubeAccess from '#middlewares/require-youtube-access.js';
 
 const router = express.Router();
 
-//* --- NEW LOGIC ---
+// Deprecate old analysis routes — letakkan BEFORE route /:videoId
+// agar tidak ditelan oleh parameter :videoId
+router.all('/videos', (req, res) => {
+  res.status(410).json({
+    status: 'fail',
+    message: 'Rute analisis lama ini telah dinonaktifkan. Silakan gunakan endpoint baru.',
+  });
+});
+router.all('/videos/:analysisId/comments', (req, res) => {
+  res.status(410).json({
+    status: 'fail',
+    message: 'Rute analisis lama ini telah dinonaktifkan. Silakan gunakan endpoint baru.',
+  });
+});
+router.all('/comments/:analyzedCommentId', (req, res) => {
+  res.status(410).json({
+    status: 'fail',
+    message: 'Rute analisis lama ini telah dinonaktifkan. Silakan gunakan endpoint baru.',
+  });
+});
+router.all('/videos/:analysisId/judi-comments', (req, res) => {
+  res.status(410).json({
+    status: 'fail',
+    message: 'Rute analisis lama ini telah dinonaktifkan. Silakan gunakan endpoint baru.',
+  });
+});
 
 router.get(
   '/history',
@@ -75,16 +100,19 @@ router.get(
 );
 
 // Deprecate old analysis routes
-router.all([
-  '/videos',
-  '/videos/:analysisId/comments',
-  '/comments/:analyzedCommentId',
-  '/videos/:analysisId/judi-comments'
-], (req, res) => {
-  res.status(410).json({
-    status: 'fail',
-    message: 'Rute analisis lama ini telah dinonaktifkan. Silakan gunakan endpoint baru.',
-  });
-});
+router.all(
+  [
+    '/videos',
+    '/videos/:analysisId/comments',
+    '/comments/:analyzedCommentId',
+    '/videos/:analysisId/judi-comments',
+  ],
+  (req, res) => {
+    res.status(410).json({
+      status: 'fail',
+      message: 'Rute analisis lama ini telah dinonaktifkan. Silakan gunakan endpoint baru.',
+    });
+  },
+);
 
 export default router;

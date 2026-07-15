@@ -9,12 +9,14 @@
 
 Backend Judi Guard adalah **server-side service** berbasis **Node.js + Express 5 (ESM)** yang menangani:
 
-- Autentikasi & otorisasi (JWT, Google OAuth)
-- Integrasi YouTube Data API v3
+- Autentikasi & otorisasi (JWT, Google OAuth, RBAC multi-role)
+- Manajemen **Workspace** multi-tenant + RBAC permission system
+- Integrasi YouTube Data API v3 (fetch komentar, moderasi, OAuth token refresh)
 - Orkestrasi analisis komentar (fetch → ML → enrich → simpan)
 - Moderasi komentar via YouTube API
 - Manajemen konfigurasi user (whitelist/blacklist)
-- Pengiriman email (reset password, OTP)
+- Pengiriman email (reset password, OTP via Mailgun/Postmark)
+- Generate laporan PDF (moderation report, period report)
 
 ---
 
@@ -29,9 +31,14 @@ Backend Judi Guard adalah **server-side service** berbasis **Node.js + Express 5
 | Validasi      | Joi                              | 17.x               |
 | Auth          | JWT + Google OAuth 2.0           | —                  |
 | HTTP Client   | Axios                            | —                  |
-| Email         | Mailgun / Postmark               | —                  |
+| Email         | Mailgun / Postmark / Nodemailer  | —                  |
 | Security      | Helmet, express-rate-limit, CORS | —                  |
-| Dev tool      | Nodemon                          | —                  |
+| PDF           | PDFKit                           | —                  |
+| Logging       | Morgan                           | —                  |
+| Cookies       | cookie-parser                    | —                  |
+| Password      | bcryptjs                         | —                  |
+| Dev tool      | Nodemon, ESLint, Prettier        | —                  |
+| Testing       | Jest + Supertest                 | —                  |
 
 ---
 
@@ -39,7 +46,7 @@ Backend Judi Guard adalah **server-side service** berbasis **Node.js + Express 5
 
 ### 3.1 Pola Arsitektur
 
-Backend mengikuti **Feature Module Architecture** dengan **Repository Pattern** dan pemisahan lapisan ketat, termasuk **lapisan DTO** untuk menjaga kontrak data antar layer:
+Backend mengikuti **Feature Module Architecture** dengan **Repository Pattern** dan pemisahan lapisan ketat:
 
 ```mermaid
 flowchart TB
@@ -83,27 +90,9 @@ flowchart TB
 | -------------- | ----------------------------------------------- | ----------------------- |
 | **Routes**     | Mount middleware, delegasi ke controller        | Logika bisnis           |
 | **Controller** | Parse request, panggil service, format response | Query database langsung |
-| **DTO**        | Mapping request/response dan kontrak data stabil | Memanggil DB/API eksternal |
 | **Service**    | Aturan bisnis, orkestrasi API eksternal         | Detail implementasi DB  |
 | **Repository** | Query Mongoose (`find`, `create`, `update`)     | Logika bisnis           |
 | **Model**      | Skema, indeks, validasi DB, hooks               | Logika aplikasi         |
-
-### 3.3 Konvensi DTO
-
-Gunakan DTO untuk menghindari kebocoran struktur data internal ke API publik:
-
-- `request dto`: normalisasi input (`start-analysis.request.dto.js`)
-- `service dto`: kontrak antar service (`analyze-comment.dto.js`)
-- `response dto`: bentuk output API (`analysis-result.response.dto.js`)
-- `integration dto`: adapter ke API eksternal (`youtube-comment.dto.js`, `tiktok-comment.dto.js`)
-
-Contoh alur:
-
-1. Controller menerima request mentah
-2. Request diubah ke `request dto`
-3. Service bekerja dengan `service dto` (domain-friendly)
-4. Repository/model mengembalikan entitas
-5. Controller memetakan ke `response dto` agar API stabil
 
 ### 3.4 Struktur Folder
 
@@ -117,10 +106,11 @@ packages/backend/src/
 │   ├── database.js         # Koneksi MongoDB
 │   └── environment.js      # Env vars terpusat
 ├── middlewares/
-│   ├── ensure-youtube-access.js
-│   ├── error-handler.js
-│   ├── is-authenticated.js
-│   └── validate-request.js
+│   ├── error-handler.js         # Global error handler (Mongoose, JWT, Axios, dll)
+│   ├── require-auth.js          # Auth + workspace auto-init + membership check
+│   ├── require-permission.js    # RBAC permission checker (owner/admin/member)
+│   ├── require-youtube-access.js# YouTube token verification & auto-refresh
+│   └── validate-request.js      # Joi validation wrapper
 ├── modules/
 │   ├── auth/
 │   ├── channel/
@@ -128,13 +118,13 @@ packages/backend/src/
 │   ├── studio/
 │   ├── text-predict/
 │   ├── user/
-│   └── video-analysis/
-├── dto/                    # Global DTO lintas modul (opsional)
+│   ├── video-analysis/
+│   └── workspace/            # RBAC multi-tenant (BARU)
 └── shared/
     ├── clients/            # ml-api.client, google-oauth2.client
     ├── constants/          # gambling-keywords
     ├── services/           # ai.service, youtube.service
-    └── utils/              # errors, jwt, pdf-generator, dll.
+    └── utils/              # errors, jwt, pdf-generator, youtube-helper, dll.
 ```
 
 ### 3.5 Import Alias (ESM)
@@ -155,24 +145,134 @@ packages/backend/src/
 
 ### 4.1 Peta Endpoint
 
-| Prefix            | Modul          | Deskripsi                                   |
-| ----------------- | -------------- | ------------------------------------------- |
-| `GET /api/health` | app            | Health check                                |
-| `/api/auth/*`     | auth           | Register, login, OTP, OAuth, reset password |
-| `/api/users/*`    | user           | Profil & manajemen user                     |
-| `/api/analysis/*` | video-analysis | Start, status, hasil, moderasi, riwayat     |
-| `/api/videos/*`   | channel        | Video channel, search, preview komentar     |
-| `/api/config/*`   | configuration  | Whitelist & blacklist                       |
-| `/api/studio/*`   | studio         | Integrasi YouTube Studio                    |
-| `/api/predict/*`  | text-predict   | Prediksi teks tunggal                       |
+| Prefix             | Modul          | Deskripsi                                           |
+| ------------------ | -------------- | --------------------------------------------------- |
+| `GET /api/health`  | app            | Health check                                        |
+| `/api/auth/*`      | auth           | Register, login, OTP, OAuth, reset password         |
+| `/api/users/*`     | user           | Profil & manajemen user                             |
+| `/api/analysis/*`  | video-analysis | Start, status, hasil, moderasi, riwayat, report PDF |
+| `/api/videos/*`    | channel        | Video channel, search, preview komentar             |
+| `/api/config/*`    | configuration  | Whitelist & blacklist                               |
+| `/api/studio/*`    | studio         | Integrasi YouTube Studio (link moderasi)            |
+| `/api/predict/*`   | text-predict   | Prediksi teks tunggal                               |
+| `/api/workspace/*` | workspace      | Manajemen anggota, role, permission overrides       |
 
-### 4.2 Alur Analisis Video (Detail)
+#### Detail Endpoint — Auth (`/api/auth/*`)
+
+| Method  | Endpoint                 | Middleware                                    | Deskripsi                   |
+| ------- | ------------------------ | --------------------------------------------- | --------------------------- |
+| `POST`  | `/register`              | authLimiter, validate(registerSchema)         | Registrasi user baru        |
+| `POST`  | `/verify-otp`            | authLimiter, validate(otpSchema)              | Verifikasi kode OTP         |
+| `POST`  | `/resend-otp`            | authLimiter, validate(emailSchema)            | Kirim ulang OTP             |
+| `POST`  | `/login`                 | authLimiter, validate(loginSchema)            | Login email + password      |
+| `POST`  | `/google/signin`         | validate(googleLoginSchema)                   | Login/register via Google   |
+| `GET`   | `/youtube/connect`       | requireAuth, youtube:connect                  | Redirect ke Google OAuth    |
+| `GET`   | `/youtube/callback`      | requireAuth, youtube:connect                  | Handle OAuth callback       |
+| `POST`  | `/youtube/disconnect`    | requireAuth, youtube:connect                  | Putus koneksi YouTube       |
+| `GET`   | `/youtube/profile`       | requireAuth, youtube:connect, requireYTAccess | Ambil profil YouTube        |
+| `POST`  | `/forgot-password`       | authLimiter, validate(forgotPasswordSchema)   | Kirim email reset password  |
+| `PUT`   | `/reset-password/:token` | validate(resetPasswordSchema)                 | Reset password dengan token |
+| `PATCH` | `/change-password`       | requireAuth, profile:write, validate          | Ganti password              |
+| `POST`  | `/refresh`              | authLimiter, validate(refreshTokenSchema)     | Tukar refresh token → access token baru     |
+| `POST`  | `/logout`               | requireAuth                                   | Blacklist access + hapus refresh token      |
+| `ALL`   | `/guest/*`              | —                                             | **DEPRECATED** (410)        |
+
+#### Detail Endpoint — Users (`/api/users/*`)
+
+| Method  | Endpoint    | Middleware                 | Deskripsi             |
+| ------- | ----------- | -------------------------- | --------------------- |
+| `GET`   | `/me`       | requireAuth, profile:read  | Ambil profil sendiri  |
+| `PATCH` | `/updateMe` | requireAuth, profile:write | Update profil sendiri |
+| `DEL`   | `/deleteMe` | requireAuth, profile:write | Hapus akun sendiri    |
+
+#### Detail Endpoint — Analysis (`/api/analysis/*`)
+
+| Method | Endpoint                   | Middleware                                   | Deskripsi                           |
+| ------ | -------------------------- | -------------------------------------------- | ----------------------------------- |
+| `GET`  | `/history`                 | requireAuth, analysis:read                   | Riwayat analisis user               |
+| `POST` | `/:videoId`                | requireAuth, analysis:start, requireYTAccess | Mulai analisis video                |
+| `GET`  | `/status/:analysisId`      | requireAuth, analysis:read                   | Cek status analisis                 |
+| `GET`  | `/:analysisId/results`     | requireAuth, analysis:read                   | Ambil hasil analisis                |
+| `POST` | `/:analysisId/action`      | requireAuth, analysis:moderate, reqYTAccess  | Eksekusi aksi moderasi              |
+| `POST` | `/:analysisId/undo`        | requireAuth, analysis:moderate, reqYTAccess  | Undo aksi moderasi                  |
+| `GET`  | `/report/preview`          | requireAuth, analysis:report                 | Preview laporan period              |
+| `GET`  | `/report/download`         | requireAuth, analysis:report                 | Download laporan period (PDF)       |
+| `GET`  | `/:analysisId/report/pdf`  | requireAuth, analysis:report                 | Download laporan per analisis (PDF) |
+| `ALL`  | `/videos/*`, `/comments/*` | —                                            | **DEPRECATED** (410)                |
+
+#### Detail Endpoint — Channel (`/api/videos/*`)
+
+| Method | Endpoint             | Middleware                             | Deskripsi                 |
+| ------ | -------------------- | -------------------------------------- | ------------------------- |
+| `GET`  | `/`                  | requireAuth, channel:read, reqYTAccess | Daftar video user         |
+| `GET`  | `/search`            | requireAuth, channel:read, reqYTAccess | Cari video berdasarkan ID |
+| `GET`  | `/:videoId/comments` | requireAuth, channel:read, reqYTAccess | Preview komentar video    |
+
+#### Detail Endpoint — Config (`/api/config/*`)
+
+| Method | Endpoint         | Middleware                             | Deskripsi                |
+| ------ | ---------------- | -------------------------------------- | ------------------------ |
+| `POST` | `/whitelist`     | requireAuth, config:write, reqYTAccess | Tambah whitelist channel |
+| `GET`  | `/whitelist`     | requireAuth, config:read, reqYTAccess  | Daftar whitelist         |
+| `DEL`  | `/whitelist/:id` | requireAuth, config:write, reqYTAccess | Hapus whitelist          |
+| `POST` | `/blacklist`     | requireAuth, config:write, reqYTAccess | Tambah blacklist kata    |
+| `GET`  | `/blacklist`     | requireAuth, config:read, reqYTAccess  | Daftar blacklist         |
+| `DEL`  | `/blacklist/:id` | requireAuth, config:write, reqYTAccess | Hapus blacklist          |
+
+#### Detail Endpoint — Workspace (`/api/workspace/*`) **BARU**
+
+| Method  | Endpoint                       | Middleware                                    | Deskripsi                    |
+| ------- | ------------------------------ | --------------------------------------------- | ---------------------------- |
+| `GET`   | `/members`                     | requireAuth, workspace:read                   | Daftar anggota workspace     |
+| `POST`  | `/members`                     | requireAuth, workspace:invite, validate       | Undang anggota baru          |
+| `DEL`   | `/members/:userId`             | requireAuth, workspace:remove                 | Hapus anggota dari workspace |
+| `PATCH` | `/members/:userId/role`        | requireAuth, workspace:assign-role, validate  | Ubah role anggota            |
+| `PATCH` | `/members/:userId/permissions` | requireAuth, rbac:assign-permission, validate | Override permission anggota  |
+
+#### Detail Endpoint — Studio (`/api/studio/*`)
+
+| Method | Endpoint                     | Middleware                 | Deskripsi                             |
+| ------ | ---------------------------- | -------------------------- | ------------------------------------- |
+| `GET`  | `/comments-link/:analysisId` | requireAuth, analysis:read | Link ke YouTube Studio untuk moderasi |
+
+#### Detail Endpoint — Text Predict (`/api/predict/*`)
+
+| Method | Endpoint | Middleware | Deskripsi             |
+| ------ | -------- | ---------- | --------------------- |
+| `POST` | `/`      | —          | Prediksi teks tunggal |
+
+### 4.2 RBAC Permission Matrix
+
+Setiap endpoint dilindungi oleh **permission check** via middleware `require-permission.js`. Berikut matriks permission per role:
+
+| Permission               | owner | admin | member |
+| ------------------------ | :---: | :---: | :----: |
+| `profile:read`           |  ✅   |  ✅   |   ✅   |
+| `profile:write`          |  ✅   |  ✅   |   ✅   |
+| `analysis:start`         |  ✅   |  ✅   |   ✅   |
+| `analysis:read`          |  ✅   |  ✅   |   ✅   |
+| `analysis:moderate`      |  ✅   |  ✅   |   ✅   |
+| `analysis:report`        |  ✅   |  ✅   |   ✅   |
+| `config:read`            |  ✅   |  ✅   |   ✅   |
+| `config:write`           |  ✅   |  ✅   |   ✅   |
+| `channel:read`           |  ✅   |  ✅   |   ✅   |
+| `youtube:connect`        |  ✅   |  ✅   |   ✅   |
+| `workspace:read`         |  ✅   |  ✅   |   ❌   |
+| `workspace:invite`       |  ✅   |  ❌   |   ❌   |
+| `workspace:remove`       |  ✅   |  ❌   |   ❌   |
+| `workspace:assign-role`  |  ✅   |  ❌   |   ❌   |
+| `rbac:assign-permission` |  ✅   |  ❌   |   ❌   |
+| `rbac:revoke-permission` |  ✅   |  ❌   |   ❌   |
+
+**Permission Overrides**: Owner dapat memberikan override (grant/deny) permission spesifik kepada anggota via endpoint `PATCH /workspace/members/:userId/permissions`.
+
+### 4.3 Alur Analisis Video (Detail)
 
 ```mermaid
 stateDiagram-v2
     [*] --> PROCESSING: createAnalysisRecord()
     PROCESSING --> COMPLETED: processAnalysis() sukses
-    PROCESSING --> FAILED: error / timeout
+    PROCESSING --> FAILED: error / timeout (>10 menit)
     COMPLETED --> MODERATED: executeAction() hapus spam
     MODERATED --> [*]
     FAILED --> [*]
@@ -191,7 +291,7 @@ stateDiagram-v2
 5. Hitung `riskLevel` (HIGH / MEDIUM / LOW / NONE)
 6. Update statistik analisis & status `COMPLETED`
 
-### 4.3 Hybrid Scoring (AI + Rules)
+### 4.4 Hybrid Scoring (AI + Rules)
 
 ```mermaid
 flowchart TD
@@ -215,9 +315,43 @@ flowchart TD
 
 ---
 
-## 5. Integrasi Eksternal
+## 5. Middleware
 
-### 5.1 YouTube Data API v3
+### 5.1 require-auth.js
+
+- Verifikasi JWT Bearer Token
+- Auto-detect & validasi **active workspace** (dari header `x-workspace-id`, payload JWT, atau user default)
+- **Auto-init workspace** jika user belum memiliki workspace (create workspace + owner membership)
+- Set `req.auth = { userId, email, role, workspaceId }` dan `req.membership`
+
+### 5.2 require-permission.js
+
+- Cek permission eksplisit berdasarkan role atau override
+- Evaluasi: override deny → override grant → fallback default role
+- Support multiple permission (AND logic)
+
+### 5.3 require-youtube-access.js
+
+- Verifikasi token YouTube dari database
+- **Auto-refresh token** jika expiry ≤ 5 menit (dengan mutex mencegah refresh ganda)
+- Jika refresh gagal → hapus token DB → return 422
+- Set `req.youtube = { tokens, channelId, channelName }`
+
+### 5.4 validate-request.js
+
+- Wrapper Joi validation untuk body/query/params
+
+### 5.5 error-handler.js
+
+- Centralized error handler
+- Adapters: CastError (Mongoose), ValidationError, AxiosError, JWT errors, DuplicateKey (E11000)
+- Operational vs Programming error separation (production mode)
+
+---
+
+## 6. Integrasi Eksternal
+
+### 6.1 YouTube Data API v3
 
 | Operasi            | Service                          | Scope OAuth         |
 | ------------------ | -------------------------------- | ------------------- |
@@ -228,7 +362,7 @@ flowchart TD
 
 > Detail lengkap: [youtube_data_api_v3.md](../youtube_data_api_v3.md)
 
-### 5.2 Ekspansi Multi-Platform (YouTube, TikTok, Instagram, dll)
+### 6.2 Ekspansi Multi-Platform (YouTube, TikTok, Instagram, dll)
 
 Untuk ekspansi platform sosial tanpa mengubah core domain, gunakan pola **Port-Adapter (Hexagonal ringan)**:
 
@@ -252,39 +386,7 @@ flowchart LR
 - `deleteComment(commentId)`
 - `normalizeComment(rawComment) => PlatformCommentDto`
 
-#### Struktur folder yang disarankan
-
-```bash
-src/
-├── modules/
-│   ├── social-account/              # akun platform user (tokens, scopes, status)
-│   ├── content-source/              # daftar video/post lintas platform
-│   └── video-analysis/              # engine analisis (platform-agnostic)
-├── platforms/
-│   ├── contracts/
-│   │   └── social-platform.port.js
-│   ├── youtube/
-│   │   ├── youtube.adapter.js
-│   │   └── youtube.dto.js
-│   ├── tiktok/
-│   │   ├── tiktok.adapter.js
-│   │   └── tiktok.dto.js
-│   └── instagram/
-│       ├── instagram.adapter.js
-│       └── instagram.dto.js
-└── dto/
-    └── platform-comment.dto.js
-```
-
-#### Prinsip scalability & maintainability
-
-1. **Open/Closed Principle**: tambah platform baru cukup tambah adapter baru, service inti tidak diubah.
-2. **Single Responsibility**: setiap adapter hanya tahu API platform masing-masing.
-3. **DTO Normalization**: komentar dari semua platform dipetakan ke satu DTO netral domain.
-4. **Per-platform capability flags**: tidak semua platform mendukung aksi sama (mis. delete/reply), tangani lewat capability matrix.
-5. **Async processing**: fetch komentar lintas platform lewat queue untuk hindari timeout.
-
-### 5.3 ML API Client
+### 6.3 ML API Client
 
 ```javascript
 // shared/clients/ml-api.client.js
@@ -300,43 +402,45 @@ export const mlApiClient = axios.create({
 | `POST /api/analyze` | `ai.service`                 | Batch analisis komentar |
 | `GET /health`       | — (belum digunakan)          | Health check            |
 
-### 5.4 Email
+### 6.4 Email
 
 - **Mailgun** (utama produksi) — reset password, OTP
 - **Postmark** (alternatif) — dikonfigurasi di `environment.js`
+- **Nodemailer** (fallback SMTP) — untuk development
 
 ---
 
-## 6. Keamanan
+## 7. Keamanan
 
-| Aspek            | Implementasi Saat Ini                             | Rekomendasi                         |
-| ---------------- | ------------------------------------------------- | ----------------------------------- |
-| Autentikasi      | JWT Bearer di header `Authorization`              | ✅ Cukup untuk SPA                  |
-| Otorisasi        | `is-authenticated.js`, `ensure-youtube-access.js` | Tambah RBAC jika multi-role         |
-| Input validation | Joi di `validate-request.js`                      | ✅ Sudah ada                        |
-| Rate limiting    | `express-rate-limit`                              | Per-endpoint untuk `/auth`          |
-| Security headers | Helmet                                            | ✅ Sudah ada                        |
-| CORS             | Dikonfigurasi di `app.js`                         | Restrict origin di produksi         |
-| Secrets          | `.env` (tidak di-commit)                          | Vault / Secrets Manager di produksi |
+| Aspek            | Implementasi Saat Ini                             | Rekomendasi                            |
+| ---------------- | ------------------------------------------------- | -------------------------------------- |
+| Autentikasi      | JWT Bearer di header `Authorization`              | ✅ Cukup untuk SPA                     |
+| Otorisasi        | RBAC: `require-auth.js` + `require-permission.js` | ✅ Permission matrix + overrides       |
+| Input validation | Joi di `validate-request.js`                      | ✅ Sudah ada                           |
+| Rate limiting    | `express-rate-limit` (global + per-auth)          | ✅ Per-endpoint untuk `/auth`          |
+| Security headers | Helmet (CSP disesuaikan untuk Google OAuth)       | ✅ Sudah ada                           |
+| CORS             | Dikonfigurasi di `app.js` (whitelist origin)      | ✅ Restrict origin di produksi         |
+| Secrets          | `.env` (tidak di-commit)                          | ⏳ Vault / Secrets Manager di produksi |
 
 ---
 
-## 7. Resilience & Observability
+## 8. Resilience & Observability
 
-### 7.1 Kondisi Saat Ini
+### 8.1 Kondisi Saat Ini
 
-| Pola                      | Status | Detail                                  |
-| ------------------------- | ------ | --------------------------------------- |
-| Timeout ML API            | ✅     | 60 detik di `mlApiClient`               |
-| Stuck analysis guard      | ✅     | Auto-fail setelah 10 menit `PROCESSING` |
-| Centralized error handler | ✅     | `AppError`, `BadRequestError`, dll.     |
-| Structured logging        | ⚠️     | `console.log` + `morgan`                |
-| Circuit breaker ML        | ❌     | Belum ada                               |
-| Retry dengan backoff      | ❌     | Belum ada                               |
-| Correlation ID            | ❌     | Belum ada                               |
-| Health check              | ✅     | `GET /api/health`                       |
+| Pola                       | Status | Detail                                   |
+| -------------------------- | ------ | ---------------------------------------- |
+| Timeout ML API             | ✅     | 60 detik di `mlApiClient`                |
+| Stuck analysis guard       | ✅     | Auto-fail setelah 10 menit `PROCESSING`  |
+| Centralized error handler  | ✅     | `AppError`, `BadRequestError`, dll.      |
+| YouTube token auto-refresh | ✅     | Mutex-protected, auto-cleanup jika gagal |
+| Structured logging         | ⚠️     | `console.log` + `morgan`                 |
+| Circuit breaker ML         | ❌     | Belum ada                                |
+| Retry dengan backoff       | ❌     | Belum ada                                |
+| Correlation ID             | ❌     | Belum ada                                |
+| Health check               | ✅     | `GET /api/health`                        |
 
-### 7.2 Rekomendasi Peningkatan
+### 8.2 Rekomendasi Peningkatan
 
 ```mermaid
 flowchart LR
@@ -353,19 +457,64 @@ flowchart LR
 
 ---
 
-## 8. Data Model (Ringkas)
+## 9. Data Model (Ringkas)
 
 | Model             | Modul          | Tujuan                                    |
 | ----------------- | -------------- | ----------------------------------------- |
-| `User`            | user           | Akun pengguna, token YouTube              |
+| `User`            | user           | Akun pengguna, token YouTube, workspaceId |
 | `PasswordReset`   | auth           | Token reset password                      |
 | `UserConfig`      | configuration  | Whitelist channel ID, blacklist kata      |
+| `RefreshToken`    | auth           | Refresh token untuk rotasi                |
+| `TokenBlacklist`  | auth           | Blacklist access token JTI                |
 | `VideoAnalysis`   | video-analysis | Tiket analisis, statistik, status         |
 | `AnalyzedComment` | video-analysis | Komentar + hasil klasifikasi per analisis |
+| `Workspace`       | workspace      | Entitas workspace multi-tenant **BARU**   |
+| `WorkspaceMember` | workspace      | Membership + role + permission overrides  |
+
+### Struktur Workspace & WorkspaceMember
+
+```javascript
+// Workspace
+{
+  name: String,           // required
+  ownerUserId: ObjectId,  // ref: User, required
+  timestamps: true
+}
+
+// WorkspaceMember
+{
+  userId: ObjectId,       // ref: User
+  workspaceId: ObjectId,  // ref: Workspace (unique compound index)
+  role: 'owner' | 'admin' | 'member',
+  permissionOverrides: {
+    grant: [String],      // permission tambahan
+    deny: [String],       // permission dicabut
+  }
+}
+```
 
 ---
 
-## 9. Konvensi Penamaan
+## 10. Dokumentasi v2
+
+Dokumentasi spesifikasi per-fitur backend v2:
+
+| Berkas                                                                                   | Isi                                                                                  | Status         |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | -------------- |
+| [`v2/01_esm_feature_module_migration.md`](v2/01_esm_feature_module_migration.md)         | Migrasi ESM + Feature Module (struktur folder, subpath imports)                      | ✅ Selesai     |
+| [`v2/02-rbac-auth-spesifikasi-final.md`](v2/02-rbac-auth-spesifikasi-final.md)           | RBAC, Auth, Workspace — spesifikasi final middleware chain & permission              | ✅ Selesai     |
+| [`v2/03-audit-auth-flow.md`](v2/03-audit-auth-flow.md)                                   | Audit alur autentikasi & otorisasi — deep dive middleware chain, temuan, rekomendasi | ✅ Selesai     |
+| [`v2/04-arsitektur-role-dan-batasan.md`](v2/04-arsitektur-role-dan-batasan.md)           | Arsitektur role final & batasan explorer — superuser, explorer, workspace auth       | 🔒 Selesai     |
+| [`v2/05-task-plan-eksekusi-04.md`](v2/05-task-plan-eksekusi-04.md)                       | Task plan berurutan untuk mengeksekusi item yang belum dari 04                       | ✅ Selesai     |
+| [`v2/06-clean-code-split-auth.md`](v2/06-clean-code-split-auth.md)                       | Audit clean code + rencana split auth module (otp, youtube, auth service)            | ✅ Selesai     |
+| [`v2/07-refresh-token-dan-blacklist.md`](v2/07-refresh-token-dan-blacklist.md)           | Refresh token + blacklist token di DB untuk logout server-side                       | ✅ Selesai     |
+| [`v2/08-strategi-testing-auth.md`](v2/08-strategi-testing-auth.md)                       | Strategi testing auth — unit 60 ✅, integration & e2e menyusul                      | ✅ Selesai     |
+| [`v2/09-strategi-testing-middleware.md`](v2/09-strategi-testing-middleware.md)           | Strategi testing middleware — unit 38 ✅, integration 8 ✅                          | ✅ Selesai     |
+| [`v2/00-rekomendasi-pengembangan-backend.md`](v2/00-rekomendasi-pengembangan-backend.md) | Rencana prioritas pengembangan backend selanjutnya                                   | 🔓 Rekomendasi |
+
+---
+
+## 11. Konvensi Penamaan
 
 Mengikuti [esm_feature_module_migration.md](../esm_feature_module_migration.md):
 
@@ -380,7 +529,7 @@ Mengikuti [esm_feature_module_migration.md](../esm_feature_module_migration.md):
 
 ---
 
-## 10. Menjalankan Backend
+## 11. Menjalankan Backend
 
 ```bash
 cd packages/backend
@@ -395,26 +544,37 @@ npm run dev            # nodemon, port 3001
 | -------------- | -------------------------- |
 | `npm run dev`  | Development dengan Nodemon |
 | `npm start`    | Production                 |
-| `npm test`     | Jest (timeout 30s)         |
+| `npm run test`  | Jest — unit + integration (timeout 180s) |
+| `npm run test:unit` | Hanya `*.unit.test.js` (timeout 10s) |
+| `npm run test:integration` | Hanya `*.integration.test.js` (timeout 30s) |
 | `npm run lint` | ESLint                     |
 
----
+### Dokumentasi API (Swagger)
 
-## 11. Perbandingan: Saat Ini vs Rekomendasi
+Jika sudah aktif, buka:
 
-| Area           | Saat Ini                | Target Best Practice                     |
-| -------------- | ----------------------- | ---------------------------------------- |
-| Struktur modul | Feature modules ✅      | Pertahankan, tambah README per modul     |
-| Async analisis | Sinkron di HTTP request | Background job queue                     |
-| ML resilience  | Timeout saja            | Circuit breaker + retry + fallback       |
-| Logging        | Console + morgan        | Structured JSON + correlation ID         |
-| API docs       | README manual           | OpenAPI/Swagger auto-generated           |
-| Testing        | 1 test file             | Unit per service + integration per route |
-| Caching        | Tidak ada               | Redis cache untuk hasil analisis selesai |
+```
+http://localhost:3001/api-docs
+```
 
 ---
 
-## 12. Diagram Deployment
+## 12. Perbandingan: Saat Ini vs Rekomendasi
+
+| Area           | Saat Ini                | Target Best Practice                                  |
+| -------------- | ----------------------- | ----------------------------------------------------- |
+| Struktur modul | Feature modules ✅      | Pertahankan, tambah README per modul                  |
+| RBAC           | Workspace + permissions | ✅ Implementasi Fase 2 lengkap                        |
+| Async analisis | Sinkron di HTTP request | Background job queue                                  |
+| ML resilience  | Timeout saja            | Circuit breaker + retry + fallback                    |
+| Logging        | Console + morgan        | Structured JSON + correlation ID                      |
+| API docs       | README manual           | OpenAPI/Swagger auto-generated (✅ via swagger-jsdoc) |
+| Testing        | Jest + Supertest — 60 unit tests ✅ | Unit per service + integration per route |
+| Caching        | Tidak ada               | Redis cache untuk hasil analisis selesai              |
+
+---
+
+## 13. Diagram Deployment
 
 ```mermaid
 graph TB
@@ -427,7 +587,7 @@ graph TB
     subgraph External
         ML[ml-api:7860<br/>HF Spaces / lokal]
         YT[YouTube API]
-        MG[Mailgun]
+        MG[Mailgun / Postmark]
     end
 
     FE --> BE
@@ -439,4 +599,4 @@ graph TB
 
 ---
 
-_Terakhir diperbarui: Juli 2026_
+_Terakhir diperbarui: 12 Juli 2026 — v2 ESM, RBAC, Workspace ✅, Auth unit tests 60/60 ✅_

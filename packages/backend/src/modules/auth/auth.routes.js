@@ -1,17 +1,8 @@
 import rateLimit from 'express-rate-limit';
-import authController from '#modules/auth/auth.controller.js';
+import * as authController from '#modules/auth/auth.controller.js';
 import * as userController from '#modules/user/user.controller.js';
 import validateRequest from '#middlewares/validate-request.js';
-import {
-  registerSchema,
-  loginSchema,
-  otpSchema,
-  emailSchema,
-  forgotPasswordSchema,
-  resetPasswordSchema,
-  changePasswordSchema,
-  googleLoginSchema,
-} from '#modules/auth/auth.validator.js';
+import * as authValidator from '#modules/auth/auth.validator.js';
 import express from 'express';
 import requireAuth from '#middlewares/require-auth.js';
 import requirePermission from '#middlewares/require-permission.js';
@@ -31,35 +22,43 @@ export const router = express.Router();
 router.post(
   '/register',
   authLimiter,
-  validateRequest(registerSchema, 'body'),
+  validateRequest(authValidator.registerSchema, 'body'),
   authController.handleRegister,
 );
 
 router.post(
   '/verify-otp',
   authLimiter,
-  validateRequest(otpSchema, 'body'),
+  validateRequest(authValidator.otpSchema, 'body'),
   authController.handleVerifyOtp,
 );
 
 router.post(
   '/resend-otp',
   authLimiter,
-  validateRequest(emailSchema, 'body'),
+  validateRequest(authValidator.emailSchema, 'body'),
   authController.handleResendOtp,
 );
 
 router.post(
   '/login',
   authLimiter,
-  validateRequest(loginSchema, 'body'),
+  validateRequest(authValidator.loginSchema, 'body'),
   authController.handleLogin,
 );
 
 router.post(
   '/google/signin',
-  validateRequest(googleLoginSchema, 'body'),
+  authLimiter,
+  validateRequest(authValidator.googleLoginSchema, 'body'),
   authController.handleGoogleAuth,
+);
+
+router.post(
+  '/set-password',
+  authLimiter,
+  validateRequest(authValidator.setPasswordSchema, 'body'),
+  authController.handleSetPassword,
 );
 
 router.get(
@@ -92,7 +91,7 @@ router.get(
 );
 
 // Deprecate guest auth routes
-router.all('/guest/*', (req, res) => {
+router.all('/guest', (req, res) => {
   res.status(410).json({
     status: 'fail',
     message: 'Rute guest auth telah dinonaktifkan.',
@@ -102,13 +101,13 @@ router.all('/guest/*', (req, res) => {
 router.post(
   '/forgot-password',
   authLimiter,
-  validateRequest(forgotPasswordSchema),
+  validateRequest(authValidator.forgotPasswordSchema),
   authController.handleForgotPassword,
 );
 
 router.put(
   '/reset-password/:token',
-  validateRequest(resetPasswordSchema),
+  validateRequest(authValidator.resetPasswordSchema),
   authController.handleResetPassword,
 );
 
@@ -116,8 +115,17 @@ router.patch(
   '/change-password',
   requireAuth,
   requirePermission('profile:write'),
-  validateRequest(changePasswordSchema),
+  validateRequest(authValidator.changePasswordSchema),
   authController.handleChangePassword,
 );
+
+router.post(
+  '/refresh',
+  authLimiter,
+  validateRequest(authValidator.refreshTokenSchema, 'body'),
+  authController.handleRefreshToken,
+);
+
+router.post('/logout', requireAuth, authController.handleLogout);
 
 export default router;

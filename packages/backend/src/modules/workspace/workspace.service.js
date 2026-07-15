@@ -1,10 +1,6 @@
 import { WorkspaceRepository } from './workspace.repository.js';
 import User from '#modules/user/user.model.js';
-import {
-  NotFoundError,
-  ConflictError,
-  BadRequestError,
-} from '#shared/utils/errors.js';
+import { NotFoundError, ConflictError, BadRequestError } from '#shared/utils/errors.js';
 
 export const getMembers = async (workspaceId) => {
   const members = await WorkspaceRepository.listMembers(workspaceId);

@@ -5,7 +5,7 @@ const config = {
   port: process.env.PORT || 3001,
   apiUrl: process.env.API_URL,
   mongodbUri: process.env.MONGODB_URI,
-  frontendUrl: process.env.FRONTEND_URL,
+  frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
   jwt: {
     secret: process.env.JWT_SECRET,
     expiresIn: process.env.JWT_EXPIRES_IN || '24h',
@@ -48,6 +48,12 @@ const config = {
   //maksimal top level comment dan replies per comment
   MAX_TOP_LEVEL_COMMENTS: 50,
   MAX_REPLIES_PER_COMMENT: 20,
+
+  // Superuser seed — baca dari env, jangan hardcode
+  superuser: {
+    email: process.env.SUPERUSER_EMAIL,
+    password: process.env.SUPERUSER_PASSWORD,
+  },
 };
 
 if (process.env.NODE_ENV === 'production' && (!config.mailgun.apiKey || !config.mailgun.domain)) {
@@ -70,7 +76,13 @@ if (!config.youtube.clientId || !config.youtube.clientSecret || !config.youtube.
   console.warn(
     'WARNING: YouTube OAuth Client ID, Secret, or Redirect URI is not defined in .env file. YouTube integration might fail.',
   );
-  process.exit(1);
+}
+
+// Validasi superuser seed
+if (!config.superuser.email || !config.superuser.password) {
+  console.warn(
+    'SUPERUSER_EMAIL or SUPERUSER_PASSWORD is not set. Seed script will not create superuser.',
+  );
 }
 
 export default config;

@@ -4,7 +4,6 @@ import {
   getChannelVideos,
   getYoutubeVideoComments,
   getVideoById,
-  getMyChannelId,
 } from '#shared/services/youtube.service.js';
 
 /**
@@ -124,10 +123,8 @@ const searchVideoById = async (req, res, next) => {
 
     if (currentUserChannel && currentUserChannel.id) {
       myChannelId = currentUserChannel.id;
-    } else if (req.user && req.user.youtubeChannelId) {
-      myChannelId = req.user.youtubeChannelId;
     } else {
-      myChannelId = await getMyChannelId(tokens);
+      myChannelId = req.auth.youtubeChannelId;
     }
 
     if (!myChannelId || videoData.channelId !== myChannelId) {

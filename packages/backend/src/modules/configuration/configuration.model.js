@@ -5,11 +5,11 @@ const whitelistSchema = new mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       required: true,
     },
     channelId: { type: String, required: true }, // ID Channel YouTube
-    channelName: { type: String, default: "Unknown" }, // Nama Channel (untuk display)
+    channelName: { type: String, default: 'Unknown' }, // Nama Channel (untuk display)
     note: { type: String }, // Catatan user
   },
   { timestamps: true },
@@ -20,14 +20,14 @@ const blacklistSchema = new mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       required: true,
     },
     keyword: { type: String, required: true }, // Kata kuncinya
     matchType: {
       type: String,
-      enum: ["CONTAINS", "EXACT"],
-      default: "CONTAINS",
+      enum: ['CONTAINS', 'EXACT'],
+      default: 'CONTAINS',
     },
   },
   { timestamps: true },
@@ -37,7 +37,7 @@ const blacklistSchema = new mongoose.Schema(
 whitelistSchema.index({ userId: 1, channelId: 1 }, { unique: true });
 blacklistSchema.index({ userId: 1, keyword: 1 }, { unique: true });
 
-const Whitelist = mongoose.model("Whitelist", whitelistSchema);
-const Blacklist = mongoose.model("Blacklist", blacklistSchema);
+const Whitelist = mongoose.model('Whitelist', whitelistSchema);
+const Blacklist = mongoose.model('Blacklist', blacklistSchema);
 
 export { Whitelist, Blacklist };

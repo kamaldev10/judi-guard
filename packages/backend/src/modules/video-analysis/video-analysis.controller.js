@@ -35,7 +35,7 @@ const startAnalysis = async (req, res, next) => {
     const tokens = req.youtubeTokens; // Dari middleware ensureYoutubeAccess
 
     // Identifikasi User vs Guest
-    const userId = req.user ? req.user._id : null;
+    const userId = req.auth ? req.auth.userId : null;
     const isGuest = !!req.isGuest; // Boolean
 
     // 1. Ambil Detail Video (Judul, dll) untuk disimpan di history
@@ -313,7 +313,7 @@ const undoAction = async (req, res, next) => {
  */
 const getHistory = async (req, res, next) => {
   try {
-    const userId = req.user.id; // Dari middleware protect
+    const userId = req.auth.userId; // Dari middleware protect
     const { page = 1, limit = 10 } = req.query;
 
     const skip = (page - 1) * limit;
@@ -371,7 +371,7 @@ const getHistory = async (req, res, next) => {
 const getReportPreview = async (req, res, next) => {
   try {
     const { startDate, endDate } = req.query;
-    const userId = req.user.id;
+    const userId = req.auth.userId;
 
     if (!startDate || !endDate) throw new AppError('Periode tanggal wajib diisi', 400);
 
@@ -440,7 +440,7 @@ const getReportPreview = async (req, res, next) => {
 const downloadPeriodReport = async (req, res, next) => {
   try {
     const { startDate, endDate } = req.query;
-    const userId = req.user.id;
+    const userId = req.auth.userId;
 
     if (!startDate || !endDate) throw new AppError('Periode tanggal wajib diisi', 400);
 
@@ -485,7 +485,7 @@ const downloadPeriodReport = async (req, res, next) => {
     };
 
     const reportData = {
-      user: { name: req.user.name || 'Member' },
+      user: { name: req.auth.fullName || req.auth.username || 'Member' },
       period: { start, end },
       summary,
       details: detailsWithComments,
@@ -560,7 +560,7 @@ const downloadReport = async (req, res, next) => {
 const submitVideoForAnalysis = async (req, res, next) => {
   try {
     const { videoUrl } = req.body;
-    const userId = req.user._id; // Didapatkan dari middleware isAuthenticated
+    const userId = req.auth.userId; // Didapatkan dari middleware isAuthenticated
 
     if (!videoUrl) {
       throw new BadRequestError('Parameter "videoUrl" diperlukan.');
@@ -589,7 +589,7 @@ const submitVideoForAnalysis = async (req, res, next) => {
 const getAnalyzedCommentsForVideo = async (req, res, next) => {
   try {
     const { analysisId } = req.params;
-    const userId = req.user._id; // Dari middleware isAuthenticated
+    const userId = req.auth.userId; // Dari middleware isAuthenticated
 
     console.log(`[video Analysis Controller] Mencari komentar untuk analysisId: ${analysisId}`);
 
@@ -612,7 +612,7 @@ const getAnalyzedCommentsForVideo = async (req, res, next) => {
 
 const batchDeleteJudiCommentsController = async (req, res, next) => {
   try {
-    const userId = req.user._id; // Diambil dari middleware isAuthenticated
+    const userId = req.auth.userId; // Diambil dari middleware isAuthenticated
     const { analysisId } = req.params; // Ambil analysisId dari parameter URL
 
     if (!analysisId) {
@@ -639,7 +639,7 @@ const batchDeleteJudiCommentsController = async (req, res, next) => {
 const deleteAnalyzedCommentController = async (req, res, next) => {
   try {
     const { analyzedCommentId } = req.params;
-    const userId = req.user._id;
+    const userId = req.auth.userId;
 
     // Dapatkan youtubeCommentId dari database terlebih dahulu
     const commentInDb = await AnalyzedCommentRepository.findOne({

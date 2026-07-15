@@ -4,7 +4,10 @@ import config from '#config/environment.js';
 import { DEFAULT_GAMBLING_KEYWORDS } from '#shared/constants/gambling-keywords.js';
 import { VideoAnalysisRepository } from '#modules/video-analysis/video-analysis.repository.js';
 import { AnalyzedCommentRepository } from '#modules/video-analysis/analyzed-comment.repository.js';
-import { WhitelistRepository, BlacklistRepository } from '#modules/configuration/configuration.repository.js';
+import {
+  WhitelistRepository,
+  BlacklistRepository,
+} from '#modules/configuration/configuration.repository.js';
 
 // --- 1. DEFINISI RULES DASAR ---
 const BASE_RULES = {
@@ -285,7 +288,4 @@ const analyzeTextWithAI = async (text) => {
   }
 };
 
-export {
-  runAiClassification,
-  analyzeTextWithAI,
-};
+export { runAiClassification, analyzeTextWithAI };

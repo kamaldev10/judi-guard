@@ -1,10 +1,12 @@
 import googleOAuth2Client from '#shared/clients/google-oauth2.client.js';
 import * as authService from '#modules/auth/auth.service.js';
-import youtubeService from '#shared/services/youtube.service.js';
+import * as otpService from '#modules/auth/otp.service.js';
+import * as passwordService from '#modules/auth/password.service.js';
+import * as youtubeOauthService from '#modules/auth/youtube-oauth.service.js';
+import * as tokenService from '#modules/auth/token.service.js';
 import { BadRequestError, UnauthorizedError } from '#shared/utils/errors.js';
 import config from '#config/environment.js';
 
-const GUEST_CALLBACK_URL = `${config.apiUrl || 'http://localhost:3001'}/api/auth/guest/callback`;
 const USER_CALLBACK_URL = `${config.apiUrl || 'http://localhost:3001'}/api/auth/youtube/callback`;
 
 /**
@@ -59,7 +61,7 @@ const handleRegister = async (req, res, next) => {
   try {
     const userData = req.body;
     // Memanggil service untuk mendaftarkan pengguna
-    const newUser = await authService.registerUser(userData);
+    const newUser = await otpService.registerUser(userData);
     res.status(201).json({
       status: 'success',
       message: 'Pengguna berhasil didaftarkan! Silahkan verifikasi OTP terlebih dahulu.',
@@ -105,13 +107,24 @@ const handleVerifyOtp = async (req, res, next) => {
   try {
     const { email, otpCode } = req.body;
     // Memanggil service untuk verifikasi OTP
-    const result = await authService.verifyOtp(email, otpCode);
-    // Hasilnya bisa berisi token JWT dan data pengguna jika verifikasi berhasil dan langsung login
+    const result = await otpService.verifyOtp(email, otpCode);
+
+    // User dari Google — perlu set password
+    if (result.status === 'set_password_required') {
+      return res.status(200).json({
+        status: 'set_password_required',
+        message: result.message,
+        data: { token: result.token },
+      });
+    }
+
+    // User biasa — langsung login
     res.status(200).json({
       status: 'success',
-      message: result.message, // Pesan dari service (misal "Verifikasi OTP berhasil.")
+      message: result.message,
       data: {
-        token: result.token,
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
         user: result.user,
       },
     });
@@ -150,7 +163,7 @@ const handleResendOtp = async (req, res, next) => {
   try {
     const { email } = req.body;
     // Memanggil service untuk mengirim ulang OTP
-    const result = await authService.resendOtp(email);
+    const result = await otpService.resendOtp(email);
     res.status(200).json({
       status: 'success',
       message: result.message, // Pesan dari service (misal "OTP baru telah dikirim.")
@@ -204,14 +217,15 @@ const handleLogin = async (req, res, next) => {
   try {
     const loginData = req.body;
     // Memanggil service untuk proses login
-    const { token, user } = await authService.loginUser(loginData);
+    const { accessToken, refreshToken, user } = await authService.loginUser(loginData);
 
     res.status(200).json({
       status: 'success',
       message: 'Login berhasil!',
       data: {
-        token, // JWT untuk autentikasi sesi
-        user, // Data pengguna (tanpa field sensitif)
+        accessToken,
+        refreshToken,
+        user,
       },
     });
   } catch (error) {
@@ -246,25 +260,57 @@ const handleLogin = async (req, res, next) => {
  *         description: ID Token tidak valid
  *         $ref: '#/components/schemas/Error'
  */
+const handleSetPassword = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+    const { accessToken, refreshToken, user } = await otpService.setPasswordAfterOtp(
+      email,
+      password,
+    );
+    res.status(200).json({
+      status: 'success',
+      message: 'Password berhasil dibuat. Silakan login.',
+      data: { accessToken, refreshToken, user },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const handleGoogleAuth = async (req, res, next) => {
   try {
-    const { idToken } = req.body; // ID Token Google yang diterima dari frontend
+    const { idToken } = req.body;
     if (!idToken) {
       throw new BadRequestError('Google ID Token diperlukan dari frontend.');
     }
 
-    // Memanggil service untuk memproses otentikasi/registrasi Google
-    const { token, user, isNewUser } = await authService.signInWithGoogle(idToken);
+    // Verifikasi Google ID token
+    const result = await authService.signInWithGoogle(idToken);
 
-    const statusCode = isNewUser ? 201 : 200; // 201 jika user baru, 200 jika user lama
-    const message = isNewUser
-      ? 'Pendaftaran dengan Google berhasil! Selamat datang.'
-      : 'Login dengan Google berhasil!';
+    // User baru — create user + send OTP
+    if (result.status === 'register_required') {
+      const otpResult = await otpService.createGoogleUser(
+        result.email,
+        result.name,
+        result.picture,
+        result.googleId,
+      );
+      return res.status(200).json({
+        status: 'otp_required',
+        message: 'Silakan verifikasi email Anda dengan kode OTP yang telah dikirim.',
+        data: { email: otpResult.email },
+      });
+    }
 
-    res.status(statusCode).json({
+    // User existing — login biasa
+    res.status(200).json({
       status: 'success',
-      message: message,
-      data: { token, user }, // Token JWT aplikasi dan data pengguna
+      message: 'Login dengan Google berhasil!',
+      data: {
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+        user: result.user,
+      },
     });
   } catch (error) {
     next(error);
@@ -298,7 +344,7 @@ const handleGoogleAuth = async (req, res, next) => {
  */
 const redirectToGoogleOAuth = (req, res, next) => {
   try {
-    if (!req.user || !req.user.id) {
+    if (!req.auth || !req.auth.userId) {
       return next(new UnauthorizedError('User tidak teridentifikasi.'));
     }
 
@@ -313,7 +359,7 @@ const redirectToGoogleOAuth = (req, res, next) => {
     const authorizeUrl = client.generateAuthUrl({
       access_type: 'offline',
       scope: YOUTUBE_SCOPES,
-      state: req.user.id.toString(), // Bawa ID user ke Google
+      state: req.auth.userId.toString(), // Bawa ID user ke Google
       prompt: 'consent', // Paksa refresh token keluar
     });
 
@@ -350,10 +396,10 @@ const redirectToGoogleOAuth = (req, res, next) => {
  *       400:
  *         description: Parameter callback tidak valid
  */
-const handleGoogleOAuthCallback = async (req, res, next) => {
+const handleGoogleOAuthCallback = async (req, res, _next) => {
   // URL Frontend (Ganti sesuai env Anda)
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-  const redirectBase = `${frontendUrl}/channel`; // Redirect ke halaman channel
+  const redirectBase = `${frontendUrl}/dashboard`; // Redirect ke halaman dashboard
 
   try {
     const { code, state: userId, error } = req.query;
@@ -367,7 +413,7 @@ const handleGoogleOAuthCallback = async (req, res, next) => {
     }
 
     // Panggil Service untuk Simpan Token
-    await authService.handleYoutubeOAuthCallback(code, userId);
+    await youtubeOauthService.handleYoutubeOAuthCallback(code, userId);
 
     // Redirect Sukses
     res.redirect(`${redirectBase}?status=connected`);
@@ -394,8 +440,8 @@ const handleGoogleOAuthCallback = async (req, res, next) => {
  */
 const handleDisconnectYouTube = async (req, res, next) => {
   try {
-    const userId = req.user.id;
-    await authService.disconnectYouTubeAccount(userId);
+    const userId = req.auth.userId;
+    await youtubeOauthService.disconnectYouTubeAccount(userId);
 
     res.status(200).json({
       status: 'success',
@@ -404,97 +450,6 @@ const handleDisconnectYouTube = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-};
-
-// --- GUEST MODE HANDLERS ---
-/**
- * @desc    Redirect user ke Google untuk izin akses YouTube (Mode Tamu)
- * @route   GET /api/auth/guest/connect
- */
-const handleConnectGuestYoutube = (req, res) => {
-  const url = googleOAuth2Client.generateAuthUrl({
-    access_type: 'offline', // Wajib offline agar dapat Refresh Token
-    scope: [
-      'https://www.googleapis.com/auth/youtube.readonly',
-      'https://www.googleapis.com/auth/youtube.force-ssl',
-      'https://www.googleapis.com/auth/youtube',
-    ],
-    prompt: 'consent',
-    include_granted_scopes: true,
-    redirect_uri: GUEST_CALLBACK_URL, // PENTING: Harus beda/spesifik
-  });
-
-  res.status(200).json({
-    status: 'success',
-    data: {
-      url: url,
-    },
-  });
-};
-
-/**
- * @desc    Callback dari Google untuk Mode Tamu
- * @route   GET /api/auth/guest/callback
- */
-const handleConnectGuestCallback = async (req, res, next) => {
-  try {
-    const { code } = req.query;
-    if (!code) {
-      return res.redirect(`${process.env.FRONTEND_URL}/dashboard?error=access_denied`);
-    }
-
-    // 1. Tukar Code dengan Tokens
-    const { tokens } = await googleOAuth2Client.getToken({
-      code,
-      redirect_uri: GUEST_CALLBACK_URL, // Pastikan variabel ini sesuai kode Anda sebelumnya
-    });
-
-    // 2. OPTIMASI: Langsung ambil profil channel saat ini juga
-    const channelProfile = await youtubeService.getChannelIdentity(tokens);
-
-    // 3. Bungkus Token + Profil dalam satu objek Session
-    const sessionData = {
-      tokens: tokens,
-      channel: channelProfile, // { id, title, thumbnail }
-    };
-
-    // 4. Simpan paket lengkap ini ke Cookie
-    res.cookie('guest_session', JSON.stringify(sessionData), {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 Hari
-    });
-
-    // Redirect dengan nama channel agar Frontend bisa langsung tahu
-    res.redirect(
-      `${process.env.FRONTEND_URL}/dashboard?status=guest_connected&channel=${encodeURIComponent(channelProfile.title)}`,
-    );
-  } catch (error) {
-    console.error('Guest Connect Error:', error);
-    res.redirect(`${process.env.FRONTEND_URL}/dashboard?error=connection_failed`);
-  }
-};
-
-/**
- * @desc    menghapus koneksi YT di dsahboard
- * @route   POST /api/auth/guest/logout
- * @access  Public
- */
-const handleGuestDisconnect = (req, res) => {
-  const cookieOptions = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-  };
-
-  // Hapus Cookie Utama
-  res.clearCookie('guest_session', cookieOptions);
-
-  res.status(200).json({
-    status: 'success',
-    message: 'Berhasil memutuskan koneksi Youtube. Sesi telah dibersihkan.',
-  });
 };
 
 // --- Handler untuk Lupa, Reset, Ganti Password ---
@@ -533,11 +488,9 @@ const handleForgotPassword = async (req, res, next) => {
         message: 'Email wajib diisi dan harus terdaftar serta dengan format yang valid.',
       });
     }
-    const result = await authService.requestPasswordReset(email.trim());
+    const result = await passwordService.requestPasswordReset(email.trim());
 
     // Logging internal di server untuk membedakan kasus
-    // (Switch statement dan console.log seperti sebelumnya sudah baik)
-    // ... (switch statement untuk logging berdasarkan result.status) ...
     switch (result.status) {
       case 'IS_GOOGLE_ONLY_ACCOUNT':
         console.info(
@@ -632,7 +585,7 @@ const handleResetPassword = async (req, res, next) => {
     const { password, confirmPassword } = req.body; // Ambil juga confirmPassword jika divalidasi di service
 
     // Service processPasswordReset idealnya juga menerima confirmPassword jika ada validasi kecocokan di sana
-    await authService.processPasswordReset(token, password, confirmPassword);
+    await passwordService.processPasswordReset(token, password, confirmPassword);
 
     res.status(200).json({
       success: true,
@@ -677,10 +630,10 @@ const handleResetPassword = async (req, res, next) => {
  */
 const handleChangePassword = async (req, res, next) => {
   try {
-    const userId = req.user._id;
+    const userId = req.auth.userId;
     const { currentPassword, newPassword } = req.body;
 
-    await authService.changeUserPassword(userId, currentPassword, newPassword);
+    await passwordService.changeUserPassword(userId, currentPassword, newPassword);
 
     res.status(200).json({
       success: true,
@@ -691,21 +644,49 @@ const handleChangePassword = async (req, res, next) => {
   }
 };
 
-export default {
+const handleRefreshToken = async (req, res, next) => {
+  try {
+    const { refreshToken } = req.body;
+    const tokens = await tokenService.refreshAccessToken(refreshToken);
+    res.status(200).json({
+      status: 'success',
+      data: {
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+      },
+    });
+  } catch (error) {
+    if (error.message === 'REFRESH_INVALID' || error.message === 'REFRESH_EXPIRED') {
+      return next(new UnauthorizedError('Refresh token tidak valid. Silakan login ulang.'));
+    }
+    next(error);
+  }
+};
+
+const handleLogout = async (req, res, next) => {
+  try {
+    const { refreshToken } = req.body;
+    await tokenService.blacklistAccessToken(req.auth);
+    if (refreshToken) await tokenService.revokeRefreshToken(refreshToken);
+    res.status(200).json({ status: 'success', message: 'Berhasil logout.' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export {
   handleRegister,
   handleVerifyOtp,
   handleResendOtp,
   handleLogin,
+  handleSetPassword,
   handleGoogleAuth,
   redirectToGoogleOAuth,
   handleGoogleOAuthCallback,
   handleDisconnectYouTube,
-
-  handleConnectGuestYoutube,
-  handleConnectGuestCallback,
-  handleGuestDisconnect,
-
   handleForgotPassword,
   handleResetPassword,
   handleChangePassword,
+  handleRefreshToken,
+  handleLogout,
 };

@@ -29,10 +29,6 @@ export class WorkspaceRepository {
   }
 
   static async updateMember(userId, workspaceId, updateData) {
-    return WorkspaceMember.findOneAndUpdate(
-      { userId, workspaceId },
-      updateData,
-      { new: true }
-    );
+    return WorkspaceMember.findOneAndUpdate({ userId, workspaceId }, updateData, { new: true });
   }
 }

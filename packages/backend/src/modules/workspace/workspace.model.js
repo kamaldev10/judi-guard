@@ -15,7 +15,7 @@ const workspaceSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 const workspaceMemberSchema = new mongoose.Schema(
@@ -49,7 +49,7 @@ const workspaceMemberSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Ensure a user can only have one membership per workspace

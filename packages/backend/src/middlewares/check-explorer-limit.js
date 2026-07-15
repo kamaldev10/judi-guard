@@ -29,7 +29,9 @@ const checkExplorerLimit = (action, max) => {
     const current = explorerCounts.get(key) || 0;
 
     if (current >= max) {
-      return next(new ForbiddenError(`Batas harian ${action} tercapai (${max}/${max}). Coba lagi besok.`));
+      return next(
+        new ForbiddenError(`Batas harian ${action} tercapai (${max}/${max}). Coba lagi besok.`),
+      );
     }
 
     explorerCounts.set(key, current + 1);

@@ -7,7 +7,7 @@ const refreshMutex = new Map();
 
 /**
  * Middleware requireYoutubeAccess:
- * 1. Membaca token YouTube dari user yang sudah terautentikasi (req.user).
+ * 1. Membaca token YouTube dari user yang sudah terautentikasi (req.auth.userId).
  * 2. Menggunakan Google OAuth2 Client untuk memverifikasi/penyegaran token otomatis jika sudah hampir kadaluarsa (<= 5 menit).
  * 3. Jika token kadaluarsa dan refresh gagal, hapus token di DB dan return 422.
  * 4. Pasang req.youtube = { tokens, channelId, channelName }
@@ -15,11 +15,11 @@ const refreshMutex = new Map();
  */
 const requireYoutubeAccess = async (req, res, next) => {
   try {
-    if (!req.user || !req.user._id) {
+    if (!req.auth || !req.auth.userId) {
       return next(new AppError('Hubungkan akun YouTube terlebih dahulu', 409));
     }
 
-    const userId = req.user._id.toString();
+    const userId = req.auth.userId;
 
     // Ambil data token YouTube yang sensitif dari database
     const user = await UserRepository.findByIdWithTokens(userId);
@@ -48,13 +48,15 @@ const requireYoutubeAccess = async (req, res, next) => {
           userId,
           (async () => {
             try {
-              console.log(`[requireYoutubeAccess] Refreshing YouTube access token for user ${userId}...`);
+              console.log(
+                `[requireYoutubeAccess] Refreshing YouTube access token for user ${userId}...`,
+              );
               const { credentials } = await oauth2Client.refreshAccessToken();
               return credentials;
             } finally {
               refreshMutex.delete(userId);
             }
-          })()
+          })(),
         );
       }
 
@@ -72,8 +74,11 @@ const requireYoutubeAccess = async (req, res, next) => {
         await user.save();
         console.log(`[requireYoutubeAccess] Token refreshed successfully for user ${userId}.`);
       } catch (refreshError) {
-        console.error(`[requireYoutubeAccess] Gagal me-refresh token untuk user ${userId}:`, refreshError.message);
-        
+        console.error(
+          `[requireYoutubeAccess] Gagal me-refresh token untuk user ${userId}:`,
+          refreshError.message,
+        );
+
         // Hapus token yang rusak di DB agar status sinkronisasi diperbarui
         user.youtubeAccessToken = undefined;
         user.youtubeRefreshToken = undefined;

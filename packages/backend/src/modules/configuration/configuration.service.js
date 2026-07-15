@@ -2,7 +2,7 @@ import { WhitelistRepository, BlacklistRepository } from './configuration.reposi
 import { UserRepository } from '#modules/user/user.repository.js';
 import * as youtubeService from '#shared/services/youtube.service.js';
 import { AppError } from '#shared/utils/errors.js';
-import DEFAULT_GAMBLING_KEYWORDS from '#shared/constants/gambling-keywords.js';
+import { DEFAULT_GAMBLING_KEYWORDS } from '#shared/constants/gambling-keywords.js';
 
 // --- SERVICE WHITELIST ---
 

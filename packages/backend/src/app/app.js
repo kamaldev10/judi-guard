@@ -76,13 +76,17 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // Swagger documentation
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
-  explorer: true,
-  customSiteTitle: 'Judi Guard API Docs',
-  swaggerOptions: {
-    persistAuthorization: true,
-  },
-}));
+app.use(
+  '/api-docs',
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec, {
+    explorer: true,
+    customSiteTitle: 'Judi Guard API Docs',
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+  }),
+);
 
 app.use('/api', apiRouter);
 

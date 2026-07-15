@@ -51,7 +51,7 @@ export const getYoutubeProfile = async (req, res, next) => {
  */
 export const getMe = async (req, res, next) => {
   try {
-    const userId = req.user._id;
+    const userId = req.auth.userId;
 
     const userFromDb = await UserRepository.findByIdWithTokens(userId);
 
@@ -118,7 +118,7 @@ export const getMe = async (req, res, next) => {
  */
 export const updateMe = async (req, res, next) => {
   try {
-    const userId = req.user._id;
+    const userId = req.auth.userId;
 
     // Daftar field yang tidak boleh diubah melalui rute ini
     const forbiddenFields = [
@@ -208,7 +208,7 @@ export const updateMe = async (req, res, next) => {
  */
 export const deleteMe = async (req, res, next) => {
   try {
-    const userId = req.user._id;
+    const userId = req.auth.userId;
 
     const user = await UserRepository.updateById(userId, { active: false }, { new: true });
 

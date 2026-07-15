@@ -7,6 +7,11 @@ const router = express.Router();
 
 router.get('/me', requireAuth, requirePermission('profile:read'), userController.getMe);
 router.patch('/updateMe', requireAuth, requirePermission('profile:write'), userController.updateMe);
-router.delete('/deleteMe', requireAuth, requirePermission('profile:write'), userController.deleteMe);
+router.delete(
+  '/deleteMe',
+  requireAuth,
+  requirePermission('profile:write'),
+  userController.deleteMe,
+);
 
 export default router;

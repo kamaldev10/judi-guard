@@ -13,9 +13,13 @@
   "scripts": {
     "start": "node src/app/server.js",
     "dev": "nodemon src/app/server.js",
+    "seed:superuser": "node scripts/seed-superuser.js",
     "lint": "eslint . ",
-    "format": "prettier --write",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testTimeout=30000 --runInBand"
+    "format": "prettier --write . --ignore-path .gitignore",
+    "format:check": "prettier --check .",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testTimeout=30000 --runInBand",
+    "test:unit": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testMatch='**/*.unit.test.js' --testTimeout=10000 --runInBand",
+    "test:integration": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testMatch='**/*.integration.test.js' --testTimeout=30000 --runInBand"
   },
   "keywords": [],
   "author": "",
@@ -42,7 +46,9 @@
     "nodemailer": "^7.0.3",
     "nodemailer-mailgun-transport": "^2.1.5",
     "pdfkit": "^0.17.2",
-    "postmark": "^4.0.5"
+    "postmark": "^4.0.5",
+    "swagger-jsdoc": "^6.3.0",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
@@ -57,9 +63,17 @@
   },
   "jest": {
     "testEnvironment": "node",
+    "roots": [
+      "src",
+      "test"
+    ],
     "setupFilesAfterEnv": [
       "./test/setup.js"
     ],
-    "testTimeout": 30000
+    "testMatch": [
+      "**/*.unit.test.js",
+      "**/*.integration.test.js"
+    ],
+    "testTimeout": 180000
   }
 }

@@ -5,73 +5,66 @@ import { MemoryRouter } from 'react-router-dom';
 import AppRouter from '../AppRouter';
 
 // Simple mocks that definitely work
-vi.mock('@/pages/home/HomePage', () => ({
+vi.mock('@/modules/home', () => ({
   __esModule: true,
-  default: () => <div>Home Page Content</div>,
+  HomePage: () => <div>Home Page Content</div>,
+  AboutUs: () => <div>About Us Content</div>,
+  FactPage: () => <div>Fact Page Content</div>,
 }));
 
-vi.mock('@/pages/about-us/AboutUs', () => ({
+vi.mock('@/modules/profile', () => ({
   __esModule: true,
-  default: () => <div>About Us Content</div>,
+  ProfilePage: () => <div>Profile Page Content</div>,
+  EditProfilePage: () => <div>Edit Profile Content</div>,
 }));
 
-vi.mock('@/pages/analisis/AnalysisPage', () => ({
+vi.mock('@/modules/auth', () => ({
   __esModule: true,
-  default: () => <div>Analysis Page Content</div>,
+  LoginPage: () => <div>Login Page Content</div>,
+  RegisterPage: () => <div>Register Page Content</div>,
+  OtpPage: () => <div>OTP Page Content</div>,
+  ForgotPasswordPage: () => <div>Forgot Password Content</div>,
+  ResetPasswordPage: () => <div>Reset Password Content</div>,
+  ChangePasswordPage: () => <div>Change Password Content</div>,
 }));
 
-vi.mock('@/pages/profile/ProfilePage', () => ({
+vi.mock('@/modules/overview', () => ({
   __esModule: true,
-  default: () => <div>Profile Page Content</div>,
+  OverviewPage: () => <div>Overview Content</div>,
 }));
 
-vi.mock('@/pages/profile/EditProfilePage', () => ({
+vi.mock('@/modules/guide', () => ({
   __esModule: true,
-  default: () => <div>Edit Profile Content</div>,
+  GuidePage: () => <div>Guide Content</div>,
 }));
 
-vi.mock('@/pages/auth/LoginPage', () => ({
+vi.mock('@/modules/configuration', () => ({
   __esModule: true,
-  default: () => <div>Login Page Content</div>,
+  ConfigPage: () => <div>Config Content</div>,
 }));
 
-vi.mock('@/pages/auth/RegisterPage', () => ({
+vi.mock('@/modules/video-analysis', () => ({
   __esModule: true,
-  default: () => <div>Register Page Content</div>,
+  VideoAnalysisPage: () => <div>Analysis Page Content</div>,
 }));
 
-vi.mock('@/pages/auth/OtpPage', () => ({
+vi.mock('@/modules/history', () => ({
   __esModule: true,
-  default: () => <div>OTP Page Content</div>,
+  HistoryPage: () => <div>History Content</div>,
 }));
 
-vi.mock('@/pages/auth/ForgotPasswordPage', () => ({
-  __esModule: true,
-  default: () => <div>Forgot Password Content</div>,
-}));
-
-vi.mock('@/pages/auth/ResetPasswordPage', () => ({
-  __esModule: true,
-  default: () => <div>Reset Password Content</div>,
-}));
-
-vi.mock('@/pages/auth/ChangePasswordPage', () => ({
-  __esModule: true,
-  default: () => <div>Change Password Content</div>,
-}));
-
-vi.mock('@/pages/status/NotFound', () => ({
+vi.mock('@/shared/components/status/NotFound', () => ({
   __esModule: true,
   default: () => <div>Not Found Content</div>,
 }));
 
 // Mock layout components
-vi.mock('@/components/layout/MainLayout', () => ({
+vi.mock('@/shared/components/layout/MainLayout', () => ({
   __esModule: true,
   default: ({ children }) => <div data-testid="main-layout">{children}</div>,
 }));
 
-vi.mock('@/components/layout/PageLoader', () => ({
+vi.mock('@/shared/components/layout/PageLoader', () => ({
   __esModule: true,
   default: () => <div data-testid="page-loader">Loading...</div>,
 }));

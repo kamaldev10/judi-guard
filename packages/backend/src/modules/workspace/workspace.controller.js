@@ -208,7 +208,7 @@ export const assignPermissionsController = async (req, res, next) => {
       workspaceId,
       targetUserId,
       grant,
-      deny
+      deny,
     );
 
     res.status(200).json({

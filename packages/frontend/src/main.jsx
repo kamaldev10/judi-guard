@@ -1,9 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './style.css';
-import App from './App';
+import App from '@/App';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { ThemeProvider } from '@/components/provider/ThemeProvider';
+import { ThemeProvider } from '@/shared/components/provider/ThemeProvider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const queryClient = new QueryClient({

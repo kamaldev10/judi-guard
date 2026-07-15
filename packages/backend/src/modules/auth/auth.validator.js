@@ -88,13 +88,36 @@ const changePasswordSchema = Joi.object({
   }),
 });
 
-export default {
-  registerSchema,
+const setPasswordSchema = Joi.object({
+  email: Joi.string().email().required().messages({
+    'string.email': 'Format email tidak valid.',
+    'any.required': 'Email wajib diisi.',
+  }),
+  password: Joi.string().min(6).required().messages({
+    'string.min': 'Password minimal harus {#limit} karakter.',
+    'any.required': 'Password wajib diisi.',
+  }),
+  confirmPassword: Joi.string().valid(Joi.ref('password')).required().messages({
+    'any.only': 'Konfirmasi password tidak cocok.',
+    'any.required': 'Konfirmasi password wajib diisi.',
+  }),
+});
+
+const refreshTokenSchema = Joi.object({
+  refreshToken: Joi.string().required().messages({
+    'any.required': 'Refresh token wajib diisi.',
+  }),
+});
+
+export {
   loginSchema,
   googleLoginSchema,
-  otpSchema,
+  registerSchema,
   emailSchema,
+  otpSchema,
+  setPasswordSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
   changePasswordSchema,
+  refreshTokenSchema,
 };

@@ -58,37 +58,24 @@ const sendErrorProd = (err, res) => {
   }
 };
 
-export default (err, req, res) => {
+export default (err, req, res, _next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error';
 
   if (process.env.NODE_ENV === 'development') {
     sendErrorDev(err, res);
   } else {
-    // Deep copy error object karena beberapa property error JS tidak enumerable
+    // Deep copy error object
     let error = Object.create(err);
     error.message = err.message;
 
     // --- ERROR ADAPTERS ---
-    // Konversi error spesifik library menjadi AppError standar
-
-    // 1. Handle Invalid ID MongoDB
     if (err.name === 'CastError') error = handleCastErrorDB(err);
-
-    // 2. Handle Validation Error Mongoose
     if (err.name === 'ValidationError') error = handleValidationErrorDB(err);
-
-    // 3. Handle Axios Error (YouTube API)
     if (err.isAxiosError) error = handleAxiosError(err);
-
-    // 4. Handle JWT Error
     if (err.name === 'JsonWebTokenError') error = new AppError('Invalid token', 401);
-
-    // 5. Handle JWT Expired
     if (err.name === 'TokenExpiredError')
       error = new AppError('Token kedaluwarsa. Silakan login kembali.', 401);
-
-    // 6. Handle MongoDB Duplicate Key (E11000)
     if (err.code === 11000) error = handleDuplicateFieldDB(err);
 
     sendErrorProd(error, res);

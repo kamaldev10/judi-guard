@@ -8,7 +8,7 @@ export default [
     ignores: ['node_modules', 'coverage', 'dist', '.vs', 'scratch', 'docs'],
   },
   {
-    files: ['src/**/*.js', 'test/**/*.js', 'jest.setup.js'],
+    files: ['src/**/*.js', 'test/**/*.js', 'scripts/**/*.js', 'jest.setup.js'],
     languageOptions: {
       sourceType: 'module',
       ecmaVersion: 'latest',

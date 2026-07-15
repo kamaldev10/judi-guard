@@ -7,7 +7,9 @@ import { ForbiddenError } from '#shared/utils/errors.js';
  */
 const requireSuperuser = (req, res, next) => {
   if (!req.auth || req.auth.role !== 'superuser') {
-    return next(new ForbiddenError('Akses ditolak. Hanya superuser yang dapat melakukan aksi ini.'));
+    return next(
+      new ForbiddenError('Akses ditolak. Hanya superuser yang dapat melakukan aksi ini.'),
+    );
   }
   next();
 };

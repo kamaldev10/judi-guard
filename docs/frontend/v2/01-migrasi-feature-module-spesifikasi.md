@@ -7,7 +7,7 @@
 
 ## 1. Target Struktur Folder (Feature Module Architecture)
 
-Struktur target di `packages/frontend/src/` mengelompokkan kode berdasarkan **domain fitur** (*feature-based*), bukan tipe teknis (*layer-based*):
+Struktur target di `packages/frontend/src/` mengelompokkan kode berdasarkan **domain fitur** (_feature-based_), bukan tipe teknis (_layer-based_):
 
 ```bash
 packages/frontend/src/
@@ -43,12 +43,12 @@ packages/frontend/src/
 
 ## 2. Panduan Folderisasi Modul Pragmatis
 
-Untuk meningkatkan produktivitas dan mencegah boilerplate berlebih (*over-engineering*), pemisahan subfolder di dalam modul disesuaikan dengan skala kompleksitas modul:
+Untuk meningkatkan produktivitas dan mencegah boilerplate berlebih (_over-engineering_), pemisahan subfolder di dalam modul disesuaikan dengan skala kompleksitas modul:
 
 1. **Modul Kompleks (Contoh: `auth`)**:
    Memisahkan folder `components/`, `hooks/`, `pages/`, dan `services/` karena memiliki banyak rute, query mutations, serta formulir terpisah.
 2. **Modul Sederhana / Kecil (Contoh: `profile`)**:
-   Tidak perlu membuat seluruh subfolder. File logic dapat digabung secara *flat* di level atas modul, cukup memisahkan subfolder `pages/` jika memiliki lebih dari 1 rute:
+   Tidak perlu membuat seluruh subfolder. File logic dapat digabung secara _flat_ di level atas modul, cukup memisahkan subfolder `pages/` jika memiliki lebih dari 1 rute:
    ```bash
    modules/profile/
    ├── index.js                     # Barrel file
@@ -60,8 +60,9 @@ Untuk meningkatkan produktivitas dan mencegah boilerplate berlebih (*over-engine
    ```
 
 **Aturan Penentuan Folder:**
+
 - **`pages/`**: **Wajib** dipisahkan per sub-route halaman sebagai entry point routing.
-- **`components/`**: **Hanya dibuat** untuk komponen yang digunakan bersama oleh $\ge$ 2 halaman di dalam modul yang sama. Komponen eksklusif 1 halaman diletakkan berdampingan (*co-located*) dengan file halaman tersebut.
+- **`components/`**: **Hanya dibuat** untuk komponen yang digunakan bersama oleh $\ge$ 2 halaman di dalam modul yang sama. Komponen eksklusif 1 halaman diletakkan berdampingan (_co-located_) dengan file halaman tersebut.
 - **`hooks/` & `services/`**: **Wajib** untuk memisahkan logika server state (TanStack Query) dan call API Axios agar JSX terfokus pada UI rendering.
 - **`stores/`**: **Hanya dibuat** jika modul memiliki global UI state yang kompleks (misal: multi-step form wizard). Gunakan state lokal `useState` atau React Context untuk modul sederhana.
 
@@ -70,10 +71,12 @@ Untuk meningkatkan produktivitas dan mencegah boilerplate berlebih (*over-engine
 ## 3. Target State Management (Zustand vs TanStack Query)
 
 ### 3.1 Aturan Wajib State
+
 - **Server State**: Disimpan di query layer menggunakan **TanStack Query** (`useQuery`, `useMutation`).
 - **UI State**: Disimpan di **Zustand store** khusus per modul (tidak boleh dicampur dengan logic call API/fetch).
 
 ### 3.2 Desain Alur State
+
 ```mermaid
 flowchart LR
     subgraph Server["Server State (TanStack Query)"]
@@ -97,6 +100,7 @@ flowchart LR
 ### 3.3 Struktur Contoh
 
 #### Zustand Store khusus UI State
+
 ```javascript
 // modules/video-analysis/stores/analysis-ui.store.js
 import { create } from 'zustand';
@@ -106,11 +110,13 @@ export const useAnalysisUiStore = create((set) => ({
   filters: { page: 1, limit: 10, riskLevel: 'ALL', search: '' },
   setStep: (step) => set({ step }),
   setFilters: (newFilters) => set((state) => ({ filters: { ...state.filters, ...newFilters } })),
-  reset: () => set({ step: 'SELECTION', filters: { page: 1, limit: 10, riskLevel: 'ALL', search: '' } })
+  reset: () =>
+    set({ step: 'SELECTION', filters: { page: 1, limit: 10, riskLevel: 'ALL', search: '' } }),
 }));
 ```
 
 #### Query/Mutation Hook Factory
+
 ```javascript
 // modules/video-analysis/hooks/useAnalysisResults.js
 import { useQuery } from '@tanstack/react-query';
@@ -135,6 +141,7 @@ export const useAnalysisResults = (id, filters) =>
 ## 4. Target Lapisan API (Shared API Client)
 
 Seluruh pemanggilan API wajib dialihkan ke shared client yang tangguh:
+
 - Path: `src/shared/api-client/index.js`
 - Fitur client:
   - Menyematkan header active workspace `X-Workspace-Id` otomatis.
@@ -143,32 +150,23 @@ Seluruh pemanggilan API wajib dialihkan ke shared client yang tangguh:
 
 ---
 
-## 5. Target Styling (Co-located Styles)
+## 5. Target Styling (Co-located Styles) — DILEWATKAN
 
-Setiap halaman atau komponen kompleks didorong menggunakan file style terpisah `{name}.styles.js` yang diletakkan berdampingan:
+**Keputusan:** Ekstraksi inline Tailwind ke file `{name}.styles.js` di-skip.
 
-```javascript
-// modules/video-analysis/pages/analysis/analysis.styles.js
-import { cn } from '@/shared/utils/cn';
+**Alasan:** Tailwind CSS _adalah_ co-located styling — kelas utility dideklarasikan langsung di JSX. Memindahkannya ke file `.styles.js` terpisah hanya menambah indirection (buka file lain → lihat `className` → balik lagi ke komponen) tanpa manfaat runtime.
 
-export const analysisStyles = {
-  page: 'flex flex-col gap-8 p-6 bg-gray-50',
-  header: 'flex flex-col gap-1.5',
-  title: 'text-3xl font-semibold tracking-tight text-slate-800',
-  stepIndicator: (active) =>
-    cn('h-2 rounded-full transition-all duration-300', active ? 'bg-teal-500 w-8' : 'bg-gray-200 w-2'),
-};
-```
+Prinsip: _The style definition lives where it's used._ Jika suatu komponen tidak digunakan ulang di beberapa tempat, inline className lebih mudah dibaca dan dirawat dibandingkan memisahkannya ke file terpisah.
 
 ---
 
 ## 6. Aturan Promosi Komponen
 
-| Skenario | Lokasi Penyimpanan | Jalur Impor |
-| :--- | :--- | :--- |
-| Digunakan oleh **1 halaman saja** | `pages/{page}/components/` | Relatif langsung |
+| Skenario                                            | Lokasi Penyimpanan              | Jalur Impor                          |
+| :-------------------------------------------------- | :------------------------------ | :----------------------------------- |
+| Digunakan oleh **1 halaman saja**                   | `pages/{page}/components/`      | Relatif langsung                     |
 | Digunakan oleh **2+ halaman dalam modul yang sama** | `modules/{feature}/components/` | Barrel modul (`@/modules/{feature}`) |
-| Digunakan oleh **2+ modul berbeda** | `shared/components/` | `@/shared/components` |
+| Digunakan oleh **2+ modul berbeda**                 | `shared/components/`            | `@/shared/components`                |
 
 ---
 
@@ -183,21 +181,41 @@ gantt
     section Fase 2
     Migrasi Modul Auth                                  :done, 2026-07-09, 1d
     Migrasi Modul Video Analysis                        :done, 2026-07-10, 1d
-    Migrasi Modul Overview, Guide & Configuration       :active, 2026-07-11, 2d
-    Migrasi Modul Profile, Home & History               :2026-07-13, 2d
+    Migrasi Modul Overview, Guide & Configuration       :done, 2026-07-11, 2d
+    Migrasi Modul Profile, Home & History               :done, 2026-07-13, 2d
     section Fase 3
-    Pembersihan & Refactor Zustand Store                :2026-07-15, 2d
+    Pembersihan & Refactor Zustand Store                :done, 2026-07-15, 2d
     section Fase 4
-    Ekstraksi Co-located Styles                         :2026-07-17, 2d
+    Ekstraksi Co-located Styles                         :done, 2026-07-17, 0d
 ```
+
+> **Catatan:** Fase 4 (Ekstraksi `.styles.js`) dilewatkan berdasarkan keputusan arsitektur. Tailwind inline sudah co-located. Lihat [Bagian 5](#5-target-styling-co-located-styles--dilewatkan).
+
+### Status Review per Modul (Juli 2026)
+
+| Modul            | Struktur Folder | API Service | TanStack Query | UI Store | Catatan                                     |
+| :--------------- | :-------------: | :---------: | :------------: | :------: | :------------------------------------------ |
+| `auth`           |       ✅        |     ✅      |       ✅       |    ✅    | `useAuthUiStore` — session/token UI only    |
+| `video-analysis` |       ✅        |     ✅      |       ✅       |    ✅    | `useAnalysisUiStore` per-modul              |
+| `overview`       |       ✅        |      —      |       —        |    —     | Halaman statis, tidak butuh API             |
+| `guide`          |       ✅        |      —      |       —        |    —     | Halaman statis, tidak butuh API             |
+| `configuration`  |       ✅        |     ✅      |       ✅       |    —     | `configKeys` factory pattern                |
+| `profile`        |       ✅        |     ✅      |       ✅       |    —     | YouTube OAuth via `useYoutubeQueries`       |
+| `home`           |       ✅        |     ✅      |       ✅       |    —     | Text predict pakai `usePredictTextMutation` |
+| `history`        |       ✅        |     ✅      |       ✅       |    —     | `historyKeys` factory pattern               |
+| `shared`         |       ✅        |     ✅      |       —        |    —     | `api-client`, `components`                  |
+
+**Dihapus (Fase 3 selesai):** `stores/`, `hooks/video-analysis/`, `lib/services/`
+
+> **Fase 4 (Co-located Styles):** Dilewatkan — Tailwind inline sudah co-located. Tidak perlu file `.styles.js` terpisah.
 
 ---
 
 ## 8. Checklist Review (QA Gate)
 
-- [ ] Seluruh file impor lintas modul menggunakan public barrel saja (`@/modules/{feature}`).
-- [ ] Logika server data diletakkan di TanStack Query layer, Zustand murni mengelola status antarmuka/UI.
-- [ ] Tidak ada pemanggilan API langsung (`fetch` atau `axios.get`) di dalam komponen JSX.
-- [ ] Komponen dipromosikan ke `shared/components` hanya setelah memiliki minimal 2 modul konsumen yang berbeda.
-- [ ] Query keys yang dipakai terstruktur rapi menggunakan factory patterns.
-- [ ] Kode inline Tailwind yang bertumpuk telah dipindahkan ke berkas style terpisah.
+- [x] Seluruh file impor lintas modul menggunakan public barrel saja (`@/modules/{feature}`).
+- [x] Logika server data diletakkan di TanStack Query layer, Zustand murni mengelola status antarmuka/UI.
+- [x] Tidak ada pemanggilan API langsung (`fetch` atau `axios.get`) di dalam komponen JSX modul yang sudah dimigrasi.
+- [x] Komponen dipromosikan ke `shared/components` hanya setelah memiliki minimal 2 modul konsumen yang berbeda.
+- [x] Query keys yang dipakai terstruktur rapi menggunakan factory patterns. _(auth, video-analysis, configuration, history, profile)_
+- [x] Kode inline Tailwind yang bertumpuk telah dipindahkan ke berkas style terpisah. _(Fase 4 — dilewatkan, Tailwind inline sudah co-located)_

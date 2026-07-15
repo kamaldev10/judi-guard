@@ -21,42 +21,53 @@ Frontend Judi Guard adalah **Single Page Application (SPA)** berbasis **React 19
 
 ## 2. Teknologi
 
-| Komponen    | Pilihan                  | Versi |
-| ----------- | ------------------------ | ----- |
-| Framework   | React                    | 19.x  |
-| Build tool  | Vite                     | 6.x   |
-| Styling     | Tailwind CSS + shadcn/ui | —     |
-| Routing     | React Router DOM         | v7    |
-| HTTP Client | Axios                    | —     |
-| State (UI)  | Zustand                  | —     |
-| Animasi     | GSAP, Framer Motion      | —     |
-| Testing     | Vitest + Testing Library | —     |
-| E2E         | Cypress (di root repo)   | —     |
-| Linting     | ESLint + Prettier        | —     |
+| Komponen       | Pilihan                  | Versi |
+| -------------- | ------------------------ | ----- |
+| Framework      | React                    | 19.x  |
+| Build tool     | Vite                     | 6.x   |
+| Styling        | Tailwind CSS + shadcn/ui | —     |
+| Routing        | React Router DOM         | v7    |
+| HTTP Client    | Axios                    | —     |
+| Server State   | TanStack Query           | —     |
+| State (UI)     | Zustand                  | —     |
+| Animasi        | GSAP, Framer Motion      | —     |
+| Testing        | Vitest + Testing Library | —     |
+| E2E            | Cypress (di root repo)   | —     |
+| Linting        | ESLint + Prettier        | —     |
 
 ---
 
-## 3. Arsitektur Kode Saat Ini (Layer-Based MVP)
+## 3. Arsitektur Kode Saat Ini (Feature Module Architecture)
 
-Struktur file di dalam `packages/frontend/src/` saat ini diatur berdasarkan **tipe teknis** (*layer-based*):
+Struktur file di dalam `packages/frontend/src/` diatur berdasarkan **domain fitur** (_feature-based_):
 
 ```bash
 packages/frontend/src/
-├── assets/                 # Ikon, gambar, font
-├── components/             # Komponen UI global/per-domain
-├── constants/              # Data statis & nilai konstan
-├── hooks/                  # Custom React hooks
-├── lib/
-│   ├── services/           # Logika pemanggilan API (Axios client & request)
-│   └── utils/              # Validator formulir & formatting helper
-├── pages/                  # Komponen halaman untuk routing
-├── routes/                 # Konfigurasi routing (AppRouter, ProtectedRoute)
-├── stores/                 # Zustand global stores (mencampur UI & Server State)
+├── assets/                         # Ikon, gambar, font
+├── constants/                      # Data statis & nilai konstan
+├── routes/                         # Thin routing layer
+│   ├── AppRouter.jsx
+│   └── ProtectedRoute.jsx
+├── modules/
+│   ├── auth/                       # Login, register, OTP, reset password
+│   ├── video-analysis/             # Analisis komentar video
+│   ├── overview/                   # Dashboard landing
+│   ├── guide/                      # Panduan penggunaan
+│   ├── configuration/              # Whitelist & blacklist
+│   ├── profile/                    # Profil pengguna
+│   ├── home/                       # Landing page & prediksi teks demo
+│   └── history/                    # Riwayat analisis & laporan
+├── shared/
+│   ├── api-client/                 # Axios instance terpusat (JWT, workspace, 401)
+│   ├── components/                 # UI reusable global (layout, ui, status)
+│   └── utils/                      # Helper global (formatters, formValidators, cn, motion)
+├── lib/                            # Kosong — dapat dihapus. Utils sudah di shared/utils
+│   └── utils/                      # → pindah ke shared/utils
 ├── App.jsx
 └── main.jsx
 ```
 
-*Untuk melihat arsitektur target (**Feature Module Architecture**), silakan merujuk pada [Dokumen Spesifikasi Migrasi (v2)](v2/01-migrasi-feature-module-spesifikasi.md).*
+*Detail target arsitektur dan aturan folderisasi: [Spesifikasi Migrasi (v2)](v2/01-migrasi-feature-module-spesifikasi.md).*
 
 ---
 
@@ -67,9 +78,6 @@ packages/frontend/src/
 | Path                     | Halaman              | Auth | YouTube OAuth | Layout          |
 | ------------------------ | -------------------- | ---- | ------------- | --------------- |
 | `/`                      | HomePage             | —    | —             | MainLayout      |
-| `/analysis`              | AnalysisPage (guest) | —    | —             | MainLayout      |
-| `/profile`               | ProfilePage          | —    | —             | MainLayout      |
-| `/profile/edit`          | EditProfilePage      | —    | —             | MainLayout      |
 | `/about-us`              | AboutUs              | —    | —             | MainLayout      |
 | `/facts`                 | FactPage             | —    | —             | MainLayout      |
 | `/dashboard`             | OverviewPage         | —    | —             | DashboardLayout |
@@ -77,6 +85,8 @@ packages/frontend/src/
 | `/dashboard/history`     | HistoryPage          | ✅   | —             | DashboardLayout |
 | `/dashboard/config`      | ConfigPage           | ✅   | ✅            | DashboardLayout |
 | `/dashboard/guide`       | GuidePage            | —    | —             | DashboardLayout |
+| `/dashboard/profile`     | ProfilePage          | ✅   | —             | DashboardLayout |
+| `/dashboard/profile/edit`  | EditProfilePage      | ✅   | —             | DashboardLayout |
 | `/login`                 | LoginPage            | —    | —             | —               |
 | `/register`              | RegisterPage         | —    | —             | —               |
 | `/otp`                   | OtpPage              | —    | —             | —               |
@@ -103,60 +113,64 @@ flowchart TD
 
 ## 5. Manajemen State Saat Ini
 
-Keadaan state management saat ini sebagian besar dikelola oleh **Zustand store** yang mencampur server data fetching dan UI flags secara bersamaan:
+### 5.1 Server State (TanStack Query)
 
-| Store                | File                           | Server State                           | UI State          | Status             |
-| -------------------- | ------------------------------ | -------------------------------------- | ----------------- | ------------------ |
-| `authStore`          | `stores/authStore.js`          | Token, user data                       | Loading flags     | ⚠️ Campur          |
-| `videoAnalysisStore` | `stores/videoAnalysisStore.js` | `myVideos`, `comments`, hasil analisis | `step`, `filters` | ⚠️ Campur          |
-| `textPredictStore`   | `stores/textPredictStore.js`   | Hasil prediksi                         | Input text        | ⚠️ Campur          |
-| `userStore`          | `stores/userStore.js`          | Profil user                            | —                 | ⚠️ Server di store |
-| `configStore`        | `stores/configStore.js`        | Whitelist/blacklist                    | —                 | ⚠️ Server di store |
-| `historyStore`       | `stores/historyStore.js`       | Riwayat analisis                       | Filter/pagination | ⚠️ Campur          |
-| `youtubeStore`       | `stores/youtubeStore.js`       | OAuth state                            | —                 | ⚠️ Campur          |
+| Modul              | Hooks / Query Keys                          | Status |
+| ------------------ | --------------------------------------------- | ------ |
+| `auth`             | `useAuthMutations`                            | ✅     |
+| `video-analysis`   | `useAnalysisQueries`                          | ✅     |
+| `configuration`    | `useConfigQueries` + `configKeys`             | ✅     |
+| `profile`          | `useProfileQueries`                           | ✅     |
+| `home`             | `usePredictTextMutation`                      | ✅     |
+| `history`          | `useHistoryQueries` + `historyKeys`           | ✅     |
 
-*Tujuan migrasi memisahkan Server State ke **TanStack Query** dan menyisakan UI State di **Zustand per modul**. Lihat detail di [Spesifikasi Migrasi State (v2)](v2/01-migrasi-feature-module-spesifikasi.md#3-target-state-management-zustand-vs-tanstack-query).*
+### 5.2 UI State (Zustand)
+
+| Store / Modul Store       | File                                              | Status             |
+| ------------------------- | ------------------------------------------------- | ------------------ |
+| `useAnalysisUiStore`      | `modules/video-analysis/stores/analysis-ui.store` | ✅ UI-only per-modul |
+| `useAuthUiStore`          | `modules/auth/stores/auth-ui.store`               | ✅ UI-only per-modul |
 
 ---
 
 ## 6. Lapisan API Saat Ini
 
-Seluruh request API saat ini ditampung secara terpusat di dalam folder `src/lib/services/`:
+### 6.1 Shared API Client (Target)
 
 ```
-lib/services/
-├── apiClient.js          # Axios instance + interceptors (JWT, default workspace)
-├── authApi.js            # API khusus autentikasi
-├── userApi.js            # API data user
-├── videoAnalysisApi.js   # API analisis video & komentar
-├── channelApi.js         # API data channel
-├── configApi.js          # API konfigurasi filter kata kunci
-├── historyApi.js         # API riwayat scan
-├── predictTextApi.js     # API prediksi manual/demo teks
-├── youtubeApi.js         # API integrasi OAuth Google/YouTube
-└── managePasswordApi.js  # API manajemen reset/lupa kata sandi
+shared/api-client/index.js    # JWT, X-Workspace-Id, auto-logout 401
 ```
+
+### 6.2 Module API Services
+
+| Modul              | File                                      |
+| ------------------ | ----------------------------------------- |
+| `auth`             | `modules/auth/services/auth.api.js`       |
+| `video-analysis`   | `modules/video-analysis/services/analysis.api.js` |
+| `configuration`    | `modules/configuration/services/config.api.js`    |
+| `profile`          | `modules/profile/services/profile.api.js` |
+| `home`             | `modules/home/services/home.api.js`       |
+| `history`          | `modules/history/services/history.api.js` |
+
+<!-- Legacy services folder deleted in Fase 3 -->
 
 ---
 
 ## 7. Komponen UI Saat Ini
 
-Komponen-komponen UI diklasifikasikan ke dalam folder-folder berikut:
-
-| Folder | Deskripsi / Isi | Konsumen Utama |
-| :--- | :--- | :--- |
-| `components/ui/` | Komponen primitif dari **shadcn/ui** (Button, Dialog, Input) | Seluruh aplikasi |
-| `components/layout/` | Tata letak global (`MainLayout`, `DashboardLayout`) | Berkas rute utama |
-| `components/auth/` | Formulir login, register, dan reset password | Halaman `/pages/auth/*` |
-| `components/analysis/` | Formulir input, list komentar, dan box statistik | Halaman analisis |
+| Folder                        | Deskripsi / Isi                                      |
+| :---------------------------- | :--------------------------------------------------- |
+| `shared/components/ui/`       | Komponen primitif shadcn/ui (Button, Dialog, Input)  |
+| `shared/components/layout/`   | Tata letak global (MainLayout, DashboardLayout)      |
+| `shared/components/status/`   | State halaman (NotFound, LoginRequired, dll)         |
+| `modules/{feature}/components/` | Komponen khusus per modul                        |
 
 ---
 
 ## 8. Styling Saat Ini
 
 - Menggunakan **Tailwind CSS utility classes** yang dideklarasikan secara inline di JSX.
-- Kelas-kelas Tailwind yang bertumpuk panjang mempersulit keterbacaan struktur HTML.
-- Berkas `tailwind.config.js` mengatur tema warna dasar, font, dan kustomisasi plugin animasi.
+- Ekstraksi ke file `{name}.styles.js` co-located **dilewatkan** — Tailwind inline sudah co-located, file style terpisah hanya menambah indirection.
 
 ---
 
@@ -177,13 +191,11 @@ stateDiagram-v2
 
 ## 10. Pengujian (Testing)
 
-| Jenis Pengujian | Alat (Tools) | Lokasi Berkas |
-| :--- | :--- | :--- |
-| Unit komponen | Vitest + React Testing Library | `src/**/__tests__/*.spec.jsx` |
-| Unit store | Vitest | `src/stores/__tests__/` |
-| Unit service | Vitest | `src/lib/services/__tests__/` |
-| Integrasi | Vitest | `*.integration.spec.jsx` |
-| End-to-End (E2E) | Cypress | `/cypress/` (di root repository) |
+| Jenis Pengujian | Alat (Tools)                   | Lokasi Berkas                        |
+| :-------------- | :----------------------------- | :----------------------------------- |
+| Unit komponen   | Vitest + React Testing Library | `src/**/__tests__/*.spec.jsx`        |
+| Integrasi       | Vitest                         | `*.integration.spec.jsx`             |
+| End-to-End      | Cypress                        | `/cypress/` (di root repository)     |
 
 ---
 
@@ -198,14 +210,14 @@ VITE_API_URL=http://localhost:3001
 
 ## 12. Skrip Development
 
-| Perintah | Fungsi |
-| :--- | :--- |
-| `npm run dev` | Menjalankan local development server (default port 5173) |
-| `npm run build` | Membuat bundel produksi di folder `dist/` |
-| `npm run preview` | Menjalankan server lokal untuk meninjau hasil build produksi |
-| `npm run test` | Menjalankan seluruh pengujian berbasis Vitest |
-| `npm run lint` | Menganalisis sintaksis menggunakan ESLint |
-| `npm run cy:open` | Membuka antarmuka interaktif Cypress |
+| Perintah          | Fungsi                                              |
+| :---------------- | :-------------------------------------------------- |
+| `npm run dev`     | Menjalankan local development server (port 5173)    |
+| `npm run build`   | Membuat bundel produksi di folder `dist/`           |
+| `npm run preview` | Meninjau hasil build produksi                       |
+| `npm run test`    | Menjalankan seluruh pengujian berbasis Vitest       |
+| `npm run lint`    | Menganalisis sintaksis menggunakan ESLint           |
+| `npm run cy:open` | Membuka antarmuka interaktif Cypress                |
 
 ---
 

@@ -54,12 +54,23 @@ const userSchema = new mongoose.Schema(
     isYoutubeConnected: { type: Boolean, default: false },
     role: {
       type: String,
-      enum: ['owner', 'admin', 'member'],
-      default: 'member',
+      enum: ['explorer', 'superuser', 'owner', 'admin', 'member'],
+      default: 'explorer',
+    },
+    workspaceId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Workspace',
     },
     permissionOverrides: {
       grant: { type: [String], default: [] },
       deny: { type: [String], default: [] },
+    },
+    explorerLimits: {
+      lastResetDate: { type: String }, // YYYY-MM-DD
+      analysisCount: { type: Number, default: 0 },
+      pdfCount: { type: Number, default: 0 },
+      moderateCount: { type: Number, default: 0 },
+      whitelistCount: { type: Number, default: 0 },
     },
   },
   {
@@ -68,15 +79,6 @@ const userSchema = new mongoose.Schema(
     toObject: { virtuals: true }, // Izinkan virtuals di object output
   },
 );
-
-// userSchema.virtual("isYoutubeConnected").get(function () {
-//   // Dianggap terhubung jika ada access token dan channel ID (atau salah satunya, sesuai definisi Anda)
-//   return !!(
-//     this.youtubeChannelId &&
-//     this.youtubeAccessToken &&
-//     this.youtubeRefreshToken
-//   );
-// });
 
 // Middleware: Hash password sebelum user disimpan
 userSchema.pre('save', async function (next) {
@@ -95,6 +97,5 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-const User = mongoose.model('User', userSchema);
-
+export const User = mongoose.model('User', userSchema);
 export default User;

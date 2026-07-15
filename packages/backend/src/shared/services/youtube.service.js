@@ -50,20 +50,15 @@ const getAuthenticatedYouTubeClient = async (userId) => {
 
   if (needsRefresh) {
     if (!tokenMutex.has(userId)) {
-      tokenMutex.set(
-        userId,
-        new Promise(async (resolve, reject) => {
-          try {
-            const { credentials } = await oAuth2Client.refreshAccessToken();
-            console.info(credentials.scope);
-            resolve(credentials);
-          } catch (error) {
-            reject(error);
-          } finally {
-            tokenMutex.delete(userId);
-          }
-        }),
-      );
+      tokenMutex.set(userId, async () => {
+        try {
+          const { credentials } = await oAuth2Client.refreshAccessToken();
+          console.info(credentials.scope);
+          return credentials;
+        } finally {
+          tokenMutex.delete(userId);
+        }
+      });
     }
 
     try {
